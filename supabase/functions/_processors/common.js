@@ -1,0 +1,199 @@
+import { supabaseAdmin } from '../_helpers/supabase.js';
+
+/**
+ * Extracts the queued apps from the updater queue by invoking the updater_dequeue RPC.
+ * @param {number} count - The maximum number of apps to retrieve.
+ * @returns {Promise<Array<number>>} An array of app IDs.
+ */
+export async function dequeueApps(count = 200) {
+  const { data, error } = await supabaseAdmin.rpc('updater_dequeue', { p_count: count });
+
+  if (error) {
+    return [];
+  }
+
+  return data;
+}
+
+/**
+ * Pushes apps to the updater queue by invoking the public.updater_enqueue RPC.
+ * @param {Array<number>} appIds - An array of app IDs to queue.
+ * @returns {Promise<boolean>} True if successful, false otherwise.
+ * @throws Will throw an error if the RPC call fails.
+ */
+export async function enqueueApps(appIds) {
+  if (!appIds || appIds.length === 0) {
+    return true;
+  }
+
+  const { error } = await supabaseAdmin.rpc('updater_enqueue', { p_appids: appIds });
+  if (error) {
+    throw error;
+  }
+  return !error;
+}
+
+/**
+ * Gets the latest check timestamp from the updater queue for a specific type
+ * @param {string} type - The type of check to retrieve
+ * @returns {Promise<string|null>} The value of the latest check or null if not found
+ */
+export async function getLastCheck(type) {
+  const { data, error } = await supabaseAdmin
+    .from('updater_queue')
+    .select('value')
+    .eq('type', type)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    return null;
+  }
+
+  return data[0].value;
+}
+
+/**
+ * Updates the check timestamp in the updater queue
+ * @param {string} type - The type of check to update
+ * @param {string|number} value - The value to store
+ * @returns {Promise<boolean>} True if successful, false otherwise
+ */
+export async function updateLastCheck(type, value) {
+  // Delete existing records of this type
+  await supabaseAdmin
+    .from('updater_queue')
+    .delete()
+    .eq('type', type);
+
+  // Insert new record
+  const { error } = await supabaseAdmin
+    .from('updater_queue')
+    .insert({
+      type,
+      value: value.toString()
+    });
+
+  return !error;
+}
+
+/**
+ * Adds an app to the update queue
+ * @param {number} appId - The app ID to queue for update
+ * @returns {Promise<boolean>} True if successful, false otherwise
+ */
+export async function queueAppForUpdate(appId) {
+  const { error } = await supabaseAdmin
+    .from('updater_queue')
+    .insert({
+      type: 'app_update',
+      value: appId.toString()
+    });
+
+  return !error;
+}
+
+/**
+ * Saves records to the database using bulk update
+ * @param {string} table - The table name to update
+ * @param {Array<Object>} records - The records to save to the database
+ * @param {string|Array} [conflictField='id'] - The field to use for conflict resolution. May be a single field or an array of fields.
+ * @param {number} [batchSize=1000] - Maximum number of records to update in a single operation
+ * @param {number} [maxRetries=3] - Maximum number of retries for failed operations
+ * @returns {Promise<Object>} Object containing success and failure information
+ */
+export async function saveToDatabase(table, records, conflictField = 'id', batchSize = 1000, maxRetries = 3) {
+  const conflictFields = Array.isArray(conflictField) ? conflictField : [conflictField];
+
+  // Ensure we have valid data to process
+  if (!records || records.length === 0) {
+    console.warn('No records to process');
+    return { errors: [], successful: [], failed: [] };
+  }
+
+  const errors = [];
+  const failed = [];
+  const successful = [];
+
+  // Helper function for retrying operations with delay
+  const retryOperation = async (operation, retries) => {
+    try {
+      return await operation();
+    } catch (err) {
+      if (retries <= 0) { throw err; }
+
+      // Exponential backoff with jitter
+      const delay = Math.floor(Math.random() * 1000) + 1000 * Math.pow(2, maxRetries - retries);
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      console.log(`Retrying operation, ${retries} attempts left`);
+      return retryOperation(operation, retries - 1);
+    }
+  };
+
+  // Group records by their updated fields signature
+  const recordsByFields = {};
+
+  for (const record of records) {
+    // Create a signature based on the fields present in the record
+    const fieldSignature = Object.keys(record).sort().join(',');
+
+    if (!recordsByFields[fieldSignature]) {
+      recordsByFields[fieldSignature] = {
+        records: [],
+        updatedFields: Object.keys(record)
+      };
+    }
+
+    // Check if this record is already included based on conflict fields
+    const existingRecords = recordsByFields[fieldSignature].records;
+    if (!existingRecords.some((r) => conflictFields.every((field) => r[field] === record[field]))) {
+      existingRecords.push(record);
+    }
+  }
+
+  // Process each group separately
+  for (const fieldSignature in recordsByFields) {
+    const group = recordsByFields[fieldSignature];
+    const uniqueRecords = group.records;
+    const updatedFields = group.updatedFields;
+
+    // Process in batches
+    for (let i = 0; i < uniqueRecords.length; i += batchSize) {
+      const batch = uniqueRecords.slice(i, i + batchSize);
+      if (batch.length === 0) {
+        continue;
+      }
+
+      try {
+        const operation = async () => {
+          const { error } = await supabaseAdmin.rpc('bulk_upsert', {
+            p_table: table,
+            p_records: batch,
+            p_update_fields: updatedFields,
+            p_conflict_fields: conflictFields
+          });
+
+          if (error) { throw error; }
+          return { error: null };
+        };
+
+        // Try the operation with retries
+        const result = await retryOperation(operation, maxRetries);
+
+        if (result.error) {
+          errors.push(result.error);
+          failed.push(...batch);
+        } else {
+          successful.push(...batch);
+        }
+      } catch (error) {
+        console.error(`Batch operation failed after ${maxRetries} retries:`, error);
+        errors.push(error);
+        failed.push(...batch);
+      }
+    }
+  }
+
+  return { errors, successful, failed };
+}

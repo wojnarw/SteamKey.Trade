@@ -1,0 +1,12 @@
+{
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "editor.formatOnSave": true,
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "editor.gotoLocation.multipleTypeDefinitions": "goto",
+  "editor.tabSize": 2,
+  "eslint.format.enable": true,
+  "vue.server.hybridMode": "auto",
+  "nuxtr.defaultPackageManager": "NPM"
+}

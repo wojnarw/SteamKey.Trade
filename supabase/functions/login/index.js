@@ -1,0 +1,147 @@
+import SteamSignIn from 'npm:steam-signin';
+
+import { serve } from '../_helpers/edge.js';
+import { supabaseAdmin } from '../_helpers/supabase.js';
+import { steamApiRequest } from '../_helpers/steamAPI.js';
+
+import { Collection, User } from '../_entities/index.js';
+
+/**
+ * Registers a new user with the provided authentication user and Steam ID.
+ *
+ * @param {Object} authUser - The authenticated user object.
+ * @param {string} steamID64 - The Steam ID of the user.
+ *
+ * @throws Will throw an error if updating the database or synchronizing collections fails.
+ */
+async function register(authUser, steamID64) {
+  console.log(`Registering user ${authUser.id} with Steam ID ${steamID64}`);
+
+  const user = new User(supabaseAdmin); // new user
+  user.id = authUser.id;
+  user.steamId = steamID64;
+
+  try {
+    const { players } = await steamApiRequest('ISteamUser', 'GetPlayerSummaries', 'v2', {
+      params: {
+        steamids: steamID64
+      }
+    });
+
+    const { personaname, avatarfull, loccountrycode } = players[0];
+    if (personaname) {
+      user.displayName = personaname;
+    }
+    if (avatarfull) {
+      user.avatar = avatarfull;
+    }
+    if (loccountrycode) {
+      user.region = loccountrycode;
+    }
+  } catch (error) {
+    console.error('Failed to set user information from Steam', error);
+  }
+
+  // Set user display name, region and avatar from Steam
+  try {
+    await user.save();
+  } catch (error) {
+    // ignore duplicate key error
+    if (error.code !== '23505') {
+      throw error;
+    }
+  }
+
+  // Set default preferences
+  try {
+    await user.savePreferences({ createdAt: new Date() });
+  } catch (error) {
+    // ignore duplicate key error
+    if (error.code !== '23505') {
+      throw error;
+    }
+  }
+
+  // Set user collections
+  await Promise.all([
+    Collection.enums.type.tradelist,
+    Collection.enums.type.wishlist,
+    Collection.enums.type.library,
+    Collection.enums.type.blacklist
+  ].map(async (type) => {
+    let collection = await Collection.getMasterCollection(supabaseAdmin, user.id, type);
+    if (!collection) {
+      collection = await Collection.createMasterCollection(supabaseAdmin, user.id, type);
+    }
+    if (type === Collection.enums.type.wishlist || type === Collection.enums.type.library) {
+      try {
+        await collection.syncWithSteam();
+      } catch (error) {
+        console.error(`Failed to sync ${type} collection with Steam: `, error);
+        throw error;
+      }
+    }
+  }));
+
+  // Update user metadata with Steam ID, marking registration as complete
+  const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
+    app_metadata: {
+      ...authUser.app_metadata,
+      steamid: steamID64
+    }
+  });
+
+  if (authUpdateError) {
+    throw authUpdateError;
+  }
+}
+
+/**
+ * Verifies a user's Steam OpenID login and creates a custom token for them.
+ *
+ * @param {Object} data - The incoming request data.
+ * @param {string} data.verify - The OpenID verification URL.
+ * @returns {Promise<Object>} The login token.
+ */
+const login = async ({ verify }) => {
+  // TODO: Use a fixed domain?
+  const returnUrl = new URL(verify);
+  const signIn = new SteamSignIn(returnUrl.origin);
+
+  try {
+    const steamID = await signIn.verifyLogin(returnUrl.href);
+    const steamID64 = steamID.getSteamID64();
+
+    // Creates user if not exists
+    const email = `${steamID64}@steam`;
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('Failed to generate login token');
+    }
+
+    // If first-time login, register user
+    if (!data.user.app_metadata.steamid) {
+      await register(data.user, steamID64);
+      // EdgeRuntime.waitUntil(register(data.user, steamID64));
+    }
+
+    const loginToken = data.properties.hashed_token;
+    return { loginToken };
+  } catch (error) {
+    error.returnUrl = returnUrl.href;
+    error.error = error.message;
+    error.message = 'Failed to verify Steam login';
+    throw error;
+  }
+};
+
+serve(login);
+

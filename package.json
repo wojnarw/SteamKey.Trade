@@ -1,0 +1,86 @@
+{
+  "name": "steamkey.trade",
+  "description": "SteamKey.Trade",
+  "homepage": "https://steamkey.trade",
+  "bugs": "https://github.com/Revadike/SteamKey.Trade/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Revadike/SteamKey.Trade.git"
+  },
+  "author": {
+    "name": "Revadike",
+    "email": "revadike@outlook.com",
+    "url": "https://revadike.com"
+  },
+  "contributors": [
+    "https://github.com/Revadike/SteamKey.Trade/graphs/contributors"
+  ],
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "start /B \"\" supabase functions serve --env-file .\\supabase\\.env.local & nuxt dev --dotenv .env.local",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:reset": "supabase db reset",
+    "supabase:pull": "supabase db pull --local && supabase migration up --local",
+    "supabase:diff": "node -e \"process.stdin.resume(); setTimeout(()=>{const rl=require('readline').createInterface({input:process.stdin,output:process.stdout}); rl.question('Name: ',f=>{rl.close(); require('child_process').execSync('supabase stop && supabase db diff -f '+f+' && supabase start',{stdio:'inherit'})})},50)\"",
+    "supabase:push": "supabase db push --local",
+    "supabase:deploy": "supabase functions deploy && supabase secrets set --env-file ./supabase/.env.prod && supabase db push",
+    "supabase:dump": "supabase db dump -f supabase/seed.sql --data-only && supabase db dump -f supabase/schema.sql -s public --keep-comments --local",
+    "supabase:populate": "deno run --env-file=\".env.local\" --env-file=\"./supabase/.env.local\" --allow-all --unstable-detect-cjs --import-map=\"./supabase/functions/import_map.json\" \"./supabase/functions/database-update/index.js\"",
+    "cache:clear": "node -e \"['.nuxt','node_modules/.cache'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\"",
+    "lint": "eslint . && supabase db lint",
+    "lint:fix": "eslint . --fix",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "imports": {
+    "#src/*": "./src/*.js"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "@nuxtjs/supabase": "^1.5.0",
+    "@pinia/nuxt": "^0.11.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "cropperjs": "1.6.2",
+    "fuse.js": "^7.1.0",
+    "json-to-csv-export": "^3.1.0",
+    "lodash": "^4.17.21",
+    "pinia": "^3.0.2",
+    "pinia-plugin-persistedstate": "^4.2.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^2.4.0",
+    "@nuxt/eslint": "^1.3.0",
+    "@nuxt/types": "^2.18.1",
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.24.0",
+    "eslint-config-vuetify": "^3.0.3",
+    "eslint-plugin-vue": "^10.0.0",
+    "nuxt": "^3.16.2",
+    "sass": "^1.86.3",
+    "supabase": "2.20.12",
+    "vite-plugin-vuetify": "^2.1.1",
+    "vue": "^3.5.13",
+    "vue-eslint-parser": "^10.1.3",
+    "vue-router": "^4.5.0",
+    "vuetify": "3.7.19"
+  },
+  "resolutions": {
+    "cookie": "0.7.2"
+  },
+  "browser": {
+    "crypto": false
+  }
+}

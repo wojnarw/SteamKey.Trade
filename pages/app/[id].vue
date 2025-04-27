@@ -1,0 +1,727 @@
+<script setup>
+  import AppCollections from '~/components/App/AppCollections.vue';
+  import AppRelatedApps from '~/components/App/AppRelatedApps.vue';
+  import AppTrades from '~/components/App/AppTrades.vue';
+
+  import { formatDate, formatNumber, slugify } from '~/assets/js/format';
+
+  const { App, Collection, User } = useORM();
+  const { user: authUser, isLoggedIn } = useAuthStore();
+  const route = useRoute();
+  const appid = route.params.id;
+
+  const { data: app, status, error } = useLazyAsyncData(`app-${appid}`, async () => {
+    const instance = new App(appid);
+    try {
+      await instance.load();
+      return instance.toObject();
+    } catch (err) {
+      if (err.code === 'PGRST116') {
+        // throw createError({
+        //   statusCode: 404,
+        //   statusMessage: 'App not found',
+        //   message: 'The app you are looking for does not exist',
+        //   fatal: true
+        // });
+        return instance.toObject();
+      } else {
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Internal Server Error',
+          message: 'An error occurred while loading the app',
+          fatal: true
+        });
+      }
+    }
+  });
+
+  watch(() => error.value, error => {
+    if (error) {
+      throw error;
+    }
+  }, { immediate: true });
+
+  const supabase = useSupabaseClient();
+  const { data: totalUsers } = useLazyAsyncData('total-users', async () => {
+    const { count } = await supabase
+      .from(User.table)
+      .select('', { count: 'exact', head: true });
+
+    return count;
+  });
+
+  const snackbarStore = useSnackbarStore();
+  const addToCollections = async collections => {
+    try {
+      await Promise.all(collections.map(collection => {
+        const instance = new Collection(collection);
+        return instance.addApps([appid]);
+      }));
+      snackbarStore.set('success', 'Added to collections');
+    } catch (error) {
+      console.error(error);
+      snackbarStore.set('error', error.message);
+    }
+  };
+
+  const isReleased = computed(() => app.value?.releasedAt && new Date(app.value.releasedAt).getTime?.() < Date.now());
+
+  const socials = computed(() => [
+    ...app.value?.website ? [{
+      text: 'View homepage',
+      icon: 'mdi-home',
+      href: app.value.website
+    }] : [],
+    {
+      text: 'View on Steam',
+      icon: 'mdi-steam',
+      href: `https://store.steampowered.com/app/${appid}`
+    },
+    {
+      text: 'View on SteamDB',
+      icon: 'mdi-database',
+      href: `https://steamdb.info/app/${appid}`
+    },
+    {
+      text: 'View on GG.Deals',
+      icon: 'mdi-alpha-g-circle', // TODO: Replace with proper icon
+      href: `https://gg.deals/steam/app/${appid}`
+    },
+    {
+      text: 'View on Barter.vg',
+      icon: 'mdi-swap-horizontal',
+      href: `https://barter.vg/steam/app/${appid}`
+    }
+  ]);
+
+  const tabs = [
+    { name: 'Trades', icon: 'mdi-swap-horizontal', component: AppTrades },
+    { name: 'Related Apps', icon: 'mdi-controller', component: AppRelatedApps },
+    { name: 'Collections', icon: 'mdi-apps', component: AppCollections }
+  ];
+  const activeTab = ref(tabs[0].name);
+
+  function decodeHtml(html) {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  }
+
+  const title = computed(() => app.value?.title ?? `Unknown App ${appid}`);
+  const breadcrumbs = computed(() => [
+    { title: 'Home', to: '/' },
+    { title: 'Apps', to: '/apps' },
+    { title: title.value, disabled: true }
+  ]);
+
+  useHead({ title });
+</script>
+
+<template>
+  <s-page-content
+    :breadcrumbs="breadcrumbs"
+    :loading="status !== 'success'"
+  >
+    <template #append>
+      <dialog-select-collection
+        v-if="isLoggedIn"
+        multiple
+        select-text="Add to collections"
+        :table-props="{ onlyUsers: [authUser.id] }"
+        @select="addToCollections"
+      >
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            class="ml-2 bg-surface rounded"
+            :icon="$vuetify.display.xs"
+            :rounded="$vuetify.display.xs"
+            variant="flat"
+          >
+            <v-icon
+              class="mr-0 mr-sm-2"
+              :icon="$vuetify.display.xs ? 'mdi-apps' : 'mdi-plus'"
+            />
+            <span class="d-none d-sm-block">
+              Collection
+            </span>
+          </v-btn>
+        </template>
+      </dialog-select-collection>
+    </template>
+
+    <v-row class="flex-grow-1">
+      <v-col
+        class="d-flex flex-column flex-grow-1"
+        cols="12"
+        lg="8"
+        order="2"
+        order-lg="1"
+      >
+        <v-row
+          v-if="app.videos?.length || app.screenshots?.length"
+          class="flex-grow-0 mb-6"
+          no-gutters
+        >
+          <v-col>
+            <s-carousel
+              :media="[...(app.videos || []), ...(app.screenshots || [])]"
+              rounded
+            />
+          </v-col>
+        </v-row>
+
+        <v-row
+          v-if="isReleased"
+          class="flex-grow-0 mt-0"
+        >
+          <v-hover open-delay="500">
+            <template #default="{ isHovering, props }">
+              <v-col
+                v-bind="props"
+                :class="{ 'steamdb-widget': true, 'expanded': isHovering, 'light': $vuetify.theme.name === 'light' }"
+              >
+                <iframe
+                  loading="lazy"
+                  :src="`https://steamdb.info/embed/?appid=${appid}`"
+                />
+              </v-col>
+            </template>
+          </v-hover>
+        </v-row>
+
+        <v-row
+          class="d-flex flex-grow-1"
+          no-gutters
+        >
+          <v-col class="d-flex flex-column fill-height">
+            <v-card class="d-flex flex-column flex-grow-1">
+              <v-tabs v-model="activeTab">
+                <template
+                  v-for="(tab, i) in tabs"
+                  :key="tab.name"
+                >
+                  <v-tab :width="`${(100 / tabs.length).toFixed(1)}%`">
+                    <v-icon
+                      class="mr-1"
+                      :icon="tab.icon"
+                    />
+                    {{ tab.name }}
+                  </v-tab>
+                  <v-divider
+                    v-if="i < tabs.length - 1"
+                    vertical
+                  />
+                </template>
+              </v-tabs>
+
+              <v-divider />
+
+              <v-window v-model="activeTab">
+                <v-window-item
+                  v-for="tab in tabs"
+                  :key="tab.name"
+                  class="h-100"
+                  :value="tab.name"
+                >
+                  <component
+                    :is="tab.component"
+                    :app="app"
+                    :appid="appid"
+                  />
+                </v-window-item>
+              </v-window>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-col
+        cols="12"
+        lg="4"
+        order="1"
+        order-lg="2"
+      >
+        <v-row>
+          <v-col>
+            <v-card>
+              <v-btn-group
+                class="w-100"
+                divided
+              >
+                <v-btn
+                  v-for="social in socials"
+                  :key="social.text"
+                  v-tooltip:top="social.text"
+                  :href="social.href"
+                  :icon="social.icon"
+                  rel="noopener"
+                  target="_blank"
+                  :width="`${100 / socials.length}%`"
+                />
+              </v-btn-group>
+              <v-img
+                :aspect-ratio="460 / 215"
+                lazy-src="/applogo.svg"
+                :src="app?.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`"
+              />
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row style="min-height: 100px;">
+          <v-col cols="8">
+            <v-card class="d-flex flex-column fill-height text-center justify-center position-relative overflow-hidden">
+              <v-icon
+                v-tooltip:top="'The price on Steam'"
+                class="position-absolute opacity-10"
+                icon="mdi-steam"
+                size="80"
+                style="left: 25%; transform: translate(-50%, -50%); top: 50%;"
+              />
+              <v-icon
+                v-tooltip:top="'Market price (GG.Deals)'"
+                class="position-absolute opacity-10"
+                icon="mdi-shopping"
+                size="75"
+                style="right: 25%; transform: translate(50%, -50%); top: 50%;"
+              />
+              <v-row no-gutters>
+                <v-col
+                  class="d-flex flex-column align-center justify-center"
+                  cols="6"
+                  style="line-height: 1"
+                >
+                  <h1
+                    v-if="app.free"
+                    class="text-success"
+                  >
+                    Free
+                  </h1>
+                  <a
+                    v-if="app.free"
+                    class="text-caption text-decoration-none text-disabled"
+                    :href="`steam://rungameid/${appid}`"
+                    rel="noopener"
+                  >
+                    Launch on Steam
+                  </a>
+                  <span
+                    v-if="app.retailPrice && app.discountedPrice !== app.retailPrice"
+                    class="text-caption"
+                  >
+                    <span class="text-decoration-line-through">
+                      ${{ app.retailPrice }}
+                    </span>
+                    <span class="text-disabled"> ({{ Math.round(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice) }}% off)</span>
+                  </span>
+                  <h1
+                    v-if="!isNaN(parseFloat(app.discountedPrice))"
+                    class="text-yellow"
+                  >
+                    ${{ app.discountedPrice }}
+                  </h1>
+                  <h1
+                    v-else-if="!app.free"
+                    class="text-disabled font-weight-thin"
+                  >
+                    ¯\_(ツ)_/¯
+                  </h1>
+                </v-col>
+
+                <v-divider
+                  style="position: absolute; left: 50%; height: 100%;"
+                  vertical
+                />
+                <v-col
+                  class="d-flex flex-column align-center justify-center"
+                  cols="6"
+                  style="line-height: 1"
+                >
+                  <h1
+                    v-if="!isNaN(parseFloat(app.marketPrice))"
+                    class="text-yellow"
+                  >
+                    ${{ app.marketPrice }}
+                  </h1>
+                  <h1
+                    v-else
+                    class="text-disabled font-weight-thin"
+                  >
+                    ¯\_(ツ)_/¯
+                  </h1>
+                  <span
+                    v-if="!isNaN(parseFloat(app.historicalLow))"
+                    class="text-caption"
+                  >
+                    ${{ formatNumber(app.historicalLow) }} <span class="text-disabled">historical low</span>
+                  </span>
+                </v-col>
+              </v-row>
+            </v-card>
+          </v-col>
+          <v-col
+            v-tooltip:top="'Steam reviews'"
+            cols="4"
+          >
+            <v-card
+              v-ripple
+              class="d-flex flex-column fill-height text-center justify-center pa-4 text-body-2 position-relative overflow-hidden"
+              style="line-height: 1"
+            >
+              <v-icon
+                class="position-absolute opacity-10"
+                icon="mdi-star"
+                size="80"
+                style="left: 50%; transform: translate(-50%, -50%); top: 50%;"
+              />
+              <a
+                class="text-decoration-none position-relative"
+                :href="`https://steamcommunity.com/app/${appid}/reviews`"
+                rel="noopener"
+                target="_blank"
+              >
+                <h1
+                  v-if="app.positiveReviews + app.negativeReviews"
+                  :class="(app.positiveReviews / (app.positiveReviews + app.negativeReviews)) > 0.5 ? 'text-success' : 'text-error'"
+                >
+                  {{ (Math.round((app.positiveReviews / (app.positiveReviews + app.negativeReviews)) * 100)) }}%
+                </h1>
+                <h1
+                  v-else
+                  class="text-disabled font-weight-thin"
+                >
+                  ¯\_(ツ)_/¯
+                </h1>
+                <span
+                  v-if="app.positiveReviews + app.negativeReviews"
+                  class="text-caption text-primary"
+                >
+                  {{ formatNumber(app.positiveReviews + app.negativeReviews) }} <span class="text-disabled">reviews</span>
+                </span>
+              </a>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+            <v-card>
+              <v-card-text>
+                <span v-if="app.description">
+                  {{ decodeHtml(app.description) }}
+                </span>
+
+                <v-chip-group class="chips">
+                  <v-chip
+                    v-for="tag in app.tags"
+                    :key="tag"
+                    class="text-capitalize"
+                    label
+                    size="small"
+                    :to="`/collection/tag-${slugify(tag)}`"
+                  >
+                    {{ tag }}
+                  </v-chip>
+                </v-chip-group>
+
+                <v-table class="mt-2">
+                  <tbody>
+                    <tr v-if="app.id">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.id }}
+                      </td>
+                      <td>
+                        {{ app.id }}
+                      </td>
+                    </tr>
+                    <tr v-if="app.type">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.type }}
+                      </td>
+                      <td>
+                        <nuxt-link
+                          class="text-decoration-none text-capitalize text-primary"
+                          :to="`/collection/type-${slugify(app.type)}`"
+                        >
+                          {{ App.labels[app.type] }}
+                        </nuxt-link>
+                      </td>
+                    </tr>
+                    <tr v-if="app.releasedAt">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.releasedAt }}
+                      </td>
+                      <td>
+                        {{ formatDate(app.releasedAt, false) }}
+                      </td>
+                    </tr>
+                    <tr v-if="app.developers?.length">
+                      <td class="text-overline text-no-wrap">
+                        {{ app.developers.length === 1 ? App.labels.developer : App.labels.developers }}
+                      </td>
+                      <td>
+                        <v-chip-group class="chips">
+                          <v-chip
+                            v-for="developer in app.developers"
+                            :key="developer"
+                            class="text-capitalize"
+                            label
+                            size="small"
+                            :to="`/collection/developer-${slugify(developer)}`"
+                          >
+                            {{ developer }}
+                          </v-chip>
+                        </v-chip-group>
+                      </td>
+                    </tr>
+                    <tr v-if="app.publishers?.length">
+                      <td class="text-overline text-no-wrap">
+                        {{ app.publishers.length === 1 ? App.labels.publisher : App.labels.publishers }}
+                      </td>
+                      <td>
+                        <v-chip-group class="chips">
+                          <v-chip
+                            v-for="publisher in app.publishers"
+                            :key="publisher"
+                            class="text-capitalize"
+                            label
+                            size="small"
+                            :to="`/collection/publisher-${slugify(publisher)}`"
+                          >
+                            {{ publisher }}
+                          </v-chip>
+                        </v-chip-group>
+                      </td>
+                    </tr>
+                    <tr v-if="app.languages?.length">
+                      <td class="text-overline text-no-wrap">
+                        {{ app.languages.length === 1 ? App.labels.language : App.labels.languages }}
+                      </td>
+                      <td>
+                        <v-chip-group class="chips">
+                          <v-chip
+                            v-for="language in app.languages"
+                            :key="language"
+                            class="text-capitalize"
+                            label
+                            size="small"
+                            :to="`/collection/language-${slugify(language)}`"
+                          >
+                            {{ language }}
+                          </v-chip>
+                        </v-chip-group>
+                      </td>
+                    </tr>
+                    <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        In Library
+                      </td>
+                      <td>
+                        {{ formatNumber(app.libraries || 0) }}
+                        <span class="text-disabled">
+                          ({{ formatNumber(100 * (app.libraries || 0) / totalUsers) }}%)
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        On Wishlist
+                      </td>
+                      <td>
+                        {{ formatNumber(app.wishlists || 0) }}
+                        <span class="text-disabled">
+                          ({{ formatNumber(100 * (app.wishlists || 0) / totalUsers) }}%)
+                        </span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        For Trade
+                      </td>
+                      <td>
+                        {{ formatNumber(app.tradelists || 0) }}
+                        <span class="text-disabled">
+                          ({{ formatNumber(100 * (app.tradelists || 0) / totalUsers) }}%)
+                        </span>
+                      </td>
+                    </tr>
+                    <tr v-if="!isNaN(parseFloat(app.achievements))">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.achievements }}
+                      </td>
+                      <td>
+                        <a
+                          class="text-decoration-none"
+                          :href="`https://steamcommunity.com/my/stats/${appid}?tab=achievements`"
+                          rel="noopener"
+                          target="_blank"
+                        >
+                          {{ formatNumber(app.achievements) }}
+                        </a>
+                      </td>
+                    </tr>
+                    <tr v-if="!isNaN(parseFloat(app.cards))">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.cards }}
+                      </td>
+                      <td>
+                        <a
+                          class="text-decoration-none"
+                          :href="`https://steamcommunity.com/my/gamecards/${appid}`"
+                          rel="noopener"
+                          target="_blank"
+                        >
+                          {{ formatNumber(app.cards) }}
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.steamdb }}
+                        {{ App.labels.steamdeck }}
+                      </td>
+                      <td class="d-flex align-center">
+                        <dialog-steamdeck-compatibility
+                          :appid="Number(appid)"
+                          hydrate-on-demand
+                        >
+                          <template #activator="attrs">
+                            <div
+                              v-bind="attrs.props"
+                              class="cursor-pointer flex-grow-1 text-no-wrap"
+                            >
+                              <v-icon
+                                v-if="!app.steamdeck"
+                                color="disabled"
+                                icon="mdi-help-circle-outline"
+                              />
+                              <v-icon
+                                v-else-if="app.steamdeck === 'Verified'"
+                                color="success"
+                                icon="mdi-check-circle"
+                              />
+                              <v-icon
+                                v-else-if="app.steamdeck === 'Unsupported'"
+                                icon="mdi-cancel"
+                              />
+                              <v-icon
+                                v-else-if="app.steamdeck === 'Playable'"
+                                color="warning"
+                                icon="mdi-information"
+                              />
+                              {{ app.steamdeck || 'Unknown' }}
+                            </div>
+                          </template>
+                        </dialog-steamdeck-compatibility>
+                      </td>
+                    </tr>
+                    <tr v-if="app.exfgls !== null">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.exfgls }}
+                      </td>
+                      <td>
+                        <v-icon
+                          :color="app.exfgls ? 'error' : 'success'"
+                          :icon="app.exfgls ? 'mdi-close' : 'mdi-check'"
+                        />
+                      </td>
+                    </tr>
+                    <tr v-if="app.removedAs">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.removedAs }}
+                      </td>
+                      <td>
+                        <a
+                          class="text-decoration-none"
+                          :href="`https://steam-tracker.com/app/${appid}`"
+                          rel="noopener"
+                          target="_blank"
+                        >
+                          {{ app.removedAs }}
+                        </a>
+                      </td>
+                    </tr>
+                    <tr v-if="app.removedAt">
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.removedAt }}
+                      </td>
+                      <td>
+                        {{ formatDate(app.removedAt, false) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+
+    <v-footer class="mt-6 text-caption flex-grow-0">
+      <v-spacer />
+      Last updated: {{ formatDate(app.updatedAt) }}
+    </v-footer>
+  </s-page-content>
+</template>
+
+<style lang="scss" scoped>
+  .steamdb-widget {
+    border-radius: 6px;
+    border: none;
+    height: 90px;
+    margin-bottom: 34px;
+    margin-top: 0px;
+    overflow: hidden;
+    position: relative;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.expanded {
+      height: 310px;
+    }
+
+    &.light {
+      iframe {
+        filter: grayscale(100%) invert(1) contrast(1.5);
+      }
+    }
+
+    iframe {
+      border-radius: 6px;
+      border: none;
+      filter: grayscale(100%) brightness(1.3);
+      height: 390px;
+      overflow: hidden;
+      position: relative;
+      top: -88px;
+      width: 100%;
+    }
+  }
+
+  .chips {
+    ::v-deep(.v-slide-group__container) {
+      width: 0;
+    }
+
+    ::v-deep(.v-slide-group__prev--disabled),
+    ::v-deep(.v-slide-group__next--disabled) {
+      display: none;
+    }
+
+    ::v-deep(.v-slide-group__prev),
+    ::v-deep(.v-slide-group__next) {
+      min-width: 0;
+      flex: 0;
+      padding: 0 16px;
+    }
+  }
+</style>

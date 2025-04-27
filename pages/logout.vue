@@ -1,0 +1,35 @@
+<script setup>
+  const client = useSupabaseClient();
+
+  const logout = async () => {
+    clearTimeout(timeoutId);
+
+    await client.auth.signOut();
+    await navigateTo('/');
+  };
+
+  const timeoutId = setTimeout(logout, 500);
+
+  useHead({
+    title: 'Logging out...'
+  });
+
+  definePageMeta({
+    layout: 'empty',
+    middleware: 'authenticated'
+  });
+</script>
+
+<template>
+  <v-container class="fill-height">
+    <v-row justify="center">
+      <v-col cols="auto">
+        <a
+          href="/"
+          @click.prevent="logout"
+          v-text="'Click here'"
+        /> if you are not redirected automatically.
+      </v-col>
+    </v-row>
+  </v-container>
+</template>

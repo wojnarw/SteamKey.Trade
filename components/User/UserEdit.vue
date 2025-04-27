@@ -1,0 +1,333 @@
+<script setup>
+  import countries from '~/supabase/functions/_assets/countries.json';
+
+  const { user: authUser, preferences, setPhotoUrl, setPreferences } = useAuthStore();
+  const { User } = useORM();
+  const supabase = useSupabaseClient();
+  const snackbarStore = useSnackbarStore();
+
+  const saving = ref(false);
+  const valid = ref(false);
+  const avatar = ref(null);
+  const background = ref(null);
+
+  // Custom URL validation
+  const urlRules = [
+    v => /^[a-zA-Z0-9_-]+$/.test(v) || 'Only letters, numbers, underscores and hyphens are allowed',
+    v => !v || !/^76561\d{12}$/.test(v) || 'Steam ID is not allowed as custom URL'
+  ];
+
+  const regions = countries.map(country => ({
+    title: country.name,
+    value: country.alpha2
+  }));
+
+  const enabledNotifications = ref(preferences.enabledNotifications || []);
+  const { data: user, status, error } = useLazyAsyncData(`user-${authUser.id}`, async () => {
+    const user = new User(authUser.id);
+    await user.load();
+    const data = user.toObject();
+
+    if (data.avatar) {
+      avatar.value = { url: data.avatar };
+    }
+
+    if (data.background) {
+      background.value = { url: data.background };
+    }
+
+    return data;
+  });
+
+  watch(() => error.value, error => {
+    if (error) {
+      throw error;
+    }
+  }, { immediate: true });
+
+  const uploadFile = async ({ file, crop }, bucket) => {
+    if (!file) { return null; }
+
+    try {
+      let processedFile = file;
+
+      // If crop data is provided, crop and resize the image
+      if (crop && crop.width && crop.height) {
+        // Create a canvas to crop the image
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size to the cropped dimensions
+        canvas.width = crop.width;
+        canvas.height = crop.height;
+
+        // Create an image element to load the original file
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+
+        // Wait for the image to load
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+
+        // Draw the cropped portion of the image onto the canvas
+        ctx.drawImage(
+          img,
+          crop.x, // source x
+          crop.y, // source y
+          crop.width, // source width
+          crop.height, // source height
+          0, // destination x
+          0, // destination y
+          crop.width, // destination width
+          crop.height // destination height
+        );
+
+        // Convert canvas to a file
+        processedFile = await (await fetch(canvas.toDataURL())).blob();
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${authUser.id}.${fileExt}`;
+
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, processedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) { throw error; }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
+
+      return `${publicUrl}?t=${Date.now()}`;
+    } catch (error) {
+      snackbarStore.set('error', `Upload failed: ${error.message}`);
+      return null;
+    }
+  };
+
+  const saveProfile = async () => {
+    if (!valid.value) {
+      snackbarStore.set('warning', 'Please check the form for errors');
+      return;
+    }
+
+    saving.value = true;
+
+    try {
+      const instance = new User(user.value.id);
+      Object.assign(instance, user.value);
+
+      // Upload avatar and background
+      const [avatarUrl, backgroundUrl] = await Promise.all([
+        avatar.value ? uploadFile(avatar.value, 'avatars') : Promise.resolve(null),
+        background.value ? uploadFile(background.value, 'backgrounds') : Promise.resolve(null)
+      ]);
+
+      if (avatarUrl) {
+        instance.avatar = avatarUrl;
+      }
+
+      if (backgroundUrl) {
+        instance.background = backgroundUrl;
+      }
+
+      // Update user in Supabase
+      await instance.save();
+
+      // Update auth store
+      setPhotoUrl(instance.avatar);
+
+      // Update user preferences
+      const savedPreferences = await instance.savePreferences({
+        enabledNotifications: enabledNotifications.value
+      });
+
+      // Update auth store preferences
+      setPreferences(savedPreferences);
+
+      snackbarStore.set('success', 'Profile saved successfully');
+      await navigateTo(`/user/${user.value.customUrl || authUser.steamId}`);
+    } catch (error) {
+      console.error(error);
+      snackbarStore.set('error', 'Something went wrong, please try again.');
+    } finally {
+      saving.value = false;
+    }
+  };
+
+  const breadcrumbs = computed(() => [
+    { title: 'Home', to: '/' },
+    { title: 'Users', to: '/users' },
+    { title: user.value?.displayName || 'Profile', to: `/user/${user.value?.customUrl || authUser.id}` },
+    { title: 'Settings', disabled: true }
+  ]);
+
+  useHead({ title: 'Profile Settings' });
+</script>
+
+<template>
+  <s-page-content
+    :breadcrumbs="breadcrumbs"
+    :loading="status === 'pending'"
+  >
+    <v-form
+      v-model="valid"
+      @submit.prevent="saveProfile"
+    >
+      <v-card class="mb-4">
+        <v-card-text>
+          <v-row>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <input-image
+                v-model="avatar"
+                :accepts="['image/jpeg', 'image/png']"
+                aspect-ratio="1:1"
+                cropped
+                cropper-eager
+                :hint="User.descriptions.avatar"
+                :label="User.labels.avatar"
+              />
+            </v-col>
+
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <input-image
+                v-model="background"
+                :accepts="['image/jpeg', 'image/png']"
+                aspect-ratio="16:9"
+                cropped
+                cropper-eager
+                :hint="User.descriptions.background"
+                :label="User.labels.background"
+              />
+            </v-col>
+
+            <v-col
+              cols="12"
+              md="5"
+            >
+              <v-text-field
+                v-model="user.displayName"
+                :hint="User.descriptions.displayName"
+                :label="User.labels.displayName"
+                persistent-hint
+                required
+              />
+            </v-col>
+
+            <v-col
+              cols="12"
+              md="4"
+            >
+              <v-text-field
+                v-model="user.customUrl"
+                :hint="User.descriptions.customUrl"
+                :label="User.labels.customUrl"
+                persistent-hint
+                :rules="urlRules"
+              />
+            </v-col>
+
+            <v-col
+              cols="12"
+              md="3"
+            >
+              <v-combobox
+                hint="Your connected Steam account"
+                :items="[authUser.steamId]"
+                label="Steam Connection"
+                menu-icon=""
+                :model-value="authUser.steamId"
+                persistent-hint
+                readonly
+                variant="plain"
+              >
+                <template #selection>
+                  <v-chip
+                    size="small"
+                    @click="() => navigateTo(`https://steamcommunity.com/profiles/${authUser.steamId}`, {
+                      external: true,
+                      open: { target: '_blank' }
+                    })"
+                  >
+                    <v-icon
+                      class="mr-1"
+                      icon="mdi-steam"
+                    />
+                    {{ authUser.steamId }}
+                  </v-chip>
+                </template>
+              </v-combobox>
+            </v-col>
+
+            <v-col
+              cols="12"
+              md="7"
+            >
+              <v-row>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="user.bio"
+                    :hint="User.descriptions.bio"
+                    :label="User.labels.bio"
+                    persistent-hint
+                    rows="3"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-select
+                    v-model="user.region"
+                    clearable
+                    :hint="User.descriptions.region"
+                    :items="regions"
+                    :label="User.labels.region"
+                    persistent-hint
+                  />
+                </v-col>
+              </v-row>
+            </v-col>
+
+            <v-col
+              cols="12"
+              md="5"
+            >
+              <p>Enabled notifications</p>
+              <v-checkbox
+                v-for="(value, key) in User.enums.notification"
+                :key="key"
+                v-model="enabledNotifications"
+                hide-details
+                :label="User.labels[key]"
+                :value="value"
+              />
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+
+      <v-card>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            :disabled="!valid"
+            :loading="saving"
+            type="submit"
+            variant="tonal"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
+  </s-page-content>
+</template>
