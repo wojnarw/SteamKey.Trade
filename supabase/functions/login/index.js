@@ -74,12 +74,12 @@ async function register(authUser, steamID64) {
       collection = await Collection.createMasterCollection(supabaseAdmin, user.id, type);
     }
     if (type === Collection.enums.type.wishlist || type === Collection.enums.type.library) {
-      // try {
-      await collection.syncWithSteam();
-      // } catch (error) {
-      //   console.error(`Failed to sync ${type} collection with Steam: `, error);
+      try {
+        await collection.syncWithSteam();
+      } catch (error) {
+        console.error(`Failed to sync ${type} collection with Steam: `, error);
       //   throw error;
-      // }
+      }
     }
   }));
 
