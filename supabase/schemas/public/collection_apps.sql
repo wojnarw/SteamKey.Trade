@@ -287,6 +287,8 @@ as $$
 declare
   v_collection_data record;
   increment integer;
+  collection_type_map jsonb;
+  column_name text;
 begin
   -- Determine if we're incrementing (insert) or decrementing (delete)
   increment := case when tg_op = 'INSERT' then 1 else -1 end;
@@ -296,17 +298,28 @@ begin
   from public.collections
   where id = case when tg_op = 'INSERT' then new.collection_id else old.collection_id end;
   
+  -- Define the mapping of collection types to column names
+  collection_type_map := '{
+    "library": "libraries",
+    "wishlist": "wishlists",
+    "tradelist": "tradelists", 
+    "blacklist": "blacklists"
+  }'::jsonb;
+  
   -- Only update stats for master collections of specific types
   if v_collection_data.type in ('library', 'wishlist', 'tradelist', 'blacklist') and v_collection_data.master = true then
+    -- Get the column name from the mapping
+    column_name := collection_type_map->>v_collection_data.type;
+    
     -- Update the appropriate counter in the apps table
     execute format('
       update public.apps
-      set %Is = coalesce(%Is, 0) + %L
+      set %I = coalesce(%I, 0) + %L
       where id = %L
-      and coalesce(%Is, 0) + %L >= 0', -- Ensure count doesn't go below zero
-      v_collection_data.type, v_collection_data.type, increment,
+      and coalesce(%I, 0) + %L >= 0', -- Ensure count doesn't go below zero
+      column_name, column_name, increment,
       case when tg_op = 'INSERT' then new.app_id else old.app_id end,
-      v_collection_data.type, increment
+      column_name, increment
     );
   end if;
   

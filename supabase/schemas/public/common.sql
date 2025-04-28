@@ -1,3 +1,5 @@
+set check_function_bodies=off;
+
 -- Enable cron extension
 create extension pg_cron with schema pg_catalog;
 grant usage on schema cron to postgres;
