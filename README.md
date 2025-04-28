@@ -13,22 +13,26 @@ SteamKey.Trade is a community-driven platform where gamers can safely and easily
 ### Setup
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/Revadike/SteamKey.Trade.git
    cd SteamKey.Trade
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start the Supabase stack:**
+
    ```bash
    npm run supabase:start
    ```
 
 4. **Set up environment local variables:**
+
    Copy `.env.example` to `.env.local` and run:
      ```bash
      npx supabase status
@@ -38,6 +42,7 @@ SteamKey.Trade is a community-driven platform where gamers can safely and easily
    Inside the supabase folder, copy `.env.example` to `.env.local` and enter the environment variables.
 
 5. **(Optional) Set up environment production variables:**
+
    Copy `.env.example` to `.env` and enter the URL and API key from [here](https://supabase.com/dashboard/project/_/settings/api).
    
    Inside the supabase folder, copy `.env.example` to `.env.prod` and enter the environment variables.
@@ -67,6 +72,7 @@ SteamKey.Trade is a community-driven platform where gamers can safely and easily
    The main branch, which is used for production. This branch should always be stable. Every change will be deployed to production.
 
 - **[`develop`](https://github.com/Revadike/SteamKey.Trade/tree/develop):**
+
    The development branch, which is used for development. This branch can be unstable. Use this branch for submitting pull requests.
 
 ### Database
