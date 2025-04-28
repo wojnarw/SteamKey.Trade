@@ -145,7 +145,7 @@ export const processSteamPICS = async (appids, client) => {
           client.removeListener('loggedOn', handleLoggedOn);
           client.removeListener('error', handleError);
           reject(new Error('Steam client login timed out'));
-        }, 10000);
+        }, 30000);
 
         const handleLoggedOn = () => {
           clearTimeout(timeout);
