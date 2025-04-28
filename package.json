@@ -31,13 +31,15 @@
     "supabase:dump": "supabase db dump -f supabase/seed.sql --data-only && supabase db dump -f supabase/schema.sql -s public --keep-comments --local",
     "supabase:populate": "deno run --env-file=\".env.local\" --env-file=\"./supabase/.env.local\" --allow-all --unstable-detect-cjs --import-map=\"./supabase/functions/import_map.json\" \"./supabase/functions/database-update/index.js\"",
     "cache:clear": "node -e \"['.nuxt','node_modules/.cache'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\"",
+    "git:merge": "git fetch origin && git checkout master && git pull origin master && git merge develop && git push origin master",
     "lint": "eslint . && supabase db lint",
     "lint:fix": "eslint . --fix",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "deploy": "git:merge && supabase:deploy"
   },
   "engines": {
     "node": "20"

@@ -61,6 +61,14 @@ SteamKey.Trade is a community-driven platform where gamers can safely and easily
    - [Supabase Local Development](https://supabase.com/docs/guides/local-development/overview)
    - [Nuxt Development](https://nuxt.com/docs/getting-started/introduction)
 
+### Branches
+- **[`master`](https://github.com/Revadike/SteamKey.Trade/tree/master):**
+
+   The main branch, which is used for production. This branch should always be stable. Every change will be deployed to production.
+
+- **[`develop`](https://github.com/Revadike/SteamKey.Trade/tree/develop):**
+   The development branch, which is used for development. This branch can be unstable. Use this branch for submitting pull requests.
+
 ### Database
 Changes to the database are tracked through migration files, located in `supabase/migrations`. Best to do this in a local environment first, before pushing to production. There are three ways to make new migrations:
 
@@ -109,6 +117,7 @@ entrypoint = './functions/my-function/index.js'
 | **`npm run supabase:dump`**   | Dumps the remote database data to `supabase/seed.sql` and local database schema to `supabase/schema.sql`.|
 | **`npm run supabase:populate`**| Run the database update script. |
 | **`npm run cache:clear`**     | Clears the Nuxt and node_modules cache. |
+| **`npm run git:merge`**       | Merges the development branch into the master branch. |
 | **`npm run lint`**            | Runs ESLint and Supabase Lint to check for linting errors. |
 | **`npm run lint:fix`**        | Runs ESLint and automatically fixes linting errors. |
 | **`npm run build`**           | Builds the Nuxt application for production. |
@@ -116,3 +125,4 @@ entrypoint = './functions/my-function/index.js'
 | **`npm run generate`**        | Generates a static version of the Nuxt application. |
 | **`npm run preview`**         | Previews the generated static application. |
 | **`npm run postinstall`**     | Runs Nuxt prepare after installing dependencies. |
+| **`npm run deploy`**          | Runs `git:merge` and `supabase:deploy`, which deploys new changes to production. |
