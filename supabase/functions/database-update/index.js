@@ -87,12 +87,12 @@ const databaseUpdate = async () => {
   }
 
   console.log('9. Processing GG Deals Prices');
-  const lastPricesCheck = await getLastCheck('ggdeals_prices_check');
+  const lastPricesCheck = await getLastCheck('ggdeals_deals_check');
   const pricesResult = await processGGDealsPrices(lastPricesCheck);
   if (pricesResult.errors.length > 0) {
     console.error('Error processing GG Deals Prices:', pricesResult.errors);
   } else {
-    await updateLastCheck('ggdeals_prices_check', now);
+    await updateLastCheck('ggdeals_deals_check', now);
   }
 
   // Get peak memory usage (if available)
