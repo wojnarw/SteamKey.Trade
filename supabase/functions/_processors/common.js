@@ -107,7 +107,6 @@ export async function saveToDatabase(table, records, conflictField = 'id', batch
 
   // Ensure we have valid data to process
   if (!records || records.length === 0) {
-    console.warn('No records to process');
     return { errors: [], successful: [], failed: [] };
   }
 
