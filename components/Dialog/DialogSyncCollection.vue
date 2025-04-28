@@ -1,4 +1,6 @@
 <script setup>
+  import { FunctionsHttpError } from '@supabase/supabase-js';
+
   const supabase = useSupabaseClient();
   const snackbarStore = useSnackbarStore();
   const { user, updateUserCollections } = useAuthStore();
@@ -26,7 +28,7 @@
       await navigateTo(`/collection/${data.wishlist}`);
     } catch (error) {
       console.error(error);
-      if (error.constructor.name === 'FunctionsHttpError') {
+      if (error instanceof FunctionsHttpError) {
         const message = await error.context.json();
         snackbarStore.set('error', message.error || message);
       } else {
@@ -58,7 +60,7 @@
       await navigateTo(`/collection/${data.library}`);
     } catch (error) {
       console.error(error);
-      if (error.constructor.name === 'FunctionsHttpError') {
+      if (error instanceof FunctionsHttpError) {
         const message = await error.context.json();
         snackbarStore.set('error', message.error || message);
       } else {

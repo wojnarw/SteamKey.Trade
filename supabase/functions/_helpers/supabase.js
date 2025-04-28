@@ -1,4 +1,4 @@
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * Creates a Supabase client with Auth context of the user that called the function.

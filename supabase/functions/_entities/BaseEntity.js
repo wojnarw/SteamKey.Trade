@@ -1,3 +1,4 @@
+import { SupabaseClient } from '@supabase/supabase-js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import crypto from 'node:crypto';
@@ -18,7 +19,7 @@ export class Entity {
    * @throws {Error} When client or data is missing, or when ID is required but missing.
    */
   constructor(client, data = {}) {
-    if (!client || client.constructor.name !== 'SupabaseClient') {
+    if (!client || !(client instanceof SupabaseClient)) {
       throw new Error('Supabase client is required');
     }
 

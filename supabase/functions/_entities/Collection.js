@@ -1,3 +1,5 @@
+import { FunctionsHttpError } from '@supabase/supabase-js';
+
 import { Entity } from './BaseEntity.js';
 import { App } from './App.js';
 import { User } from './User.js';
@@ -215,7 +217,7 @@ export class Collection extends Entity {
     });
 
     if (error) {
-      if (error.constructor.name === 'FunctionsHttpError') {
+      if (error instanceof FunctionsHttpError) {
         const message = await error.context.json();
         throw new Error(message.error);
       }
@@ -427,8 +429,7 @@ export class Collection extends Entity {
     });
 
     if (error) {
-      // if (error instanceof FunctionsHttpError) {
-      if (error.constructor.name === 'FunctionsHttpError') {
+      if (error instanceof FunctionsHttpError) {
         const message = await error.context.json();
         throw new Error(message.error);
       }

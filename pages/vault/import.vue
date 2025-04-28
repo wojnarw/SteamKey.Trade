@@ -1,4 +1,5 @@
 <script setup>
+  import { FunctionsHttpError } from '@supabase/supabase-js';
   import { useDisplay } from 'vuetify';
 
   import { toAccountID } from '~/assets/js/steamid';
@@ -74,7 +75,7 @@
       setImports(items);
     } catch (error) {
       console.error(error);
-      if (error.constructor.name === 'FunctionsHttpError') {
+      if (error instanceof FunctionsHttpError) {
         const message = await error.context.json();
         snackbarStore.set('error', message.error || message);
       } else {
@@ -118,7 +119,7 @@
       setImports(items);
     } catch (error) {
       console.error(error);
-      if (error.constructor.name === 'FunctionsHttpError') {
+      if (error instanceof FunctionsHttpError) {
         const message = await error.context.json();
         snackbarStore.set('error', message.error || message);
       } else {

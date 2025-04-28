@@ -432,8 +432,8 @@ export class Trade extends Entity {
    * @throws Will throw an error if the database query fails.
    */
   static async getActivities(supabase, trades, limit = 10) {
-    if (!supabase || supabase.constructor.name !== 'SupabaseClient') {
-      throw new Error('Supabase client is required.');
+    if (!supabase) {
+      throw new Error('Missing required parameters');
     }
 
     const { table, fields } = this.activity;
