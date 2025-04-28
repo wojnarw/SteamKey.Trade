@@ -393,7 +393,7 @@ begin
     url := function_url,
     body := p_body,
     headers := '{"content-type":"application/json"}'::jsonb,
-    timeout_milliseconds := 100000
+    timeout_milliseconds := 3600000
   );
   
   return;
