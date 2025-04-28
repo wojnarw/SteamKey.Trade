@@ -39,7 +39,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "deploy": "git:merge && supabase:deploy"
+    "deploy": "npm run git:merge && npm run supabase:deploy"
   },
   "engines": {
     "node": "20"
