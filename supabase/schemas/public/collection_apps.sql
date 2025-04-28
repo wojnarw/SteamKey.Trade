@@ -309,7 +309,7 @@ begin
   -- Only update stats for master collections of specific types
   if v_collection_data.type in ('library', 'wishlist', 'tradelist', 'blacklist') and v_collection_data.master = true then
     -- Get the column name from the mapping
-    column_name := collection_type_map->>v_collection_data.type;
+    column_name := collection_type_map->>v_collection_data.type::text;
     
     -- Update the appropriate counter in the apps table
     execute format('
