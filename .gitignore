@@ -27,3 +27,5 @@ proxies.txt
 !.env.example
 
 supabase/seed.sql
+supabase/functions/database-update/deno.json
+supabase/functions/database-update/deno.lock
