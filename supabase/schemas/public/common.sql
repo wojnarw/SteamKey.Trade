@@ -400,4 +400,4 @@ begin
   
   return;
 end;
-$$ language plpgsql security invoker;
+$$ language plpgsql security definer;
