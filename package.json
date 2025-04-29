@@ -19,7 +19,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "start /B \"\" supabase functions serve --env-file .\\supabase\\.env.local & nuxt dev --dotenv .env.local",
+    "dev": "node -e \"require('child_process').spawn('npx',['supabase','functions','serve','--env-file','./supabase/.env.local'],{stdio:'inherit',shell:true});require('child_process').spawn('npx',['nuxt','dev','--dotenv','.env.local'],{stdio:'inherit',shell:true})\"",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",

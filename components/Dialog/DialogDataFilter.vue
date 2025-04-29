@@ -1,6 +1,4 @@
 <script setup>
-  import { VNumberInput } from 'vuetify/labs/components';
-
   const props = defineProps({
     title: {
       type: String,
@@ -294,7 +292,7 @@
                   @update:model-value="value => updateFilter(index, 'value', value)"
                 />
                 <v-select
-                  v-else-if="filter.operation === 'in'"
+                  v-else-if="['in', 'cs', 'cd', 'ov'].includes(filter.operation)"
                   chips
                   closable-chips
                   density="compact"
@@ -337,7 +335,7 @@
                   :model-value="filter.value"
                   @update:model-value="value => updateFilter(index, 'value', value)"
                 />
-                <VNumberInput
+                <v-number-input
                   v-else-if="isNumberType(filter.field)"
                   density="compact"
                   hide-details
@@ -410,7 +408,7 @@
                   label="Value"
                 />
                 <v-select
-                  v-else-if="newFilter.operation === 'in'"
+                  v-else-if="['in', 'cs', 'cd', 'ov'].includes(newFilter.operation)"
                   v-model="newFilter.value"
                   chips
                   closable-chips
@@ -452,7 +450,7 @@
                   hide-details
                   label="Value"
                 />
-                <VNumberInput
+                <v-number-input
                   v-else-if="isNumberType(newFilter.field)"
                   v-model="newFilter.value"
                   density="compact"
