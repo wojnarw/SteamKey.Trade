@@ -16,6 +16,40 @@ create table collection_apps (
 -- Add table comment
 comment on table collection_apps is 'Apps included in collections';
 
+-- Add indexes
+create index collection_apps_collection_id_idx on public.collection_apps using btree (collection_id);
+
+-- Function to add collection app
+create or replace function add_collection_app(p_collection_id text, p_app_id integer, p_title text)
+returns void
+set search_path = ''
+as $$
+begin
+  -- Check if collection_id exists in collections, if not insert it
+  if not exists (select 1 from public.collections where id = p_collection_id) then
+    insert into public.collections (id, private, user_id, type, title, description)
+    values (p_collection_id, false, null, 'app', p_title, 'Auto-generated');
+  end if;
+
+  -- Insert into collection_apps
+  insert into public.collection_apps (collection_id, app_id, source)
+  values (p_collection_id, p_app_id, 'sync')
+  on conflict do nothing;
+end;
+$$ language plpgsql security invoker;
+
+-- Function to remove collection app
+create or replace function remove_collection_app(p_collection_id text, p_app_id integer)
+returns void
+set search_path = ''
+as $$
+begin
+  delete from public.collection_apps
+  where app_id = p_app_id
+  and collection_id = p_collection_id;
+end;
+$$ language plpgsql security invoker;
+
 -- Create function to bulk remove apps from collections
 create or replace function bulk_remove_collection_apps(p_collection_id text, p_apps integer[])
 returns void

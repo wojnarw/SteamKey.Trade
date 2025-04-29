@@ -296,6 +296,9 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 schema_paths = [
   # Depends on nothing
   "./schemas/public/common.sql",
+  "./schemas/storage/assets.sql",
+  "./schemas/storage/avatars.sql",
+  "./schemas/storage/backgrounds.sql",
 
   # Depends on common
   "./schemas/public/updater_queue.sql",
