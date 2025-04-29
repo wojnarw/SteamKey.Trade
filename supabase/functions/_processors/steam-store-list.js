@@ -1,5 +1,5 @@
 import { App } from '../_entities/index.js';
-import { saveToDatabase } from './common.js';
+import { saveToDatabase } from '../_helpers/updater.js';
 
 /**
  * Processes app list from the Steam Store API

@@ -32,13 +32,49 @@ const syncCollection = async (supabase, user, collectionType, fetchApps) => {
   }
 
   const newApps = await fetchApps();
-  const { error } = await supabase.rpc('sync_collection_apps', {
-    p_collection_id: collection.id,
-    p_apps: newApps.map(({ appId }) => Number(appId))
-  });
+  const newAppIds = newApps.map(({ appId }) => Number(appId));
 
-  if (error) {
-    throw new Error(`Failed to sync ${collectionType} collection: ${error.message}`);
+  const collectionsApps = await Collection.getMasterCollectionsApps(supabase, user.id);
+  const existingAppIds = collectionsApps?.[collectionType] || [];
+
+  const { fields, table } = Collection.apps;
+  const appsToRemove = existingAppIds.filter(appId => !newAppIds.includes(appId));
+  const appsToAdd = newAppIds.filter(appId => !existingAppIds.includes(appId));
+
+  if (appsToRemove.length > 0) {
+    const { error: deleteError } = await supabase
+      .from(table)
+      .delete()
+      .eq(fields.collectionId, collection.id)
+      .in(fields.appId, appsToRemove)
+      // Avoid deleting apps manually added by users (only delete synced apps)
+      .eq(fields.source, Collection.enums.source.sync);
+
+    if (deleteError) {
+      throw new Error(`Failed to remove apps from collection: ${deleteError.message}`);
+    }
+  }
+
+  if (appsToAdd.length > 0) {
+    const batchSize = 1000;
+
+    // Split into batches for better performance
+    for (let i = 0; i < appsToAdd.length; i += batchSize) {
+      const batchApps = appsToAdd.slice(i, i + batchSize);
+      const appsToInsert = batchApps.map(appId => ({
+        [fields.collectionId]: collection.id,
+        [fields.appId]: appId,
+        [fields.source]: Collection.enums.source.sync
+      }));
+
+      const { error: insertError } = await supabase
+        .from(Collection.apps.table)
+        .insert(appsToInsert);
+
+      if (insertError) {
+        throw new Error(`Failed to add apps to collection (batch ${i / batchSize + 1}): ${insertError.message}`);
+      }
+    }
   }
 
   collection.updatedAt = new Date();
@@ -54,7 +90,7 @@ const fetchWishlist = async (steamId) => {
     params: { steamid: steamId }
   });
 
-  // TODO: Save date_added and priority as tag
+  // TODO: Save   and priority as tag
   return items.map(({ appid, date_added }) => ({
     appId: Number(appid),
     createdAt: new Date(date_added * 1000)

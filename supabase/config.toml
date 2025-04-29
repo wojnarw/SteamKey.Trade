@@ -363,10 +363,6 @@ entrypoint = './functions/database-update/index.js'
 verify_jwt = false
 entrypoint = './functions/app-update/index.js'
 
-[functions.app-metadata-dump]
-verify_jwt = false
-entrypoint = './functions/app-metadata-dump/index.js'
-
 [functions.steamdeck-compatibility-report]
 entrypoint = './functions/steamdeck-compatibility-report/index.js'
 

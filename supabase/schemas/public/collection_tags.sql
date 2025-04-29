@@ -4,7 +4,6 @@ create table collection_tags (
   app_id integer not null references apps(id) on delete cascade,
   tag_id integer not null references tags(id) on delete cascade,
   body text default null,
-  created_at timestamptz default now(),
   primary key (collection_id, app_id, tag_id)
 );
 
@@ -16,17 +15,6 @@ create trigger collection_tags_ensure_app_exists
 before insert on collection_tags
 for each row
 execute function ensure_app_exists();
-
--- Add date management triggers
-create trigger collection_tags_update_dates
-before update on collection_tags
-for each row
-execute function update_dates();
-
-create trigger collection_tags_insert_dates
-before insert on collection_tags
-for each row
-execute function insert_dates();
 
 -- Enable RLS
 alter table collection_tags enable row level security;
