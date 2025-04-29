@@ -214,7 +214,7 @@
         sortBy.forEach(({ key, order }) => {
           query = query.order(props.mapKey(key), {
             ascending: order === 'asc',
-            nullsfirst: false
+            nullsFirst: false
           });
         });
       }
