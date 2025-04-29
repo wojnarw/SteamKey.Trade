@@ -19,7 +19,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "start /B \"\" supabase functions serve --env-file .\\supabase\\.env.local & nuxt dev --dotenv .env.local",
+    "dev": "node -e \"require('child_process').spawn('npx',['supabase','functions','serve','--env-file','./supabase/.env.local'],{stdio:'inherit',shell:true});require('child_process').spawn('npx',['nuxt','dev','--dotenv','.env.local'],{stdio:'inherit',shell:true})\"",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
@@ -31,7 +31,7 @@
     "supabase:dump": "supabase db dump -f supabase/seed.sql --data-only && supabase db dump -f supabase/schema.sql -s public --keep-comments --local",
     "supabase:populate": "deno run --env-file=\".env.local\" --env-file=\"./supabase/.env.local\" --allow-all --unstable-detect-cjs --import-map=\"./supabase/functions/import_map.json\" \"./supabase/functions/database-update/index.js\"",
     "cache:clear": "node -e \"['.nuxt','node_modules/.cache'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\"",
-    "git:merge": "git fetch origin && git checkout master && git pull origin master && git merge develop && git push origin master",
+    "git:merge": "git checkout master && git pull origin master && git merge develop && git push origin master",
     "lint": "eslint . && supabase db lint",
     "lint:fix": "eslint . --fix",
     "build": "nuxt build",
@@ -43,9 +43,6 @@
   },
   "engines": {
     "node": "20"
-  },
-  "imports": {
-    "#src/*": "./src/*.js"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -67,17 +64,17 @@
     "@nuxt/types": "^2.18.1",
     "@nuxtjs/google-fonts": "^3.2.0",
     "dotenv": "^16.5.0",
-    "eslint": "^9.24.0",
+    "eslint": "^9.25.1",
     "eslint-config-vuetify": "^3.0.3",
-    "eslint-plugin-vue": "^10.0.0",
-    "nuxt": "^3.16.2",
-    "sass": "^1.86.3",
-    "supabase": "2.20.12",
+    "eslint-plugin-vue": "^10.0.1",
+    "nuxt": "^3.17.1",
+    "sass": "^1.87.0",
+    "supabase": "^2.22.6",
     "vite-plugin-vuetify": "^2.1.1",
     "vue": "^3.5.13",
     "vue-eslint-parser": "^10.1.3",
-    "vue-router": "^4.5.0",
-    "vuetify": "3.7.19"
+    "vue-router": "^4.5.1",
+    "vuetify": "3.8.3"
   },
   "resolutions": {
     "cookie": "0.7.2"

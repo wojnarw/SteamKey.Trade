@@ -341,11 +341,6 @@ begin
 end;
 $$ language plpgsql security invoker;
 
--- Cron job to call app metadata dump Supabase Edge function
-select cron.schedule('call_app_metadata_dump', '0 0 * * *', $$
-  select public.call_edge_function('app-metadata-dump');
-$$);
-
 -- Create triggers
 create trigger apps_ensure_parent_exists
 before insert on apps

@@ -1,5 +1,5 @@
 import { App } from '../_entities/index.js';
-import { saveToDatabase } from './common.js';
+import { saveToDatabase } from '../_helpers/updater.js';
 
 /**
  * Processes a recently changed deals from the GG Deals API and saves the processed data to a database.

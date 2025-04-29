@@ -296,6 +296,9 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 schema_paths = [
   # Depends on nothing
   "./schemas/public/common.sql",
+  "./schemas/storage/assets.sql",
+  "./schemas/storage/avatars.sql",
+  "./schemas/storage/backgrounds.sql",
 
   # Depends on common
   "./schemas/public/updater_queue.sql",
@@ -359,10 +362,6 @@ entrypoint = './functions/database-update/index.js'
 [functions.app-update]
 verify_jwt = false
 entrypoint = './functions/app-update/index.js'
-
-[functions.app-metadata-dump]
-verify_jwt = false
-entrypoint = './functions/app-metadata-dump/index.js'
 
 [functions.steamdeck-compatibility-report]
 entrypoint = './functions/steamdeck-compatibility-report/index.js'

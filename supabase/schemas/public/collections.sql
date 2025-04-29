@@ -36,6 +36,10 @@ create table collections (
 -- Add table comment
 comment on table collections is 'User collections for organizing apps and items';
 
+-- Add indexes
+create index collections_private_idx on public.collections using btree (private);
+create index collections_title_idx on public.collections using btree (title);
+
 -- Create trigger function to handle master collection inserts
 create or replace function collections_handle_master_insert()
 returns trigger

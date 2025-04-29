@@ -9,6 +9,9 @@ create table collection_relations (
 -- Add table comment
 comment on table collection_relations is 'Many-to-many relationships between collections';
 
+-- Add indexes
+create index collection_relations_parent_id_idx on public.collection_relations using btree (parent_id);
+
 -- Enable RLS
 alter table collection_relations enable row level security;
 

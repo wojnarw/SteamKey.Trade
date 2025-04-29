@@ -1,5 +1,5 @@
 import { App, Collection } from '../_entities/index.js';
-import { saveToDatabase } from './common.js';
+import { saveToDatabase } from '../_helpers/updater.js';
 
 /**
  * Processes a list of Steam app IDs by fetching game details from the Steam Store API

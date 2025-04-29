@@ -9,12 +9,45 @@ create table collection_apps (
   collection_id text not null references collections(id) on delete cascade,
   app_id integer not null references apps(id) on delete cascade,
   source collection_apps_source not null default 'user',
-  created_at timestamptz default now(),
   primary key (collection_id, app_id)
 );
 
 -- Add table comment
 comment on table collection_apps is 'Apps included in collections';
+
+-- Add indexes
+create index collection_apps_collection_id_idx on public.collection_apps using btree (collection_id);
+
+-- Function to add collection app
+create or replace function add_collection_app(p_collection_id text, p_app_id integer, p_title text)
+returns void
+set search_path = ''
+as $$
+begin
+  -- Check if collection_id exists in collections, if not insert it
+  if not exists (select 1 from public.collections where id = p_collection_id) then
+    insert into public.collections (id, private, user_id, type, title, description)
+    values (p_collection_id, false, null, 'app', p_title, 'Auto-generated');
+  end if;
+
+  -- Insert into collection_apps
+  insert into public.collection_apps (collection_id, app_id, source)
+  values (p_collection_id, p_app_id, 'sync')
+  on conflict do nothing;
+end;
+$$ language plpgsql security invoker;
+
+-- Function to remove collection app
+create or replace function remove_collection_app(p_collection_id text, p_app_id integer)
+returns void
+set search_path = ''
+as $$
+begin
+  delete from public.collection_apps
+  where app_id = p_app_id
+  and collection_id = p_collection_id;
+end;
+$$ language plpgsql security invoker;
 
 -- Create function to bulk remove apps from collections
 create or replace function bulk_remove_collection_apps(p_collection_id text, p_apps integer[])
@@ -27,55 +60,6 @@ begin
   and app_id = any(p_apps);
 end;
 $$ language plpgsql security invoker;
-
--- Create function to sync/diff apps in a collection
-create or replace function sync_collection_apps(p_collection_id text, p_apps integer[])
-returns void
-set search_path = ''
-as $$
-declare
-  apps_to_remove integer[];
-  apps_to_add integer[];
-begin
-  -- Find sync apps currently in the collection that are not in the new list
-  select array_agg(app_id) into apps_to_remove
-  from public.collection_apps
-  where collection_id = p_collection_id
-    and source = 'sync'
-    and app_id <> all(p_apps);
-
-  if apps_to_remove is not null then
-    perform public.bulk_remove_collection_apps(p_collection_id, apps_to_remove);
-  end if;
-
-  -- Find app ids in the new list that are not already present in the collection (regardless of source)
-  select array_agg(new_app.new_app_id) into apps_to_add
-  from unnest(p_apps) as new_app(new_app_id)
-  where not exists (
-    select 1
-    from public.collection_apps
-    where collection_id = p_collection_id
-      and app_id = new_app.new_app_id
-  );
-
-  if apps_to_add is not null then
-    perform public.bulk_insert(
-      'public.collection_apps'::text,
-      (
-      select jsonb_agg(
-        jsonb_build_object(
-          'collection_id', p_collection_id,
-          'app_id', new_app.new_app_id,
-          'source', 'sync'
-        )
-      )
-      from unnest(apps_to_add) as new_app(new_app_id)
-      )
-    );
-  end if;
-end;
-$$ language plpgsql security invoker
-set statement_timeout to '120s';
 
 -- Create function to get all apps in a user's master collections
 create or replace function get_master_collections_apps(p_user_id uuid)
@@ -337,17 +321,6 @@ create trigger collection_apps_after_delete
 after delete on collection_apps
 for each row
 execute function collection_apps_update_app_stats();
-
--- Add date management triggers
-create trigger collection_apps_update_dates
-before update on collection_apps
-for each row
-execute function update_dates();
-
-create trigger collection_apps_insert_dates
-before insert on collection_apps
-for each row
-execute function insert_dates();
 
 -- Enable RLS
 alter table collection_apps enable row level security;

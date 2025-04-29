@@ -1,5 +1,5 @@
 import { App } from '../_entities/index.js';
-import { saveToDatabase } from './common.js';
+import { saveToDatabase } from '../_helpers/updater.js';
 
 /**
  * Processes Steam trading card information from steam.tools

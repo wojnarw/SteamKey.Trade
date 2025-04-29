@@ -65,12 +65,14 @@ export const useTagsStore = defineStore('tags', {
 
       const supabase = useSupabaseClient();
       try {
-        const { data = [] } = await supabase
+        const { data } = await supabase
           .from('tags')
           .select('id, title, type');
 
-        this.setFromRecords(data);
-        this.refreshedAt = Date.now();
+        if (data) {
+          this.setFromRecords(data);
+          this.refreshedAt = Date.now();
+        }
       } catch (error) {
         console.error(error);
       }

@@ -3,7 +3,7 @@ import { processSteamPICS } from '../_processors/steam-pics.js';
 import { processSteamStoreDetails } from '../_processors/steam-store-details.js';
 import { processSteamReviews } from '../_processors/steam-reviews.js';
 import { processGGDealsDetails } from '../_processors/ggdeals-details.js';
-import { dequeueApps } from '../_processors/common.js';
+import { dequeueApps } from '../_helpers/updater.js';
 
 // Runs every 5 minutes
 const appUpdate = async ({ count = 100 }) => {

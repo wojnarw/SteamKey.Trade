@@ -5,7 +5,7 @@ import tags from '../_assets/tags.json' with { type: 'json' }; // Cached at 2025
 import categories from '../_assets/categories.json' with { type: 'json' }; // Cached at 2025-04-27
 
 import { App } from '../_entities/index.js';
-import { saveToDatabase } from './common.js';
+import { saveToDatabase } from '../_helpers/updater.js';
 
 /**
  * Topological sort, which sorts an array of records in a parent-first order based on their hierarchical relationships.

@@ -3,7 +3,7 @@
 
   const snackbarStore = useSnackbarStore();
   const { Collection } = useORM();
-  const { updateUserCollections } = useAuthStore();
+  const { updateUserCollections, user } = useAuthStore();
 
   const props = defineProps({
     id: {
@@ -120,6 +120,7 @@
     try {
       const instance = new Collection(collection.value.id);
       Object.assign(instance, collection.value);
+      instance.userId = user.id;
 
       // Format dates for submission
       if (collection.value.startsAt) {
@@ -160,7 +161,7 @@
       }
 
       snackbarStore.set('success', isNew ? 'Collection created' : 'Collection saved');
-      await navigateTo(`/collection/${collection.value.id}`);
+      await navigateTo(`/collection/${instance.id}`);
     } catch (error) {
       console.error(error);
       snackbarStore.set('error', error.message || 'Failed to save collection');
@@ -209,6 +210,7 @@
                 hide-details
                 :label="Collection.labels.title"
                 required
+                :rules="[v => !!v || 'Title is required']"
               />
             </v-col>
             <v-col
@@ -229,6 +231,7 @@
                 :label="Collection.labels.type"
                 menu-icon=""
                 required
+                :rules="[v => !!v || 'Type is required']"
               />
             </v-col>
             <v-col

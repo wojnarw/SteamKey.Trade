@@ -8,5 +8,8 @@
   "editor.tabSize": 2,
   "eslint.format.enable": true,
   "vue.server.hybridMode": "auto",
-  "nuxtr.defaultPackageManager": "NPM"
+  "nuxtr.defaultPackageManager": "NPM",
+  "search.exclude": {
+    "**/supabase/migrations/**": true
+  }
 }
