@@ -28,9 +28,9 @@
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
-    <v-card class="h-100">
+    <v-card class="h-100 pa-2">
       <table-data
-        class="h-100"
+        class="h-100 "
         :headers="headers"
         no-data-text="No users found"
         :query-getter="queryGetter"

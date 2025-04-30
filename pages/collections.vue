@@ -87,7 +87,7 @@
 
       <v-window
         v-model="activeTab"
-        class="h-100"
+        class="h-100 pa-2"
         :touch="false"
       >
         <v-window-item

@@ -240,6 +240,7 @@
   const refresh = () => loadItems({ itemsPerPage: itemsPerPage.value, page: prevPage.value, search: search.value, sortBy: sortBy.value });
 
   defineExpose({
+    loading,
     remap,
     refresh
   });
@@ -282,7 +283,7 @@
       />
       <div
         v-if="showSelect || searchField || props.filters.length"
-        class="pa-4 d-flex justify-end align-center ga-2"
+        class="d-flex justify-end align-center ga-2"
       >
         <v-text-field
           v-if="searchField"

@@ -261,7 +261,7 @@
       >
         <v-window-item value="apps">
           <table-apps
-            class="h-100"
+            class="h-100 mt-4"
             :only-collections="[collection.id]"
           />
         </v-window-item>

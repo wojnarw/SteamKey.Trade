@@ -89,6 +89,143 @@
     default: () => []
   });
 
+  // Helper functions for app links
+  const getLinkVars = link => (link.match(/\{(.+?)\}/g) ?? []).map(varName => varName.slice(1, -1));
+
+  const getAppLink = (app, link) => {
+    const vars = getLinkVars(link);
+    if (!vars.length) {
+      return link;
+    }
+    return vars.reduce((acc, varName) => {
+      const value = app[varName === 'appid' ? 'id' : varName];
+      return acc.replace(`{${varName}}`, value);
+    }, link);
+  };
+
+  const visibleAppLinks = app => {
+    const links = preferences.value?.appLinks || [
+      { title: 'Homepage', url: '{website}' },
+      { title: 'Steam Store', url: 'https://store.steampowered.com/app/{appid}' },
+      { title: 'Steam Community', url: 'https://steamcommunity.com/app/{appid}' },
+      { title: 'SteamDB', url: 'https://steamdb.info/app/{appid}/' },
+      { title: 'GG.deals', url: 'https://gg.deals/steam/app/{appid}/' }
+    ];
+    return links.filter(({ url }) => getLinkVars(url).every(varName => {
+      const value = app[varName === 'appid' ? 'id' : varName];
+      return value !== undefined && value !== null;
+    }));
+  };
+
+  const getCollectionLink = (prop, value) => {
+    switch (prop) {
+      case App.fields.type:
+        return `/collection/type-${value}`;
+      case App.fields.developers:
+        return `/collection/developer-${slugify(value)}`;
+      case App.fields.publishers:
+        return `/collection/publisher-${slugify(value)}`;
+      case App.fields.tags:
+        return `/collection/tag-${slugify(value)}`;
+      case App.fields.languages:
+        return `/collection/language-${slugify(value)}`;
+      case App.fields.platforms:
+        return `/collection/platform-${slugify(value)}`;
+      default:
+        return undefined;
+    }
+  };
+
+  const { names: tagNames } = storeToRefs(useTagsStore());
+  const getTags = item => {
+    if (!item?.collection?.[0]?.tags?.length && !item.snapshot?.tags?.length) {
+      return [];
+    }
+
+    const { fields } = Collection.tags;
+    const tags = item.snapshot?.tags?.length
+      ? item.snapshot.tags
+      : item.collection[0].tags.filter(tag => {
+        return tag[fields.appId] === item.id;
+      });
+
+    return tags.map(tag => Collection.fromDB(tag, fields));
+  };
+
+  const deleteTag = async tag => {
+    const { fields, table } = Collection.tags;
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq(fields.collectionId, tag.collectionId)
+      .eq(fields.appId, tag.appId)
+      .eq(fields.tagId, tag.tagId);
+
+    if (!error) {
+      tag = null;
+    }
+  };
+
+  const isSelected = id => !!selected.value.find(v => v.id.toString() === id.toString());
+  const isMandatory = id => !!mandatory.value.find(v => v.id.toString() === id.toString());
+
+  // workaround for mandatory items not always being removed from selected (e.g. through using selectAll)
+  watch(() => selected.value, () => {
+    mandatory.value = mandatory.value.filter(item => isSelected(item.id));
+  });
+
+  const select = item => {
+    if (!props.showSelect) {
+      return;
+    }
+
+    const { id } = item;
+
+    // toggle between selected and unselected (mandatory stays locked)
+    if (props.noMandatory) {
+      // if the item is selected and not mandatory, remove it from selected
+      if (isSelected(id) && !isMandatory(id)) {
+        selected.value.splice(selected.value.indexOf(item), 1);
+        // if the item is not selected, add it to selected (only if not max selection)
+      } else if (!isSelected(id)) {
+        if (props.maxSelection && selected.value.length >= props.maxSelection) {
+          return;
+        }
+        selected.value.push(item);
+      }
+      // cycle through selected, mandatory and unselected
+    } else {
+      // if the item is selected and not mandatory, remove it from selected
+      if (!isSelected(id)) {
+        if (isMandatory(id)) {
+          mandatory.value.splice(mandatory.value.indexOf(item), 1);
+        }
+        if (props.maxSelection !== null && selected.value.length >= props.maxSelection) {
+          return;
+        }
+        selected.value.push(item);
+      } else if (isMandatory(id)) {
+        selected.value.splice(selected.value.indexOf(item), 1);
+        mandatory.value.splice(mandatory.value.indexOf(item), 1);
+      } else {
+        mandatory.value.push(item);
+      }
+    }
+
+    // workaround for selection visuals not re-rendering
+    selected.value = [...selected.value];
+  };
+
+  const getRowClass = item => {
+    return {
+      'v-data-table__tr position-relative app-row': true,
+      'in-library': inLibrary(item.id),
+      'in-wishlist': inWishlist(item.id),
+      'in-blacklist': inBlacklist(item.id),
+      'in-tradelist': inTradelist(item.id)
+    };
+  };
+
   const queryGetter = (selectedOnly) => {
     if (props.onlyApps) {
       let query = supabase
@@ -327,145 +464,10 @@
   };
 
   const tableEvents = computed(() => {
-    return props.items ? { 'click:row': (_, { item }) => clickRow(toRaw(item)) } : { 'click:row': clickRow };
+    return Array.isArray(props.items)
+      ? { 'click:row': (_, { item }) => clickRow(toRaw(item)) }
+      : { 'click:row': clickRow };
   });
-
-  // Helper functions for app links
-  const getLinkVars = link => (link.match(/\{(.+?)\}/g) ?? []).map(varName => varName.slice(1, -1));
-
-  const getAppLink = (app, link) => {
-    const vars = getLinkVars(link);
-    if (!vars.length) {
-      return link;
-    }
-    return vars.reduce((acc, varName) => {
-      const value = app[varName === 'appid' ? 'id' : varName];
-      return acc.replace(`{${varName}}`, value);
-    }, link);
-  };
-
-  const visibleAppLinks = app => {
-    const links = preferences.value?.appLinks || [
-      { title: 'Homepage', url: '{website}' },
-      { title: 'Steam Store', url: 'https://store.steampowered.com/app/{appid}' },
-      { title: 'Steam Community', url: 'https://steamcommunity.com/app/{appid}' },
-      { title: 'SteamDB', url: 'https://steamdb.info/app/{appid}/' },
-      { title: 'GG.deals', url: 'https://gg.deals/steam/app/{appid}/' }
-    ];
-    return links.filter(({ url }) => getLinkVars(url).every(varName => {
-      const value = app[varName === 'appid' ? 'id' : varName];
-      return value !== undefined && value !== null;
-    }));
-  };
-
-  const getCollectionLink = (prop, value) => {
-    switch (prop) {
-      case App.fields.type:
-        return `/collection/type-${value}`;
-      case App.fields.developers:
-        return `/collection/developer-${slugify(value)}`;
-      case App.fields.publishers:
-        return `/collection/publisher-${slugify(value)}`;
-      case App.fields.tags:
-        return `/collection/tag-${slugify(value)}`;
-      case App.fields.languages:
-        return `/collection/language-${slugify(value)}`;
-      case App.fields.platforms:
-        return `/collection/platform-${slugify(value)}`;
-      default:
-        return undefined;
-    }
-  };
-
-  const { names: tagNames } = storeToRefs(useTagsStore());
-  const getTags = item => {
-    if (!item?.collection?.[0]?.tags?.length && !item.snapshot?.tags?.length) {
-      return [];
-    }
-
-    const { fields } = Collection.tags;
-    const tags = item.snapshot?.tags?.length
-      ? item.snapshot.tags
-      : item.collection[0].tags.filter(tag => {
-        return tag[fields.appId] === item.id;
-      });
-
-    return tags.map(tag => Collection.fromDB(tag, fields));
-  };
-
-  const deleteTag = async tag => {
-    const { fields, table } = Collection.tags;
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq(fields.collectionId, tag.collectionId)
-      .eq(fields.appId, tag.appId)
-      .eq(fields.tagId, tag.tagId);
-
-    if (!error) {
-      tag = null;
-    }
-  };
-
-  const isSelected = id => !!selected.value.find(v => v.id.toString() === id.toString());
-  const isMandatory = id => !!mandatory.value.find(v => v.id.toString() === id.toString());
-
-  // workaround for mandatory items not always being removed from selected (e.g. through using selectAll)
-  watch(() => selected.value, () => {
-    mandatory.value = mandatory.value.filter(item => isSelected(item.id));
-  });
-
-  const select = item => {
-    if (!props.showSelect) {
-      return;
-    }
-
-    const { id } = item;
-
-    // toggle between selected and unselected (mandatory stays locked)
-    if (props.noMandatory) {
-      // if the item is selected and not mandatory, remove it from selected
-      if (isSelected(id) && !isMandatory(id)) {
-        selected.value.splice(selected.value.indexOf(item), 1);
-      // if the item is not selected, add it to selected (only if not max selection)
-      } else if (!isSelected(id)) {
-        if (props.maxSelection && selected.value.length >= props.maxSelection) {
-          return;
-        }
-        selected.value.push(item);
-      }
-    // cycle through selected, mandatory and unselected
-    } else {
-      // if the item is selected and not mandatory, remove it from selected
-      if (!isSelected(id)) {
-        if (isMandatory(id)) {
-          mandatory.value.splice(mandatory.value.indexOf(item), 1);
-        }
-        if (props.maxSelection !== null && selected.value.length >= props.maxSelection) {
-          return;
-        }
-        selected.value.push(item);
-      } else if (isMandatory(id)) {
-        selected.value.splice(selected.value.indexOf(item), 1);
-        mandatory.value.splice(mandatory.value.indexOf(item), 1);
-      } else {
-        mandatory.value.push(item);
-      }
-    }
-
-    // workaround for selection visuals not re-rendering
-    selected.value = [...selected.value];
-  };
-
-  const getRowClass = item => {
-    return {
-      'app-row': true,
-      'in-library': inLibrary(item.id),
-      'in-wishlist': inWishlist(item.id),
-      'in-blacklist': inBlacklist(item.id),
-      'in-tradelist': inTradelist(item.id)
-    };
-  };
 
   defineExpose({
     refresh
@@ -533,17 +535,48 @@
 
     <template #tbody="{ items: rowItems }">
       <tbody
-        v-if="rowItems.length === 0"
+        v-if="table?.loading && !rowItems.length"
         class="v-data-table__tbody"
-        role="rowgroup"
-        style="height: 200px;"
       >
-        <tr class="v-data-table-rows-no-data">
-          <td :colspan="headers.length + (showSelect || tableProps.showSelect ? 1 : 0)">
-            <span class="text-disabled font-italic">No apps found</span>
+        <!-- <tr
+          v-for="i in 10"
+          :key="i"
+          class="v-data-table__tr position-relative app-row"
+        >
+          <td
+            v-if="showSelect || tableProps.showSelect"
+            class="v-data-table__td v-data-table-column--align-start"
+          >
+            <div class="app-avatar">
+              <v-skeleton-loader
+                class="h-100 w-100"
+                type="image"
+              />
+            </div>
           </td>
-        </tr>
+          <td
+            v-for="header in headers"
+            :key="header.key"
+            class="v-data-table__td v-data-table-column--align-start"
+          >
+            <v-skeleton-loader
+              class="w-100 h-100"
+              type="text"
+            />
+          </td>
+        </tr> -->
       </tbody>
+      <div
+        v-else-if="rowItems.length === 0"
+        class="d-flex position-absolute w-100 h-100 align-center justify-center overflow-hidden top-0 po"
+        :style="{
+          pointerEvents: 'none',
+          paddingTop: props.simple ? '0' : '116px',
+          paddingBottom: '56px',
+        }"
+      >
+        <span class="text-disabled font-italic">No apps found</span>
+      </div>
       <tbody
         v-else
         class="v-data-table__tbody"
@@ -554,7 +587,6 @@
         >
           <tr
             v-ripple
-            class="v-data-table__tr position-relative"
             :class="getRowClass(item)"
             @click="clickRow(item)"
           >
@@ -1012,6 +1044,10 @@
         width: 150px;
         height: 75px;
         margin-right: 8px;
+
+        .v-skeleton-loader__bone.v-skeleton-loader__image {
+          height: 76px;
+        }
 
         &.overlayed {
           .app-avatar__image:after {

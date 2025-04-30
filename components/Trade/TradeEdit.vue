@@ -404,7 +404,7 @@
                 class="fill-height"
                 :value="tab"
               >
-                <v-container>
+                <v-container class="d-flex flex-column fill-height">
                   <dialog-select-collection
                     v-if="users[tab]"
                     multiple
@@ -435,7 +435,7 @@
                     v-if="selectedCollections[tab]"
                     v-model="selectedApps[tab]"
                     v-model:mandatory="mandatoryApps[tab]"
-                    class="flex-grow-1"
+                    class="flex-grow-1 mt-4"
                     :only-collections="selectedCollections[tab]"
                     show-select
                   />

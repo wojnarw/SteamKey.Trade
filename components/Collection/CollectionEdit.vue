@@ -321,7 +321,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
 
-      <v-card class="mb-4 flex-grow-1">
+      <v-card class="d-flex flex-column flex-grow-1 mb-4">
         <v-tabs v-model="activeTab">
           <v-tab
             class="w-50"
@@ -347,12 +347,9 @@
 
         <v-divider />
 
-        <v-window
-          v-model="activeTab"
-          class="flex-grow-1"
-        >
+        <v-window v-model="activeTab">
           <v-window-item value="apps">
-            <v-card-text class="overflow-auto">
+            <v-card-text class="d-flex flex-column overflow-auto">
               <div class="d-flex flex-sm-row flex-column justify-space-between align-center ga-4 mb-2">
                 <input-app-search
                   v-model="newApp"
@@ -401,6 +398,7 @@
               <table-apps
                 ref="appsTable"
                 v-model="selectedApps"
+                class="flex-grow-1"
                 :exclude-apps="appidsToRemove"
                 :include-apps="appidsToAdd"
                 no-mandatory
