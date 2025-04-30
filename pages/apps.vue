@@ -51,7 +51,7 @@
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
-    <v-card class="d-flex fill-height pa-2">
+    <v-card class="d-flex fill-height">
       <table-apps :filters="filters" />
     </v-card>
   </s-page-content>

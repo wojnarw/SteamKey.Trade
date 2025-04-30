@@ -435,7 +435,7 @@
                     v-if="selectedCollections[tab]"
                     v-model="selectedApps[tab]"
                     v-model:mandatory="mandatoryApps[tab]"
-                    class="flex-grow-1 mt-4"
+                    class="flex-grow-1"
                     :only-collections="selectedCollections[tab]"
                     show-select
                   />

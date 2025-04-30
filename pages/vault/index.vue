@@ -363,7 +363,7 @@
             <v-divider />
 
             <v-window>
-              <v-window-item class="h-100 pa-2">
+              <v-window-item class="h-100">
                 <table-apps
                   class="h-100"
                   :only-vault-received="activeTab === 'received'"

@@ -283,7 +283,7 @@
       />
       <div
         v-if="showSelect || searchField || props.filters.length"
-        class="d-flex justify-end align-center ga-2"
+        class="d-flex justify-end align-center ga-2 px-2 pt-2"
       >
         <v-text-field
           v-if="searchField"

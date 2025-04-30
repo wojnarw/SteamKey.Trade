@@ -28,7 +28,7 @@
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
-    <v-card class="h-100 pa-2">
+    <v-card class="h-100">
       <table-data
         class="h-100 "
         :headers="headers"
