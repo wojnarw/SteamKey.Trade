@@ -38,7 +38,7 @@
       { value: 'neq', title: 'not equal' },
       { value: 'ilike', title: 'contains' },
       { value: 'like', title: 'matches pattern' },
-      { value: 'is', title: 'is (null/not null)' },
+      { value: 'is', title: 'is (known/unknown)' },
       { value: 'in', title: 'in (multiple values)' }
     ],
     Number: [
@@ -48,21 +48,21 @@
       { value: 'gte', title: 'greater than or equal' },
       { value: 'lt', title: 'less than' },
       { value: 'lte', title: 'less than or equal' },
-      { value: 'is', title: 'is (null/not null)' },
+      { value: 'is', title: 'is (known/unknown)' },
       { value: 'in', title: 'in (multiple values)' }
     ],
     Boolean: [
       { value: 'eq', title: 'equals' },
-      { value: 'is', title: 'is (null/not null)' }
+      { value: 'is', title: 'is (known/unknown)' }
     ],
     Array: [
       { value: 'cs', title: 'contains' },
       { value: 'cd', title: 'contained by' },
       { value: 'ov', title: 'overlaps' },
-      { value: 'is', title: 'is (null/not null)' }
+      { value: 'is', title: 'is (known/unknown)' }
     ],
     Object: [
-      { value: 'is', title: 'is (null/not null)' }
+      { value: 'is', title: 'is (known/unknown)' }
     ],
     Date: [
       { value: 'eq', title: 'equals' },
@@ -71,13 +71,13 @@
       { value: 'gte', title: 'greater than or equal' },
       { value: 'lt', title: 'less than' },
       { value: 'lte', title: 'less than or equal' },
-      { value: 'is', title: 'is (null/not null)' }
+      { value: 'is', title: 'is (known/unknown)' }
     ]
   };
 
   const nullValueOptions = [
-    { value: 'null', title: 'null' },
-    { value: 'not.null', title: 'not null' }
+    { value: 'null', title: 'unknown' },
+    { value: 'not.null', title: 'known' }
   ];
 
   // Utility functions for filter operations
