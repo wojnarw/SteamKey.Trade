@@ -126,7 +126,7 @@ export const processSteamStoreDetails = async (appids) => {
           record[App.fields.releasedAt] = releaseDate;
         }
       }
-      <span class="discount_original_price">$14.99</span>;
+
       appRecords.push(record);
 
       for (const group of storeInfo.package_groups || []) {
