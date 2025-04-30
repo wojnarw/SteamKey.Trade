@@ -126,15 +126,18 @@ export const processSteamStoreDetails = async (appids) => {
           record[App.fields.releasedAt] = releaseDate;
         }
       }
-
+      <span class="discount_original_price">$14.99</span>;
       appRecords.push(record);
 
       for (const group of storeInfo.package_groups || []) {
         for (const sub of group.subs || []) {
           if (sub.packageid) {
+            const title = sub.option_text
+              ? sub.option_text.replace(/<span class="discount_original_price">.*<\/span>/g, '').trim()
+              : `Unknown Package ${sub.packageid}`;
             collectionRecords.push({
               [Collection.fields.id]: `package-${sub.packageid}`,
-              [Collection.fields.title]: sub.option_text || `Unknown Package ${sub.packageid}`,
+              [Collection.fields.title]: title,
               [Collection.fields.type]: Collection.enums.type.steamPackage,
               [Collection.fields.links]: [{
                 title: 'Steam Store',
