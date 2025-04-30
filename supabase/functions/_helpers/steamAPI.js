@@ -26,7 +26,6 @@ export const steamApiRequest = async (iface, method, version = 'v1', config = {}
     }
   });
 
-  const data = await response.json();
   const error = new Error();
   error.status = response.status;
 
@@ -44,6 +43,13 @@ export const steamApiRequest = async (iface, method, version = 'v1', config = {}
     }
   }
 
+  const contentType = response.headers.get('content-type');
+  if (contentType && !contentType.includes('application/json')) {
+    error.message = `Invalid content type: ${contentType}`;
+    throw error;
+  }
+
+  const data = await response.json();
   if (data?.response) {
     return data.response;
   }
