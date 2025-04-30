@@ -13,27 +13,42 @@ import { saveToDatabase } from '../_helpers/updater.js';
  */
 export const processGGDealsDetails = async (appids) => {
   const records = [];
+  const errors = [];
+  const failed = [];
+
+  const batchSize = 1;
   try {
-    for (let i = 0; i < appids.length; i += 100) {
-      const batch = appids.slice(i, i + 100);
+    for (let i = 0; i < appids.length; i += batchSize) {
+      const batch = appids.slice(i, i + batchSize);
 
       const url = new URL('https://api.gg.deals/steamkeytrade/game/by-steam-app-id/');
       url.searchParams.append('ids', batch.join(',')); // max 100
 
-      const response = await fetch(url, {
-        headers: {
-          'X-API-Key': Deno.env.get('GGDEALS_API_KEY')
-        }
-      });
+      let response;
+      try {
+        response = await fetch(url, {
+          headers: {
+            'X-API-Key': Deno.env.get('GGDEALS_API_KEY')
+          }
+        });
+      } catch (error) {
+        failed.push(...batch.map((appid) => ({ [App.fields.id]: appid })));
+        errors.push(error);
+        continue;
+      }
 
       if (!response.ok) {
-        throw new Error(`GG Deals API returned ${response.status}: ${response.statusText}`);
+        failed.push(...batch.map((appid) => ({ [App.fields.id]: appid })));
+        errors.push(new Error(`GG Deals API returned ${response.status}: ${response.statusText}`));
+        continue;
       }
 
       const { data, success } = await response.json();
 
       if (!data || !success) {
-        throw new Error(`GG Deals API returned an error: ${JSON.stringify(data)}`);
+        failed.push(...batch.map((appid) => ({ [App.fields.id]: appid })));
+        errors.push(new Error(`GG Deals API returned an error: ${JSON.stringify(data)}`));
+        continue;
       }
 
       for (const appid in data) {
@@ -56,7 +71,8 @@ export const processGGDealsDetails = async (appids) => {
     }
 
     // Save to database
-    return saveToDatabase(App.table, records, App.fields.id);
+    const result = await saveToDatabase(App.table, records, App.fields.id);
+    return { errors: errors.concat(result.errors), failed: failed.concat(result.failed), successful: result.successful };
   } catch (error) {
     const failed = appids.map((appid) => records.find((record) => record[App.fields.id] === appid) || { [App.fields.id]: appid });
     return { errors: [error], failed, successful: [] };
