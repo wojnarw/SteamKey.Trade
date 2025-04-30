@@ -271,7 +271,7 @@
 
             <v-col
               cols="12"
-              md="7"
+              md="9"
             >
               <v-row>
                 <v-col cols="12">
@@ -298,7 +298,7 @@
 
             <v-col
               cols="12"
-              md="5"
+              md="3"
             >
               <p>Enabled notifications</p>
               <v-checkbox
