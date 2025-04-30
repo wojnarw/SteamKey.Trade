@@ -43,7 +43,7 @@
 
   const isMe = computed(() => authUser?.id === user.id);
 
-  const { data: stats, status: statsStatus, error: statsError } = useLazyAsyncData(`user-stats-${user.id}`, () => {
+  const { data: stats, /* status: statsStatus, */ error: statsError } = useLazyAsyncData(`user-stats-${user.id}`, () => {
     return user.getStatistics();
   }, {
     getCachedData: (key, nuxtApp) => {
@@ -63,7 +63,7 @@
   });
 
   const isLoading = computed(() => {
-    return statsStatus.value === 'pending' || tradesStatus.value === 'pending';
+    return /* statsStatus.value === 'pending' || */ tradesStatus.value === 'pending';
   });
 
   const hasError = computed(() => {
