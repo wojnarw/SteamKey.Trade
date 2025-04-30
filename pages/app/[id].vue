@@ -320,12 +320,12 @@
                   >
                     ${{ app.discountedPrice }}
                   </h1>
-                  <h1
+                  <h2
                     v-else-if="!app.free"
-                    class="text-disabled font-weight-thin"
+                    class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
                   >
                     ¯\_(ツ)_/¯
-                  </h1>
+                  </h2>
                 </v-col>
 
                 <v-divider
@@ -343,12 +343,12 @@
                   >
                     ${{ app.marketPrice }}
                   </h1>
-                  <h1
+                  <h2
                     v-else
-                    class="text-disabled font-weight-thin"
+                    class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
                   >
                     ¯\_(ツ)_/¯
-                  </h1>
+                  </h2>
                   <span
                     v-if="!isNaN(parseFloat(app.historicalLow))"
                     class="text-caption"
@@ -386,12 +386,12 @@
                 >
                   {{ (Math.round((app.positiveReviews / (app.positiveReviews + app.negativeReviews)) * 100)) }}%
                 </h1>
-                <h1
+                <h2
                   v-else
-                  class="text-disabled font-weight-thin"
+                  class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
                 >
                   ¯\_(ツ)_/¯
-                </h1>
+                </h2>
                 <span
                   v-if="app.positiveReviews + app.negativeReviews"
                   class="text-caption text-primary"
