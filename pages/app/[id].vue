@@ -443,7 +443,7 @@
                           class="text-decoration-none text-capitalize text-primary"
                           :to="`/collection/type-${slugify(app.type)}`"
                         >
-                          {{ App.labels[app.type] }}
+                          {{ App.labels[Object.entries(App.enums.type).find(([value]) => value === app.type)[0]] }}
                         </nuxt-link>
                       </td>
                     </tr>
