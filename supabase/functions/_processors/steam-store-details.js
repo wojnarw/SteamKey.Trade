@@ -145,7 +145,7 @@ export const processSteamStoreDetails = async (appids) => {
                 url: `https://store.steampowered.com/sub/${sub.packageid}/`
               }, {
                 title: 'SteamDB',
-                icon: 'mdi-database',
+                icon: 'icon-steamdb',
                 url: `https://steamdb.info/sub/${sub.packageid}/`
               }]
             });

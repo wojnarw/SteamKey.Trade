@@ -573,7 +573,7 @@ export class Collection extends Entity {
             url: `https://steamcommunity.com/profiles/${user.steamId}/games/?tab=all`
           }, {
             title: 'SteamDB Calculator',
-            icon: 'mdi-database',
+            icon: 'icon-steamdb',
             url: `https://steamdb.info/calculator/${user.steamId}?all_games`
           }];
           break;

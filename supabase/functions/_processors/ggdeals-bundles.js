@@ -68,7 +68,7 @@ export const processGGDealsBundles = async (lastCheck) => {
       };
 
       if (url) {
-        baseRecord[Collection.fields.links] = [{ icon: 'mdi-alpha-g-circle', title: 'GG Deals', url }];
+        baseRecord[Collection.fields.links] = [{ icon: 'icon-ggdeals', title: 'GG Deals', url }];
       }
 
       if (tiers.length === 1) {

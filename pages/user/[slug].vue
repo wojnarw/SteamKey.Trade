@@ -118,7 +118,7 @@
       },
       {
         text: 'View on SteamDB',
-        icon: 'mdi-database',
+        icon: 'icon-steamdb',
         href: `https://steamdb.info/calculator/${user.steamId}`
       }
     ]

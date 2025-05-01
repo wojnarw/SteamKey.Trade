@@ -79,12 +79,12 @@
     },
     {
       text: 'View on SteamDB',
-      icon: 'mdi-database',
+      icon: 'icon-steamdb',
       href: `https://steamdb.info/app/${appid}`
     },
     {
       text: 'View on GG.Deals',
-      icon: 'mdi-alpha-g-circle', // TODO: Replace with proper icon
+      icon: 'icon-ggdeals',
       href: `https://gg.deals/steam/app/${appid}`
     },
     {
