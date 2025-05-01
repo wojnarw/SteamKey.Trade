@@ -67,4 +67,18 @@ const appUpdate = async ({ count = 100 }) => {
   };
 };
 
-serve(appUpdate);
+// If in Supabase Edge Functions environment
+if (Deno?.env?.get?.('SB_EXECUTION_ID')) {
+  // Serve the function
+  serve(appUpdate);
+} else {
+  // Run the function directly
+  console.log('App update function initialized');
+  appUpdate()
+    .then(result => {
+      console.log('App update function completed:', result);
+    })
+    .catch(error => {
+      console.error('Error in app update function:', error);
+    });
+}

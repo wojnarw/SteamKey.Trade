@@ -348,20 +348,20 @@ schema_paths = [
   "./schemas/public/views.sql",
 ]
 
+# Off-loaded to a VPS
+# [functions.database-update] 
+# verify_jwt = false
+# entrypoint = './functions/database-update/index.js'
+# [functions.app-update]
+# verify_jwt = false
+# entrypoint = './functions/app-update/index.js'
+
 [functions.login]
 verify_jwt = false
 entrypoint = './functions/login/index.js'
 
 [functions.steam-sync]
 entrypoint = './functions/steam-sync/index.js'
-
-[functions.database-update]
-verify_jwt = false
-entrypoint = './functions/database-update/index.js'
-
-[functions.app-update]
-verify_jwt = false
-entrypoint = './functions/app-update/index.js'
 
 [functions.steamdeck-compatibility-report]
 entrypoint = './functions/steamdeck-compatibility-report/index.js'

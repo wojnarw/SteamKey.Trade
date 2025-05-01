@@ -16,7 +16,7 @@ export const processGGDealsDetails = async (appids) => {
   const errors = [];
   const failed = [];
 
-  const batchSize = 1;
+  const batchSize = 100;
   try {
     for (let i = 0; i < appids.length; i += batchSize) {
       const batch = appids.slice(i, i + batchSize);

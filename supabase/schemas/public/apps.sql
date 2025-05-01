@@ -307,11 +307,6 @@ begin
 end;
 $$ language plpgsql security invoker;
 
--- Cron job to call app update Superbase Edge function
-select cron.schedule('call_app_update', '*/5 * * * *', $$
-  select public.call_edge_function('app-update');
-$$);
-
 -- Create function to return app metadata dump
 create or replace function get_apps_metadata()
 returns jsonb
