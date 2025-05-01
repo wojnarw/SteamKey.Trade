@@ -29,6 +29,13 @@
     value: null
   });
 
+  watch(() => newFilter.value.field, () => {
+    if (newFilter.value.field && !newFilter.value.operation) {
+      const options = getOperationOptions(newFilter.value.field);
+      newFilter.value.operation = options[0].value;
+    }
+  });
+
   const activeIndexSet = reactive(new Set());
   const hoveredIndexSet = reactive(new Set());
 
@@ -147,7 +154,9 @@
   };
 
   const addFilter = () => {
-    if (!newFilter.value.field || !newFilter.value.operation) { return; }
+    if (!newFilter.value.field || !newFilter.value.operation || !newFilter.value.value) {
+      return;
+    }
 
     // Don't duplicate filters for the same field and operation
     const existingIndex = localFilters.value.findIndex(f =>
@@ -202,22 +211,6 @@
     localFilters.value = [];
     emit('clear');
   };
-
-  // Check if new filter is valid
-  const isNewFilterValid = computed(() => {
-    return newFilter.value.field && newFilter.value.operation && (
-      newFilter.value.value !== null ||
-      (newFilter.value.operation === 'in' && Array.isArray(newFilter.value.value)) ||
-      newFilter.value.operation === 'is'
-    );
-  });
-
-  // Auto-add filter when all fields are filled
-  watch(() => isNewFilterValid.value, (valid) => {
-    if (valid) {
-      addFilter();
-    }
-  });
 </script>
 
 <template>
@@ -406,6 +399,7 @@
                   item-value="value"
                   :items="nullValueOptions"
                   label="Value"
+                  @update:model-value="addFilter"
                 />
                 <v-select
                   v-else-if="['in', 'cs', 'cd', 'ov'].includes(newFilter.operation)"
@@ -420,6 +414,7 @@
                   :items="getValueOptions(newFilter.field)"
                   label="Values"
                   multiple
+                  @update:model-value="addFilter"
                 />
                 <v-select
                   v-else-if="getFilterDefinition(newFilter.field)?.options?.length"
@@ -431,6 +426,7 @@
                   item-value="value"
                   :items="getValueOptions(newFilter.field)"
                   label="Value"
+                  @update:model-value="addFilter"
                 />
                 <v-select
                   v-else-if="isBooleanType(newFilter.field)"
@@ -442,6 +438,7 @@
                   item-value="value"
                   :items="getValueOptions(newFilter.field)"
                   label="Value"
+                  @update:model-value="addFilter"
                 />
                 <input-date
                   v-else-if="isDateType(newFilter.field)"
@@ -449,6 +446,7 @@
                   density="compact"
                   hide-details
                   label="Value"
+                  @update:model-value="addFilter"
                 />
                 <v-number-input
                   v-else-if="isNumberType(newFilter.field)"
@@ -457,6 +455,8 @@
                   :disabled="!newFilter.operation"
                   hide-details
                   label="Value"
+                  @blur="addFilter"
+                  @keyup.enter="addFilter"
                 />
                 <v-text-field
                   v-else
@@ -465,6 +465,8 @@
                   :disabled="!newFilter.operation"
                   hide-details
                   label="Value"
+                  @blur="addFilter"
+                  @keyup.enter="addFilter"
                 />
               </v-col>
             </v-row>
