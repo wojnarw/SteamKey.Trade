@@ -6,7 +6,8 @@
   import { formatDate, formatNumber, slugify } from '~/assets/js/format';
 
   const { App, Collection, User } = useORM();
-  const { user: authUser, isLoggedIn } = useAuthStore();
+  const { user: authUser, isLoggedIn, updateUserCollections } = useAuthStore();
+  const { inLibrary, inWishlist, inBlacklist, inTradelist } = storeToRefs(useCollectionsStore());
   const route = useRoute();
   const appid = route.params.id;
 
@@ -16,13 +17,8 @@
       await instance.load();
       return instance.toObject();
     } catch (err) {
+      // If the app is not found, return an empty App object
       if (err.code === 'PGRST116') {
-        // throw createError({
-        //   statusCode: 404,
-        //   statusMessage: 'App not found',
-        //   message: 'The app you are looking for does not exist',
-        //   fatal: true
-        // });
         return instance.toObject();
       } else {
         throw createError({
@@ -101,11 +97,23 @@
   ];
   const activeTab = ref(tabs[0].name);
 
-  function decodeHtml(html) {
+  const decodeHtml = (html) => {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
     return txt.value;
-  }
+  };
+
+  const removeFromMasterCollection = async (type) => {
+    try {
+      const instance = await Collection.getMasterCollection(supabase, authUser.id, type);
+      await instance.removeApps([appid]);
+      await updateUserCollections();
+      snackbarStore.set('success', `Removed from your ${type}`);
+    } catch (error) {
+      console.error(error);
+      snackbarStore.set('error', error.message);
+    }
+  };
 
   const title = computed(() => app.value?.title ?? `Unknown App ${appid}`);
   const breadcrumbs = computed(() => [
@@ -123,6 +131,78 @@
     :loading="status !== 'success'"
   >
     <template #append>
+      <v-btn
+        v-if="inLibrary(appid)"
+        class="ml-2 bg-surface rounded"
+        color="success"
+        :icon="$vuetify.display.xs"
+        :rounded="$vuetify.display.xs"
+        variant="tonal"
+        @click="removeFromMasterCollection(Collection.enums.type.library)"
+      >
+        <v-icon
+          class="mr-0 mr-sm-2"
+          :icon="$vuetify.display.xs ? Collection.icons.library : 'mdi-minus'"
+        />
+        <span class="d-none d-sm-block">
+          Library
+        </span>
+      </v-btn>
+
+      <v-btn
+        v-if="inWishlist(appid)"
+        class="ml-2 bg-surface rounded"
+        color="error"
+        :icon="$vuetify.display.xs"
+        :rounded="$vuetify.display.xs"
+        variant="tonal"
+        @click="removeFromMasterCollection(Collection.enums.type.wishlist)"
+      >
+        <v-icon
+          class="mr-0 mr-sm-2"
+          :icon="$vuetify.display.xs ? Collection.icons.wishlist : 'mdi-minus'"
+        />
+        <span class="d-none d-sm-block">
+          Wishlist
+        </span>
+      </v-btn>
+
+      <v-btn
+        v-if="inBlacklist(appid)"
+        class="ml-2 bg-surface rounded"
+        color="disabled"
+        :icon="$vuetify.display.xs"
+        :rounded="$vuetify.display.xs"
+        variant="tonal"
+        @click="removeFromMasterCollection(Collection.enums.type.blacklist)"
+      >
+        <v-icon
+          class="mr-0 mr-sm-2"
+          :icon="$vuetify.display.xs ? Collection.icons.blacklist : 'mdi-minus'"
+        />
+        <span class="d-none d-sm-block">
+          Blacklist
+        </span>
+      </v-btn>
+
+      <v-btn
+        v-if="inTradelist(appid)"
+        class="ml-2 bg-surface rounded"
+        color="info"
+        :icon="$vuetify.display.xs"
+        :rounded="$vuetify.display.xs"
+        variant="tonal"
+        @click="removeFromMasterCollection(Collection.enums.type.tradelist)"
+      >
+        <v-icon
+          class="mr-0 mr-sm-2"
+          :icon="$vuetify.display.xs ? Collection.icons.tradelist : 'mdi-minus'"
+        />
+        <span class="d-none d-sm-block">
+          Tradelist
+        </span>
+      </v-btn>
+
       <dialog-select-collection
         v-if="isLoggedIn"
         multiple
@@ -169,25 +249,6 @@
               rounded
             />
           </v-col>
-        </v-row>
-
-        <v-row
-          v-if="isReleased"
-          class="flex-grow-0 mt-0"
-        >
-          <v-hover open-delay="500">
-            <template #default="{ isHovering, props }">
-              <v-col
-                v-bind="props"
-                :class="{ 'steamdb-widget': true, 'expanded': isHovering, 'light': $vuetify.theme.name === 'light' }"
-              >
-                <iframe
-                  loading="lazy"
-                  :src="`https://steamdb.info/embed/?appid=${appid}`"
-                />
-              </v-col>
-            </template>
-          </v-hover>
         </v-row>
 
         <v-row
@@ -403,10 +464,70 @@
           </v-col>
         </v-row>
 
+        <v-row
+          v-if="isReleased || true"
+          class="flex-grow-0 mt-6 mb-3"
+        >
+          <v-hover open-delay="500">
+            <template #default="{ isHovering, props }">
+              <v-col
+                v-bind="props"
+                :class="{ 'steamdb-widget': true, 'expanded': isHovering, 'light': $vuetify.theme.name === 'light' }"
+              >
+                <iframe
+                  loading="lazy"
+                  :src="`https://steamdb.info/embed/?appid=${appid}`"
+                />
+              </v-col>
+            </template>
+          </v-hover>
+        </v-row>
+
         <v-row>
           <v-col>
             <v-card>
               <v-card-text>
+                <v-alert
+                  v-if="inLibrary(appid)"
+                  border="start"
+                  class="mb-2"
+                  color="success"
+                  icon="mdi-information"
+                  variant="tonal"
+                >
+                  You have this app in your library
+                </v-alert>
+                <v-alert
+                  v-if="inWishlist(appid)"
+                  border="start"
+                  class="mb-2"
+                  color="error"
+                  icon="mdi-information"
+                  variant="tonal"
+                >
+                  You have this app on your wishlist
+                </v-alert>
+                <v-alert
+                  v-if="inBlacklist(appid)"
+                  border="start"
+                  class="mb-2"
+                  color="disabled"
+                  icon="mdi-information"
+                  variant="tonal"
+                >
+                  You have this app on your blacklist
+                </v-alert>
+                <v-alert
+                  v-if="inTradelist(appid)"
+                  border="start"
+                  class="mb-2"
+                  color="info"
+                  icon="mdi-information"
+                  variant="tonal"
+                >
+                  You have this app on your tradelist
+                </v-alert>
+
                 <span v-if="app.description">
                   {{ decodeHtml(app.description) }}
                 </span>
@@ -679,8 +800,6 @@
     border-radius: 6px;
     border: none;
     height: 90px;
-    margin-bottom: 34px;
-    margin-top: 0px;
     overflow: hidden;
     position: relative;
     transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
