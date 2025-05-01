@@ -6,7 +6,7 @@ import { processGGDealsDetails } from '../_processors/ggdeals-details.js';
 import { dequeueApps } from '../_helpers/updater.js';
 
 // Runs every 5 minutes
-const appUpdate = async ({ count = 100 }) => {
+const appUpdate = async ({ count = 100 } = {}) => {
   const appids = await dequeueApps(count);
 
   if (appids.length === 0) {
