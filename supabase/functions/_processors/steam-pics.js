@@ -122,6 +122,44 @@ export const getTags = async (fresh = false) => {
 };
 
 /**
+ * Sets up a Steam client and logs in anonymously.
+ * @returns {Promise<import('npm:steam-user').Steam>} A promise that resolves to the logged-in Steam client.
+ * @throws {Error} - Throws an error if the login process fails or times out.
+ */
+export const setupSteamClient = () => {
+  const client = new Steam();
+
+  // Wait for login
+  return new Promise((resolve, reject) => {
+    const handleLoggedOn = () => {
+      clearTimeout(timeout);
+      client.removeListener('error', handleError);
+      resolve(client);
+    };
+
+    const handleError = (err) => {
+      clearTimeout(timeout);
+      client.removeListener('loggedOn', handleLoggedOn);
+      client.logOff();
+      reject(err);
+    };
+
+    const timeout = setTimeout(() => {
+      client.removeListener('loggedOn', handleLoggedOn);
+      client.removeListener('error', handleError);
+      client.logOff();
+      reject(new Error('Steam client login timed out'));
+    }, 60000);
+
+    client.once('loggedOn', handleLoggedOn);
+    client.once('error', handleError);
+
+    // Log in anonymously
+    client.logOn({ anonymous: true });
+  });
+};
+
+/**
  * Processes apps from Steam PICS
  * @param {Array<number>} appids - Array of app IDs to process
  * @parem {import('npm:steam-user').Steam} [client] - Steam client instance
@@ -135,36 +173,8 @@ export const processSteamPICS = async (appids, client) => {
       return { errors: [], failed: [], successful: [] };
     }
 
-    // Create Steam client
     if (!client) {
-      client = new Steam();
-
-      // Wait for login
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          client.removeListener('loggedOn', handleLoggedOn);
-          client.removeListener('error', handleError);
-          reject(new Error('Steam client login timed out'));
-        }, 30000);
-
-        const handleLoggedOn = () => {
-          clearTimeout(timeout);
-          client.removeListener('error', handleError);
-          resolve();
-        };
-
-        const handleError = (err) => {
-          clearTimeout(timeout);
-          client.removeListener('loggedOn', handleLoggedOn);
-          reject(err);
-        };
-
-        client.once('loggedOn', handleLoggedOn);
-        client.once('error', handleError);
-
-        // Log in anonymously
-        client.logOn({ anonymous: true });
-      });
+      client = await setupSteamClient();
     }
 
     const categories = await getCategories();
