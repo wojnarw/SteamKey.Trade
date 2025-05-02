@@ -1,9 +1,11 @@
 <script setup>
   const { Trade } = useORM();
   const supabase = useSupabaseClient();
+  const router = useRouter();
+  const route = useRoute();
 
   const { isLoggedIn, user } = storeToRefs(useAuthStore());
-  const activeTab = ref('received');
+  const activeTab = ref(route.query.tab || 'received');
   const tabs = ['received', 'sent'];
 
   const headers = computed(() => ([
@@ -74,6 +76,25 @@
     { title: 'Home', to: '/' },
     { title: 'Trades', disabled: true }
   ];
+
+  // Update URL when tab changes
+  watch(() => activeTab.value, (newTab) => {
+    if (isLoggedIn.value) {
+      router.push({
+        query: {
+          ...route.query,
+          tab: newTab
+        }
+      });
+    }
+  });
+
+  // Update active tab when URL changes
+  watch(() => route.query, (newQuery) => {
+    if (isLoggedIn.value && newQuery.tab && tabs.includes(newQuery.tab) && newQuery.tab !== activeTab.value) {
+      activeTab.value = newQuery.tab;
+    }
+  }, { deep: true });
 
   useHead({
     title: 'Trades'
