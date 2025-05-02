@@ -1,4 +1,5 @@
 <script setup>
+  import { formatNumber } from '~/assets/js/format';
   import { isSteamID64, isUrl } from '~/assets/js/validate';
 
   const route = useRoute();
@@ -289,29 +290,29 @@
             >
               <v-btn
                 v-tooltip:top="`${stats?.totalCompletedTrades ?? 0} completed ${stats?.totalCompletedTrades === 1 ? 'trade' : 'trades'}`"
-                class="w-50 font-weight-bold"
+                class="w-50 font-weight-bold text-h6"
                 color="success"
                 @click="activeTab = 'Trades'"
               >
                 <v-icon
                   class="mr-1"
                   icon="mdi-thumb-up"
-                  size="16"
+                  size="20"
                 />
-                {{ stats?.totalCompletedTrades ?? 0 }}
+                {{ formatNumber(stats?.totalCompletedTrades ?? 0) }}
               </v-btn>
               <v-btn
                 v-tooltip:top="`${stats?.totalDisputedTrades ?? 0} disputed ${stats?.totalDisputedTrades === 1 ? 'trade' : 'trades'}`"
-                class="w-50 font-weight-bold"
+                class="w-50 font-weight-bold text-h6"
                 color="error"
                 @click="activeTab = 'Trades'"
               >
                 <v-icon
                   class="mr-1"
                   icon="mdi-thumb-down"
-                  size="16"
+                  size="20"
                 />
-                {{ stats?.totalDisputedTrades ?? 0 }}
+                {{ formatNumber(stats?.totalDisputedTrades ?? 0) }}
               </v-btn>
             </v-btn-group>
 

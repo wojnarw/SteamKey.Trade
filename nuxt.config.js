@@ -76,7 +76,8 @@ export default {
     '@nuxtjs/supabase',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
-    '@nuxt/eslint'
+    '@nuxt/eslint',
+    '@nuxtjs/google-fonts'
   ],
 
   supabase: {
@@ -105,6 +106,7 @@ export default {
 
   googleFonts: {
     preconnect: true,
+    display: 'swap',
     families: {
       Roboto: [400, 500, 700]
     }

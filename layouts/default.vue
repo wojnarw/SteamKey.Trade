@@ -585,7 +585,7 @@
     bottom: 90px;
     right: 0;
     z-index: 100;
-    transform: translateX(calc(100% - 112px));
+    transform: translateX(calc(100% - 104px));
     transition: transform 0.3s ease;
     border: 3px solid rgb(var(--v-theme-surface));
     border-radius: 20px 0px 0px 20px;
@@ -662,7 +662,7 @@
   .logo-chip {
     position: absolute;
     bottom: 0;
-    left: 10;
+    left: 6px;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
     border: 3px solid rgb(var(--v-theme-surface));
 
