@@ -3,6 +3,7 @@
 
   const snackbarStore = useSnackbarStore();
   const slots = useSlots();
+  const route = useRoute();
 
   const emit = defineEmits(['click:row']);
   const props = defineProps({
@@ -115,13 +116,16 @@
   const serverItems = ref([]);
   let queryResults = [];
 
+  const waitingForUrlFilters = ref(props.filtersInUrl && route.query.filters);
   const applyFilters = (filters) => {
     activeFilters.value = filters;
+    waitingForUrlFilters.value = false;
     refresh();
   };
 
   const clearFilters = () => {
     activeFilters.value = [];
+    waitingForUrlFilters.value = false;
     refresh();
   };
 
@@ -167,6 +171,11 @@
   };
 
   const loadItems = async ({ itemsPerPage, page, search, sortBy }) => {
+    // Skip initial data loading if we're waiting for URL filters
+    if (waitingForUrlFilters.value) {
+      return;
+    }
+
     loading.value = true;
     // prevPage.value = page;
 
@@ -277,7 +286,7 @@
     :items="serverItems"
     :items-length="totalItems"
     :items-per-page-options="itemsPerPageOptions"
-    :loading="loading"
+    :loading="loading || waitingForUrlFilters"
     :must-sort="mustSort"
     :search="search"
     :show-select="showSelect"
@@ -286,7 +295,7 @@
   >
     <template #no-data>
       <span class="text-disabled font-italic">
-        {{ noDataText }}
+        {{ waitingForUrlFilters ? 'Loading filters from URL...' : noDataText }}
       </span>
     </template>
 
