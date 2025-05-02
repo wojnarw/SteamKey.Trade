@@ -233,18 +233,15 @@
             v-show="showFullLogo"
             alt="SteamKey.Trade"
             class="logo"
-            eager
             :src="'/logo-banner.svg'"
-            :style="{ marginLeft: '3px' }"
             width="370"
           />
           <v-img
             v-show="!showFullLogo"
             alt="SteamKey.Trade"
             class="logo"
-            eager
             :src="'/logo-no-text.svg'"
-            :style="{ marginLeft: '5px' }"
+            style="margin-top: -1px"
             width="48"
           />
           <v-chip
@@ -662,7 +659,7 @@
   .logo-chip {
     position: absolute;
     bottom: 0;
-    left: 6px;
+    left: 2.5px;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
     border: 3px solid rgb(var(--v-theme-surface));
 

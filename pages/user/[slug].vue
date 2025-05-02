@@ -395,7 +395,10 @@
                 v-for="(tab, i) in tabs"
                 :key="tab"
               >
-                <v-tab class="w-25">
+                <v-tab
+                  class="w-25"
+                  :value="tab"
+                >
                   <v-icon
                     class="mr-1"
                     :icon="tabIcons[tab]"
