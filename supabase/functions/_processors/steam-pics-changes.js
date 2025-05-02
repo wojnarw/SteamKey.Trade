@@ -9,7 +9,7 @@ export const processSteamPICSChanges = async (lastChangeNumber) => {
   let client;
 
   try {
-    client = setupSteamClient();
+    client = await setupSteamClient();
 
     // Get product changes since last change number
     const { currentChangeNumber, appChanges } = await client.getProductChanges(lastChangeNumber);

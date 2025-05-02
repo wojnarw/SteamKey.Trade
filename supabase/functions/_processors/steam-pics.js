@@ -313,6 +313,6 @@ export const processSteamPICS = async (appids, client) => {
     return { errors: [error], failed, successful: [] };
   } finally {
     // Ensure client logs off
-    client.logOff();
+    client?.logOff?.();
   }
 };
