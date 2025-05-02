@@ -190,6 +190,11 @@
     }
 
     localFilters.value.splice(index, 1, updatedFilter);
+
+    // If operation changed, reset value to null
+    if (field === 'operation') {
+      localFilters.value[index].value = null;
+    }
   };
 
   const applyFilters = () => {
@@ -387,6 +392,7 @@
                   item-value="value"
                   :items="getOperationOptions(newFilter.field)"
                   label="Operation"
+                  @update:model-value="newFilter.value = null"
                 />
               </v-col>
               <v-col cols="5">
