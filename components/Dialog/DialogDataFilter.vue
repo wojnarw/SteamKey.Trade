@@ -1,4 +1,6 @@
 <script setup>
+  import { encodeForQuery, decodeFromQuery } from '~/assets/js/url';
+
   const props = defineProps({
     title: {
       type: String,
@@ -22,47 +24,61 @@
   const router = useRouter();
   const route = useRoute();
 
-  const encodeForQuery = async (obj) => {
-    const jsonBlob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-    const readable = jsonBlob.stream();
-    const compressedStream = readable.pipeThrough(new CompressionStream('gzip'));
-    const buffer = await new Response(compressedStream).arrayBuffer();
-    const binary = String.fromCharCode(...new Uint8Array(buffer));
-    return encodeURIComponent(btoa(binary));
-  };
-
-  const decodeFromQuery = async (param) => {
-    if (!param) { return []; }
-
-    const binary = atob(decodeURIComponent(param));
-    const bytes = new Uint8Array([...binary].map(ch => ch.charCodeAt(0)));
-    const cs = new DecompressionStream('gzip');
-    const ds = new Response(bytes).body.pipeThrough(cs);
-    const decompressed = await new Response(ds).arrayBuffer();
-    const txt = new TextDecoder().decode(decompressed);
-    return JSON.parse(txt);
-  };
-
   const internalValue = defineModel({ type: Boolean, default: false });
   const localFilters = ref([...props.activeFilters]);
 
-  // Load filters from URL if syncWithUrl is enabled
-  onMounted(async () => {
-    if (props.syncWithUrl && route.query.filters) {
-      try {
-        const urlFilters = await decodeFromQuery(route.query.filters);
-        if (Array.isArray(urlFilters) && urlFilters.length > 0) {
-          localFilters.value = urlFilters;
-          emit('apply', urlFilters);
-        }
-      } catch (err) {
-        console.error('Failed to decode filters from URL:', err);
-      }
+  // Handle URL synchronization manually for compressed data
+  const syncFiltersWithUrl = async (filters) => {
+    if (!props.syncWithUrl) {
+      return;
     }
-  });
+
+    try {
+      const encodedData = await encodeForQuery(filters);
+
+      // Update the URL preserving other parameters
+      const query = { ...route.query, filters: encodedData };
+      router.replace({ query }, { shallow: true });
+    } catch (err) {
+      console.error('Failed to encode filters for URL:', err);
+    }
+  };
+
+  // Load filters from URL
+  const loadFiltersFromUrl = async () => {
+    if (!props.syncWithUrl || !route.query.filters) {
+      return;
+    }
+
+    try {
+      const param = route.query.filters;
+      const filters = await decodeFromQuery(param);
+
+      if (Array.isArray(filters) && filters.length > 0) {
+        localFilters.value = filters;
+        emit('apply', filters);
+      }
+    } catch (err) {
+      console.error('Failed to decode filters from URL:', err);
+    }
+  };
+
+  // Load filters from URL if syncWithUrl is enabled
+  onMounted(() => loadFiltersFromUrl());
+
+  const clearFiltersFromUrl = () => {
+    if (!props.syncWithUrl) { return; }
+
+    const query = { ...route.query };
+    delete query.filters;
+    router.replace({ query }, { shallow: true });
+  };
 
   watch(() => props.activeFilters, (newVal) => {
-    localFilters.value = [...newVal];
+    // Only update local filters if they're empty or the new value is not empty
+    if (localFilters.value.length === 0 || newVal.length > 0) {
+      localFilters.value = [...newVal];
+    }
   }, { deep: true });
 
   const newFilter = ref({
@@ -250,28 +266,18 @@
       }
       return filter;
     });
+
     emit('apply', filters);
     internalValue.value = false;
 
-    // Sync filters with URL if enabled
-    if (props.syncWithUrl) {
-      encodeForQuery(filters).then(encodedFilters => {
-        router.replace({ query: { ...route.query, filters: encodedFilters } });
-      }).catch(err => {
-        console.error('Failed to encode filters for URL:', err);
-      });
-    }
+    syncFiltersWithUrl(filters);
   };
 
   const clearFilters = () => {
     localFilters.value = [];
     internalValue.value = false;
     emit('clear');
-
-    // Clear filters from URL if syncWithUrl is enabled
-    if (props.syncWithUrl) {
-      router.replace({ query: { ...route.query, filters: undefined } });
-    }
+    clearFiltersFromUrl();
   };
 </script>
 

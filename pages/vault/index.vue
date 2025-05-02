@@ -8,12 +8,11 @@
   const { decrypt } = useVaultSecurity();
   const { App, VaultEntry, Trade } = useORM();
 
-  const router = useRouter();
   const route = useRoute();
   const supabase = useSupabaseClient();
 
-  const activeTab = ref(route.query.tab || 'unsent');
-  const activeApp = ref(route.query.appid || null);
+  const activeTab = useSearchParam('tab', 'unsent');
+  const activeApp = useSearchParam('appid', null);
   const activeDialog = ref(route.query.appid && route.query.action === 'add');
 
   const { data: counts } = useLazyAsyncData('vault-counts', async () => {
@@ -102,13 +101,6 @@
     activeApp.value = null;
     await nextTick();
     activeApp.value = appid;
-
-    router.push({
-      query: {
-        ...route.query,
-        appid
-      }
-    });
   };
 
   const deleteEntry = async item => {
@@ -131,12 +123,6 @@
   const clearApp = event => {
     if (event.key === 'Escape') {
       activeApp.value = null;
-      router.push({
-        query: {
-          ...route.query,
-          appid: undefined
-        }
-      });
     }
   };
 
@@ -145,27 +131,8 @@
     activeDialog.value = false;
   };
 
-  watch(route, newRoute => {
-    if (newRoute.query.tab && newRoute.query.tab !== activeTab.value) {
-      activeTab.value = newRoute.query.tab;
-    }
-
-    if (newRoute.query.appid && (!activeApp.value || newRoute.query.appid !== activeApp.value.id)) {
-      loadEntries(newRoute.query.appid);
-    } else if (!newRoute.query.appid && activeApp.value) {
-      activeApp.value = null;
-    }
-  });
-
-  watch(() => activeTab.value, newTab => {
-    activeApp.value = null;
-    router.push({
-      query: {
-        ...route.query,
-        tab: newTab,
-        appid: undefined // Remove appid when changing tabs
-      }
-    });
+  onMounted(() => {
+    window.addEventListener('keydown', clearApp);
   });
 
   onBeforeUnmount(() => {

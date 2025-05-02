@@ -1,16 +1,21 @@
 <script setup>
-  const route = useRoute();
-  const router = useRouter();
-
-  const singleUser = ref(false);
-  const singleApp = ref(false);
-  const selectedUser = ref(null);
-  const selectedApp = ref(null);
+  const { User, Collection } = useORM();
 
   const snackbarStore = useSnackbarStore();
   const { user: authUser } = useAuthStore();
   const supabase = useSupabaseClient();
-  const { User, Collection } = useORM();
+
+  const singleUser = ref(false);
+  const selectedUser = useSearchParam('user', null);
+
+  const singleApp = ref(false);
+  const selectedApp = useSearchParam('app', null);
+
+  // When user or app is set in URL, infer single mode
+  watch([selectedUser, selectedApp], ([newUser, newApp]) => {
+    singleUser.value = newUser !== null;
+    singleApp.value = newApp !== null;
+  }, { immediate: true });
 
   const loading = ref(false);
   const matches = ref([]);
@@ -151,59 +156,15 @@
     }
   };
 
-  // Update URL with current filter parameters
-  const updateUrlParameters = () => {
-    const query = { ...route.query };
-
-    // Update app parameter
-    if (singleApp.value && selectedApp.value) {
-      query.app = selectedApp.value.toString();
-    } else {
-      delete query.app;
-    }
-
-    // Update user parameter
-    if (singleUser.value && selectedUser.value) {
-      query.user = selectedUser.value.toString();
-    } else {
-      delete query.user;
-    }
-
-    // Update URL without reloading the page
-    router.replace({ query }, { shallow: true });
-  };
-
-  // Apply URL parameters on page load
-  const applyUrlParameters = async () => {
-    // Check for user parameter
-    if (route.query.user) {
-      singleUser.value = true;
-      selectedUser.value = route.query.user;
-    }
-
-    // Check for app parameter
-    if (route.query.app) {
-      singleApp.value = true;
-      selectedApp.value = route.query.app;
-    }
-
-    // If we have either parameter, automatically load matches
-    if (route.query.user || route.query.app) {
-      await loadMatches();
-    }
-  };
-
-  // Watch for changes in filters to update URL
-  watch([singleUser, selectedUser, singleApp, selectedApp], updateUrlParameters);
-
   // Call loadMatches when the action is triggered
-  const handleLoadMatches = async () => {
-    await loadMatches();
-    updateUrlParameters();
-  };
+  const handleLoadMatches = () => loadMatches();
 
-  // Initialize based on URL parameters
-  onMounted(applyUrlParameters);
+  // Apply filters on page load if parameters exist
+  onMounted(() => {
+    if (selectedUser.value || selectedApp.value) {
+      loadMatches();
+    }
+  });
 
   const title = 'Matches';
   const breadcrumbs = [

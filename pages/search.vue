@@ -4,10 +4,7 @@
   const { User, App, Collection, Review, TradeMessage } = useORM();
   const supabase = useSupabaseClient();
 
-  const { currentRoute } = useRouter();
-  const router = useRouter();
-  const searchQuery = ref(currentRoute.value.query?.q || '');
-  const searching = ref(true);
+  const searchQuery = useSearchParam('q', '');
   const domainMenu = ref(false);
 
   const itemsPerPage = 10;
@@ -161,9 +158,13 @@
 
   const activeDomain = ref(null);
   const allDomainKeys = Object.keys(domains.value);
-  const enabledDomains = ref(currentRoute.value.query?.in ?
-    currentRoute.value.query.in.split(',') :
-    [...allDomainKeys]);
+  // String transformation functions for enabled domains
+  const enabledDomains = useSearchParam('in', [...allDomainKeys], {
+    get: (val) => val.split(','),
+    set: (val) => val.join(',')
+  });
+
+  const searching = ref(true);
 
   const totalResults = computed(() => {
     return enabledDomains.value.reduce((acc, key) => {
@@ -233,14 +234,6 @@
 
   const search = () => {
     if (!searchQuery.value) { return; }
-    router.push({
-      name: 'search',
-      query: {
-        q: searchQuery.value,
-        in: enabledDomains.value.join(',')
-      }
-    }, { replace: true });
-
     performSearch();
   };
 
@@ -331,22 +324,6 @@
       activeDomain.value = val[0];
     }
   }, { immediate: true });
-
-  watch(() => currentRoute.value, () => {
-    if (currentRoute.value?.query?.q && searchQuery.value !== currentRoute.value?.query?.q) {
-      searchQuery.value = currentRoute.value.query.q;
-    }
-
-    if (currentRoute.value?.query?.in) {
-      enabledDomains.value = currentRoute.value.query.in.split(',');
-    } else if (searchQuery.value) {
-      enabledDomains.value = [...allDomainKeys];
-    }
-
-    if (currentRoute.value?.query?.q) {
-      performSearch();
-    }
-  });
 
   // Initial search if query exists
   if (searchQuery.value) {

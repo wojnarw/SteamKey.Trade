@@ -1,28 +1,7 @@
 <script setup>
   const { user, isLoggedIn } = storeToRefs(useAuthStore());
-  const router = useRouter();
-  const route = useRoute();
 
-  const activeTab = ref(isLoggedIn.value ? (route.query.tab || 'mine') : 'community');
-  const tabs = ['mine', 'community'];
-
-  // Update URL when tab changes
-  watch(() => activeTab.value, (newTab) => {
-    router.push({
-      query: {
-        ...route.query,
-        tab: newTab
-      }
-    });
-  });
-
-  // Update active tab when URL changes
-  watch(() => route.query, (newQuery) => {
-    if (newQuery.tab && tabs.includes(newQuery.tab) && newQuery.tab !== activeTab.value) {
-      activeTab.value = newQuery.tab;
-    }
-  }, { deep: true });
-
+  const activeTab = isLoggedIn.value ? useSearchParam('tab', 'mine') : ref('community');
   const title = 'Collections';
   const breadcrumbs = [
     { title: 'Home', to: '/' },
