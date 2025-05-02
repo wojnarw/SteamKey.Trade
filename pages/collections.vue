@@ -96,6 +96,7 @@
         >
           <table-collections
             v-if="user"
+            filters-in-url
             :only-users="[user.id]"
           />
         </v-window-item>
@@ -104,7 +105,10 @@
           class="h-100"
           value="community"
         >
-          <table-collections :exclude-users="isLoggedIn ? [user.id] : undefined" />
+          <table-collections
+            :exclude-users="isLoggedIn ? [user.id] : undefined"
+            filters-in-url
+          />
         </v-window-item>
       </v-window>
     </v-card>

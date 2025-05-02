@@ -45,6 +45,7 @@
       <table-data
         class="h-100 "
         :filters="filters"
+        filters-in-url
         :headers="headers"
         no-data-text="No users found"
         :query-getter="queryGetter"

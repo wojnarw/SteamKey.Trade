@@ -66,6 +66,10 @@
     filtersInHeader: {
       type: Boolean,
       default: false
+    },
+    filtersInUrl: {
+      type: Boolean,
+      default: false
     }
   });
 
@@ -322,6 +326,7 @@
           v-if="props.filters.length && !filtersInHeader"
           :active-filters="activeFilters"
           :filters="props.filters"
+          :sync-with-url="filtersInUrl"
           @apply="applyFilters"
           @clear="clearFilters"
         >
@@ -357,6 +362,7 @@
         v-if="props.filters.length"
         :active-filters="activeFilters"
         :filters="props.filters"
+        :sync-with-url="filtersInUrl"
         @apply="applyFilters"
         @clear="clearFilters"
       >

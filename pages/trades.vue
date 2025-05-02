@@ -174,6 +174,7 @@
             }]"
             :filters="filters"
             filters-in-header
+            filters-in-url
             :headers="headers"
             :map-item="mapItem"
             :no-data-text="isLoggedIn ? `No ${tab} trades` : 'No trades found'"

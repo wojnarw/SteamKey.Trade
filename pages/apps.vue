@@ -52,7 +52,10 @@
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
     <v-card class="d-flex fill-height">
-      <table-apps :filters="filters" />
+      <table-apps
+        :filters="filters"
+        filters-in-url
+      />
     </v-card>
   </s-page-content>
 </template>
