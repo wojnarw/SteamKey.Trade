@@ -25,6 +25,27 @@
     { title: Trade.labels.createdAt, value: Trade.fields.createdAt, sortable: true }
   ]));
 
+  const statuses = Object.values(Trade.enums.status).map(status => ({
+    title: Trade.labels[status],
+    value: status
+  }));
+  const filters = computed(() => [
+    { title: Trade.labels.status, value: Trade.fields.status, type: String, options: statuses },
+    // TODO: Add user search
+    ...(isLoggedIn.value && activeTab.value === 'received'
+      ? [{ title: Trade.labels.senderId, value: Trade.fields.senderId, type: String }]
+      : []),
+    { title: Trade.labels.senderDisputed, value: Trade.fields.senderDisputed, type: Boolean },
+    { title: Trade.labels.senderTotal, value: Trade.fields.senderTotal, type: Number },
+    // TODO: Add user search
+    ...(isLoggedIn.value && activeTab.value === 'sent'
+      ? [{ title: Trade.labels.receiverId, value: Trade.fields.receiverId, type: String }]
+      : []),
+    { title: Trade.labels.receiverDisputed, value: Trade.fields.receiverDisputed, type: Boolean },
+    { title: Trade.labels.receiverTotal, value: Trade.fields.receiverTotal, type: Number },
+    { title: Trade.labels.createdAt, value: Trade.fields.createdAt, type: Date }
+  ]);
+
   const queryGetter = () => {
     let query = supabase
       .from(Trade.table)
@@ -130,6 +151,8 @@
               key: Trade.fields.createdAt,
               order: 'desc'
             }]"
+            :filters="filters"
+            filters-in-header
             :headers="headers"
             :map-item="mapItem"
             :no-data-text="isLoggedIn ? `No ${tab} trades` : 'No trades found'"

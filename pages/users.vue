@@ -11,6 +11,19 @@
     { title: User.labels.createdAt, value: User.fields.createdAt, sortable: true }
   ];
 
+  const countries = Object.values(User.enums.country).map(cc => ({
+    text: User.labels[cc],
+    value: cc
+  }));
+  const filters = [
+    { title: User.labels.steamId, value: User.fields.steamId, type: String },
+    { title: User.labels.customUrl, value: User.fields.customUrl, type: String },
+    { title: User.labels.displayName, value: User.fields.displayName, type: String },
+    { title: User.labels.bio, value: User.fields.bio, type: String },
+    { title: User.labels.region, value: User.fields.region, type: String, options: countries },
+    { title: User.labels.createdAt, value: User.fields.createdAt, type: Date }
+  ];
+
   const queryGetter = () => {
     return supabase
       .from(User.table)
@@ -31,6 +44,7 @@
     <v-card class="h-100">
       <table-data
         class="h-100 "
+        :filters="filters"
         :headers="headers"
         no-data-text="No users found"
         :query-getter="queryGetter"

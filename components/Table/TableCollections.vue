@@ -122,6 +122,7 @@
 
   const filters = [
     { title: Collection.labels.type, value: Collection.fields.type, type: String, options: collectionTypes },
+    { title: Collection.labels.userId, value: Collection.fields.userId, type: String }, // TODO: Add user search
     { title: Collection.labels.master, value: Collection.fields.master, type: Boolean },
     { title: Collection.labels.startsAt, value: Collection.fields.startsAt, type: Date },
     { title: Collection.labels.endsAt, value: Collection.fields.endsAt, type: Date },

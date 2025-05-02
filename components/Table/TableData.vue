@@ -62,6 +62,10 @@
     filters: {
       type: Array,
       default: () => []
+    },
+    filtersInHeader: {
+      type: Boolean,
+      default: false
     }
   });
 
@@ -72,6 +76,15 @@
   });
 
   const activeFilters = ref([]);
+  const activeHeaders = computed(() => {
+    if (props.filtersInHeader) {
+      return [
+        ...props.headers,
+        { value: 'table-data-filters-slot', sortable: false, align: 'end' }
+      ];
+    }
+    return props.headers;
+  });
 
   watch([
     () => props.queryGetter,
@@ -255,7 +268,7 @@
     :class="['data-table', { 'desc-first': sortDescFirst }]"
     fixed-header
     :header-props="{ class: 'text-overline', style: { lineHeight: 1.5 } }"
-    :headers="headers"
+    :headers="activeHeaders"
     hover
     :items="serverItems"
     :items-length="totalItems"
@@ -306,7 +319,7 @@
         </v-chip>
 
         <dialog-data-filter
-          v-if="props.filters.length"
+          v-if="props.filters.length && !filtersInHeader"
           :active-filters="activeFilters"
           :filters="props.filters"
           @apply="applyFilters"
@@ -337,6 +350,33 @@
       #headers
     >
       <!-- POOF, GONE -->
+    </template>
+
+    <template #[`header.table-data-filters-slot`]>
+      <dialog-data-filter
+        v-if="props.filters.length"
+        :active-filters="activeFilters"
+        :filters="props.filters"
+        @apply="applyFilters"
+        @clear="clearFilters"
+      >
+        <template #activator="{ props: dialogProps }">
+          <v-badge
+            color="primary"
+            :content="activeFilters.length.toString()"
+            :model-value="activeFilters.length > 0"
+            offset-x="5"
+            offset-y="5"
+          >
+            <v-btn
+              v-tooltip:top="activeFilters.length > 0 ? `${activeFilters.length} filter${activeFilters.length > 1 ? 's' : ''} applied` : 'Apply filters'"
+              v-bind="dialogProps"
+              icon="mdi-filter"
+              variant="text"
+            />
+          </v-badge>
+        </template>
+      </dialog-data-filter>
     </template>
 
     <template
