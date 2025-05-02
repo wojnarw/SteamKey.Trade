@@ -121,9 +121,9 @@ export class User extends Entity {
       }, {}),
       widget: Object.freeze({
         welcome: 'welcome',
+        usersOnline: 'users_online',
         stats: 'stats',
-        tradeActivity: 'trade_activity',
-        usersOnline: 'users_online'
+        tradeActivity: 'trade_activity'
       }),
       notification: Object.freeze({
         newTrade: 'new_trade',
