@@ -133,6 +133,7 @@
     <template #append>
       <v-btn
         v-if="inLibrary(appid)"
+        v-tooltip:top="'Remove from your library'"
         class="ml-2 bg-surface rounded"
         color="success"
         :icon="$vuetify.display.xs"
@@ -151,6 +152,7 @@
 
       <v-btn
         v-if="inWishlist(appid)"
+        v-tooltip:top="'Remove from your wishlist'"
         class="ml-2 bg-surface rounded"
         color="error"
         :icon="$vuetify.display.xs"
@@ -169,6 +171,7 @@
 
       <v-btn
         v-if="inBlacklist(appid)"
+        v-tooltip:top="'Remove from your blacklist'"
         class="ml-2 bg-surface rounded"
         color="disabled"
         :icon="$vuetify.display.xs"
@@ -187,6 +190,7 @@
 
       <v-btn
         v-if="inTradelist(appid)"
+        v-tooltip:top="'Remove from your tradelist'"
         class="ml-2 bg-surface rounded"
         color="info"
         :icon="$vuetify.display.xs"
