@@ -540,14 +540,14 @@
         elevation="10"
         variant="flat"
       >
-        Feature missing?
+        Bug or missing feature?
         <a
           class="text-surface"
           href="https://github.com/Revadike/SteamKey.Trade/issues/new/choose"
           rel="noopener"
           target="_blank"
         >
-          Request here<v-icon
+          Report here<v-icon
             class="ml-1"
             icon="mdi-open-in-new"
             size="x-small"
@@ -582,7 +582,7 @@
     bottom: 90px;
     right: 0;
     z-index: 100;
-    transform: translateX(calc(100% - 104px));
+    transform: translateX(calc(100% - 140px));
     transition: transform 0.3s ease;
     border: 3px solid rgb(var(--v-theme-surface));
     border-radius: 20px 0px 0px 20px;
