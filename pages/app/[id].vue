@@ -377,7 +377,7 @@
                     <span class="text-decoration-line-through">
                       ${{ app.retailPrice }}
                     </span>
-                    <span class="text-disabled"> ({{ Math.round(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice) }}% off)</span>
+                    <span class="text-disabled"> ({{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice) }}% off)</span>
                   </span>
                   <h1
                     v-if="!isNaN(parseFloat(app.discountedPrice))"
@@ -449,7 +449,7 @@
                   v-if="app.positiveReviews + app.negativeReviews"
                   :class="(app.positiveReviews / (app.positiveReviews + app.negativeReviews)) > 0.5 ? 'text-success' : 'text-error'"
                 >
-                  {{ (Math.round((app.positiveReviews / (app.positiveReviews + app.negativeReviews)) * 100)) }}%
+                  {{ formatNumber(100 * app.positiveReviews / (app.positiveReviews + app.negativeReviews)) }}%
                 </h1>
                 <h2
                   v-else

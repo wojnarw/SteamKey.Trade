@@ -8,7 +8,7 @@
 
   const { Review } = useORM();
   const headers = [
-    { title: Review.labels.body, value: Review.fields.body, sortable: false, align: 'start' },
+    { title: 'Comment/User', value: Review.fields.body, sortable: false, align: 'start' },
     ...Object.keys(Review.enums.metric).map(metric => ({
       title: Review.labels[metric],
       value: Review.fields[metric],

@@ -282,6 +282,7 @@
     fixed-header
     :header-props="{ class: 'text-overline', style: { lineHeight: 1.5 } }"
     :headers="activeHeaders"
+    :hide-default-footer="totalItems <= itemsPerPage"
     hover
     :items="serverItems"
     :items-length="totalItems"

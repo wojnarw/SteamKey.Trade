@@ -14,7 +14,7 @@ export const formatNumber = number => {
 
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 1
   }).format(number);
 };
 

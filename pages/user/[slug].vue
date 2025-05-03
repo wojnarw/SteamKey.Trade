@@ -263,9 +263,10 @@
             </v-dialog>
 
             <v-avatar
-              class="w-100"
+              class="w-100 flex-grow-1"
               color="secondary"
-              style="min-height: 300px"
+              style="min-height: 50vw"
+              :style="{ minHeight: $vuetify.display.mdAndUp ? undefined : '60vw' }"
               tile
             >
               <rich-image
@@ -338,8 +339,6 @@
               </v-alert>
             </div>
 
-            <v-spacer />
-
             <div
               v-for="metric in Review.enums.metric"
               :key="metric"
@@ -390,13 +389,16 @@
           md="9"
         >
           <v-card class="d-flex flex-column fill-height">
-            <v-tabs v-model="activeTab">
+            <v-tabs
+              v-model="activeTab"
+              :direction="$vuetify.display.smAndUp ? 'horizontal' : 'vertical'"
+            >
               <template
                 v-for="(tab, i) in tabs"
                 :key="tab"
               >
                 <v-tab
-                  class="w-25"
+                  :class="$vuetify.display.smAndUp ? 'w-25' : 'w-100'"
                   :value="tab"
                 >
                   <v-icon

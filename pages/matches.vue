@@ -311,6 +311,7 @@
                 v-if="match.have.length"
                 :only-apps="match.have"
                 simple
+                style="min-height: 0; pointer-events: none;"
               />
               <v-alert
                 v-else
@@ -335,6 +336,7 @@
                 v-if="match.want.length"
                 :only-apps="match.want"
                 simple
+                style="min-height: 0; pointer-events: none;"
               />
               <v-alert
                 v-else

@@ -73,12 +73,11 @@
 <template>
   <div
     v-if="stats"
-    class="w-100 h-0"
-    style="min-height: 300px;"
+    :class="['w-100', $vuetify.display.mdAndDown ? 'h-100 overflow-hidden' : 'h-0']"
   >
     <v-row dense>
       <v-col
-        class="rounded pa-4"
+        class="pa-4"
         cols="12"
         md="6"
       >
@@ -97,7 +96,7 @@
                 User ID
               </td>
               <td>
-                {{ user.id }}
+                {{ user.id.slice(0, 8) }}...{{ user.id.slice(-8) }}
                 <v-icon
                   class="ml-1"
                   color="disabled"
@@ -210,18 +209,6 @@
             </tr>
           </tbody>
         </v-table>
-      </v-col>
-
-      <v-divider
-        v-if="$vuetify.display.mdAndUp"
-        vertical
-      />
-
-      <v-col
-        class="pa-4 d-flex flex-column justify-space-between"
-        cols="12"
-        md="6"
-      >
         <h2>
           <v-icon
             class="mt-n1 mr-1"
@@ -252,17 +239,6 @@
             </tr>
             <tr>
               <td class="text-overline">
-                Received
-              </td>
-              <td>
-                {{ formatNumber(stats.totalReviewsReceived) }}
-                <span class="text-disabled">
-                  {{ stats.totalReviewsReceived === 1 ? 'review' : 'reviews' }}
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <td class="text-overline">
                 Given
               </td>
               <td>
@@ -272,9 +248,32 @@
                 </span>
               </td>
             </tr>
+            <tr>
+              <td class="text-overline">
+                Received
+              </td>
+              <td>
+                {{ formatNumber(stats.totalReviewsReceived) }}
+                <span class="text-disabled">
+                  {{ stats.totalReviewsReceived === 1 ? 'review' : 'reviews' }}
+                </span>
+              </td>
+            </tr>
           </tbody>
         </v-table>
+      </v-col>
 
+      <v-divider
+        v-if="!$vuetify.display.mdAndDown"
+        style="position: absolute; left: 50%; height: 100%; z-index: -1;"
+        vertical
+      />
+
+      <v-col
+        class="pa-4 d-flex flex-column"
+        cols="12"
+        md="6"
+      >
         <h2>
           <v-icon
             class="mt-n1 mr-1"
@@ -376,24 +375,54 @@
           </tbody>
         </v-table>
 
-        <div v-if="partners?.length">
-          <b>Top {{ partners.length }} trading partners:</b>
-
-          <v-row
-            v-for="(partner, index) in partners"
-            :key="`trade-${partner.partnerId}`"
-            class="d-flex flex-row align-center justify-space-between"
-            no-gutters
-          >
-            <span>
-              {{ index + 1 }}.
-              <rich-profile-link :user-id="partner.partnerId" />
-            </span>
-            <span>{{ formatNumber(partner.totalCompletedTrades) }}
-              <span class="text-disabled">trades</span>
-            </span>
-          </v-row>
+        <v-spacer />
+        <div class="d-flex flex-row align-center justify-center">
+          <s-pie-chart
+            class="elevation-20 rounded-circle"
+            :items="[
+              { title: Trade.labels.completed, value: stats.totalCompletedTrades, color: Trade.colors.completed },
+              { title: Trade.labels.pending, value: stats.totalPendingTrades, color: Trade.colors.pending },
+              { title: Trade.labels.accepted, value: stats.totalAcceptedTrades, color: Trade.colors.accepted },
+              { title: Trade.labels.declined, value: stats.totalDeclinedTrades, color: Trade.colors.declined },
+              { title: Trade.labels.aborted, value: stats.totalAbortedTrades, color: Trade.colors.aborted },
+              { title: Trade.labels.disputed, value: stats.totalDisputedTrades, color: Trade.colors.disputed }
+            ]"
+            size="150"
+            title="Trade Status"
+          />
         </div>
+        <v-spacer />
+
+        <v-table v-if="partners?.length">
+          <tbody>
+            <tr>
+              <td
+                class="text-overline"
+                colspan="2"
+              >
+                Top {{ partners.length }} trading partners
+              </td>
+            </tr>
+            <tr
+              v-for="(partner, index) in partners"
+              :key="`trade-${partner.partnerId}`"
+            >
+              <td>
+                <span class="text-overline mr-2">
+                  #{{ index + 1 }}
+                </span>
+                <rich-profile-link
+                  hide-avatar
+                  :user-id="partner.partnerId"
+                />
+              </td>
+              <td>
+                {{ formatNumber(partner.totalCompletedTrades) }}
+                <span class="text-disabled">trades</span>
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
       </v-col>
     </v-row>
   </div>

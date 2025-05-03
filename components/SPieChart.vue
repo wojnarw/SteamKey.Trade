@@ -1,4 +1,6 @@
 <script setup>
+  import { formatNumber } from '~/assets/js/format';
+
   const props = defineProps({
     label: {
       type: String,
@@ -60,7 +62,7 @@
           />
           <!-- needed to avoid jittering -->
           <v-progress-circular
-            v-tooltip:end="`${item.title}: ${item.value}`"
+            v-tooltip:end="`${item.title}: ${formatNumber(item.value * 100 / totalValue)}% (${item.value})`"
             class="pie-segment"
             color="transparent"
             :model-value="getModelValue(item.value)"

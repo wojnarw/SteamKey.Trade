@@ -982,7 +982,6 @@
   .app-table {
     display: flex;
     flex-grow: 1;
-    min-height: 200px;
     overflow-x: hidden;
     overflow-y: scroll;
 
