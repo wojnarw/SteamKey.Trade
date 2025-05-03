@@ -626,7 +626,7 @@
             <td
               v-for="header in headers"
               :key="header.key"
-              class="v-data-table__td v-data-table-column--align-start"
+              :class="['v-data-table__td', header.key === 'links' ? 'v-data-table-column--align-end' : 'v-data-table-column--align-start']"
               :style="getTags(item).length ? { borderBottom: 'none' } : {}"
             >
               <!-- Title column -->
