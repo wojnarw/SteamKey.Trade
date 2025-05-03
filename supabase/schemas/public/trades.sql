@@ -241,10 +241,10 @@ begin
     -- Record counter if applicable
     if new.original_id is not null then
       insert into public.trade_activity (trade_id, user_id, type)
-      values (new.id, new.sender_id, 'countered');
+      values (new.original_id, new.sender_id, 'countered');
       
       -- abort original trade
-      update trades set status = 'aborted' where id = new.original_id;
+      update public.trades set status = 'declined' where id = new.original_id;
     end if;
   
   -- For updates

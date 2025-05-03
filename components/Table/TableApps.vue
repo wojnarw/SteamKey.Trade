@@ -830,7 +830,17 @@
                   </div>
 
                   <small v-if="item.snapshot?.app?.[header.key] !== undefined && item[header.key] !== item.snapshot.app[header.key]">
-                    (was ${{ formatNumber(item.snapshot.app[header.key]) }})
+                    (was
+                    {{
+                      [
+                        App.fields.retailPrice,
+                        App.fields.discountedPrice,
+                        App.fields.marketPrice,
+                        App.fields.historicalLow
+                      ].includes(header.key)
+                        ? `$${formatNumber(item.snapshot.app[header.key])}`
+                        : formatNumber(item.snapshot.app[header.key])
+                    }})
                   </small>
                 </span>
                 <span

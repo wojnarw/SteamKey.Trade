@@ -54,7 +54,7 @@
   const { data: trade, status: tradeStatus, error: tradeError } = useLazyAsyncData(tradeKey, async () => {
     const id = props.id || props.counterId || props.copyId;
     const instance = new Trade(id);
-    if (!isNew) {
+    if (!isNew || isCopy || isCounter) {
       try {
         await instance.load();
       } catch (err) {
@@ -79,6 +79,15 @@
     }
 
     const data = instance.toObject();
+
+    if (isCounter && data.receiverId !== user.id) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Forbidden',
+        message: 'You are not allowed to counter this trade',
+        fatal: true
+      });
+    }
 
     if (isCounter) {
       data.id = null;
@@ -105,19 +114,8 @@
       data.receiverVaultless = senderVaultless;
       data.receiverTotal = senderTotal;
     } else if (isCopy) {
-      data.originalId = id;
       data.id = null;
       data.status = Trade.enums.status.pending;
-    }
-
-    if (data.senderId !== user.id && (isCounter || isCopy)) {
-      const action = isCounter ? 'counter' : 'copy';
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Forbidden',
-        message: `You are not allowed to ${action} this trade`,
-        fatal: true
-      });
     }
 
     data.senderId = props.sender || user.id;
@@ -168,8 +166,8 @@
     if (tradeApps.value && tradeApps.value.sender && tradeApps.value.receiver && (isCopy || isCounter)) {
       headless.value = tradeApps.value.sender.every(app => app.vaultEntryId);
 
-      selectedCollections.value.sender = tradeApps.value.sender.map(app => app.collectionId).filter((id, index, self) => self.indexOf(id) === index);
-      selectedCollections.value.receiver = tradeApps.value.receiver.map(app => app.collectionId).filter((id, index, self) => self.indexOf(id) === index);
+      selectedCollections.value.sender = tradeApps.value.sender.map(app => app.collectionId).filter((id, index, self) => id && self.indexOf(id) === index);
+      selectedCollections.value.receiver = tradeApps.value.receiver.map(app => app.collectionId).filter((id, index, self) => id && self.indexOf(id) === index);
 
       const appids = [...tradeApps.value.sender, ...tradeApps.value.receiver]
         .map(app => app.appId)
@@ -191,6 +189,10 @@
   }, { deep: true, immediate: true });
 
   watch(() => selectedApps.value, () => {
+    if (isCopy || isCounter) {
+      return;
+    }
+
     trade.value.senderTotal = Math.max(Math.min(selectedApps.value.sender.length, trade.value.senderTotal), mandatoryApps.value.sender.length);
     trade.value.receiverTotal = Math.max(Math.min(selectedApps.value.receiver.length, trade.value.receiverTotal), mandatoryApps.value.receiver.length);
 
@@ -200,7 +202,7 @@
         const existingTradeApp = tradeApps.value[side].find(tradeApp => tradeApp.appId === app.id) || {};
         apps.push({
           appId: app.id,
-          collectionId: existingTradeApp.collectionId || app.collection.collectionId || null,
+          collectionId: existingTradeApp.collectionId || app.collection?.collectionId || selectedCollections.value[side][0] || null,
           vaultEntryId: existingTradeApp.vaultEntryId || null,
           userId: side === 'sender' ? users.value.sender : users.value.receiver,
           mandatory: mandatoryApps.value[side].some(({ id }) => id === app.id),
@@ -236,11 +238,13 @@
       }
     }
 
-    if (users.value.sender !== trade.value.senderId) {
-      trade.value.senderId = users.value.sender;
-    }
-    if (users.value.receiver !== trade.value.receiverId) {
-      trade.value.receiverId = users.value.receiver;
+    if (trade.value) {
+      if (users.value.sender !== trade.value.senderId) {
+        trade.value.senderId = users.value.sender;
+      }
+      if (users.value.receiver !== trade.value.receiverId) {
+        trade.value.receiverId = users.value.receiver;
+      }
     }
   }, { deep: true, immediate: true });
 
@@ -513,7 +517,7 @@
                       >
                         <v-img
                           v-ripple
-                          v-tooltip:top="app.title"
+                          v-tooltip:top="app.title || `Unknown app ${app.id}`"
                           :alt="app.title"
                           aspect-ratio="1"
                           class="h-100 w-100"
@@ -628,6 +632,7 @@
     grid-gap: 8px;
     width: 100%;
     height: 100%;
+    align-items: center;
 
     .app-grid-item {
       aspect-ratio: 1;

@@ -200,6 +200,14 @@ with check (
       and sender_id = (select auth.uid())
       and status = 'pending'
   )
+  -- Require collection_id and ensure it belongs to the same user_id
+  and collection_id is not null
+  and exists (
+    select 1 from collections
+    where
+      id = collection_id
+      and user_id = user_id
+  )
 );
 
 -- Allow update for your own trades

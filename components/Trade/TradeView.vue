@@ -309,7 +309,7 @@
                     no-link
                     :user-id="item.userId"
                   />
-                  <v-spacer />
+                  <v-spacer class="mx-1" />
                   <rich-date :date="item.updatedAt || item.createdAt" />
                 </p>
               </v-tooltip>
@@ -320,19 +320,23 @@
                 :icon="Trade.icons[trade.status]"
               />
               <span :class="`text-${Trade.colors[trade.status]}`">
-                {{ Trade.labels[trade.originalId ? 'countered' : trade.status] }}
+                {{ Trade.labels[trade.status] }}
               </span>
-              <nuxt-link
+
+              <span
                 v-if="trade.originalId"
-                :href="`/trade/${trade.originalId}`"
-                rel="noopener"
-                target="_blank"
+                class="ml-2"
               >
-                <v-icon
-                  class="ml-1"
-                  icon="mdi-arrow-right"
-                />
-              </nuxt-link>
+                (Counter to
+                <nuxt-link
+                  :href="`/trade/${trade.originalId}`"
+                  rel="noopener"
+                  target="_blank"
+                >
+                  <v-icon icon="mdi-arrow-right" />
+                </nuxt-link>
+                )
+              </span>
               <v-spacer class="my-1" />
               <v-chip
                 v-if="isDisputed"
