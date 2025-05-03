@@ -538,6 +538,10 @@
         v-if="table?.loading && !rowItems.length"
         class="v-data-table__tbody"
       >
+        <v-progress-linear
+          v-if="simple"
+          indeterminate
+        />
         <!-- <tr
           v-for="i in 10"
           :key="i"

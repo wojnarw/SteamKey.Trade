@@ -264,17 +264,16 @@
                   </tr>
                   <tr v-if="stats.users?.topRegions?.length">
                     <td class="text-overline">
-                      Top Regions
+                      Top {{ Math.min(3, stats.users.topRegions.length) }} Regions
                     </td>
                     <td>
-                      <div
+                      <span
                         v-for="(region, index) in stats.users.topRegions"
                         :key="region"
+                        v-tooltip:top="User.labels[region]"
                       >
-                        <span v-tooltip:top="User.labels[region]">
-                          {{ region }}{{ index < stats.users.topRegions.length - 1 ? ',' : '' }}
-                        </span>
-                      </div>
+                        {{ region }}{{ index < stats.users.topRegions.length - 1 ? ', ' : '' }}
+                      </span>
                     </td>
                   </tr>
                   <tr v-if="stats.users?.latest?.item">
