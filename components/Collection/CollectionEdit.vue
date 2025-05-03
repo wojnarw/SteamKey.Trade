@@ -351,15 +351,36 @@
           <v-window-item value="apps">
             <v-card-text class="d-flex flex-column overflow-auto">
               <div class="d-flex flex-sm-row flex-column justify-space-between align-center ga-4 mb-2">
-                <input-app-search
-                  v-model="newApp"
-                  class="w-100"
-                  density="compact"
-                  hide-details
-                  label="Add app"
-                  prepend-inner-icon="mdi-plus"
-                  @update:model-value="addApp"
-                />
+                <div class="d-flex flex-sm-row flex-column ga-4 align-center flex-grow-1">
+                  <input-app-search
+                    v-model="newApp"
+                    density="compact"
+                    hide-details
+                    label="Add single app"
+                    prepend-inner-icon="mdi-plus"
+                    style="min-width: 180px;"
+                    @update:model-value="addApp"
+                  />
+                  or
+                  <dialog-add-apps
+                    :collection-id="id"
+                    @submit="appsTable.refresh()"
+                  >
+                    <template #activator="attrs">
+                      <v-btn
+                        v-bind="attrs.props"
+                        :block="!$vuetify.display.smAndUp"
+                        prepend-icon="mdi-plus"
+                        variant="tonal"
+                      >
+                        Add multiple apps
+                      </v-btn>
+                    </template>
+                  </dialog-add-apps>
+                </div>
+
+                <v-divider vertical />
+
                 <dialog-add-tag
                   :apps="selectedApps"
                   :collection-type="collection.type"
@@ -369,6 +390,7 @@
                     <v-btn
                       v-bind="attrs.props"
                       :block="!$vuetify.display.smAndUp"
+                      class="flex-grow-1"
                       :disabled="!Object.keys(selectedApps).length"
                       variant="tonal"
                     >
@@ -380,9 +402,13 @@
                     </v-btn>
                   </template>
                 </dialog-add-tag>
+
+                <v-divider vertical />
+
                 <v-btn
                   :block="!$vuetify.display.smAndUp"
-                  color="error"
+                  class="flex-grow-1"
+                  :color="!Object.keys(selectedApps).length ? undefined : 'error'"
                   :disabled="!Object.keys(selectedApps).length"
                   :variant="Object.keys(selectedApps).length ? 'flat' : 'tonal'"
                   @click="removeApps"
