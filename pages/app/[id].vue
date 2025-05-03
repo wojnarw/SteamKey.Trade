@@ -679,6 +679,64 @@
                         </span>
                       </td>
                     </tr>
+                    <!-- <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        On Blacklist
+                      </td>
+                      <td>
+                        {{ formatNumber(app.blacklists || 0) }}
+                        <span class="text-disabled">
+                          ({{ formatNumber(100 * (app.blacklists || 0) / totalUsers) }}%)
+                        </span>
+                      </td>
+                    </tr> -->
+                    <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        Bundles
+                      </td>
+                      <td>
+                        {{ formatNumber(app.bundles || 0) }}
+                      </td>
+                    </tr>
+                    <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        Given Away
+                      </td>
+                      <td>
+                        {{ formatNumber(app.giveaways || 0) }}
+                      </td>
+                    </tr>
+                    <!-- <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.steamPackages }}
+                      </td>
+                      <td>
+                        {{ formatNumber(app.steamPackages || 0) }}
+                      </td>
+                    </tr>
+                    <tr
+                      class="cursor-pointer"
+                      @click="activeTab = 'Collections'"
+                    >
+                      <td class="text-overline text-no-wrap">
+                        {{ App.labels.steamBundles }}
+                      </td>
+                      <td class="text-overline text-no-wrap">
+                        {{ formatNumber(app.steamBundles || 0) }}
+                      </td>
+                    </tr> -->
                     <tr v-if="!isNaN(parseFloat(app.achievements))">
                       <td class="text-overline text-no-wrap">
                         {{ App.labels.achievements }}

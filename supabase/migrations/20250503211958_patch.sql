@@ -1,108 +1,11 @@
--- Create collection_apps_source enum
-create type collection_apps_source as enum (
-  'user',
-  'sync'
-);
+set check_function_bodies = off;
 
--- Create collection_apps table
-create table collection_apps (
-  collection_id text not null references collections(id) on delete cascade,
-  app_id integer not null references apps(id) on delete cascade,
-  source collection_apps_source not null default 'user',
-  primary key (collection_id, app_id)
-);
-
--- Add table comment
-comment on table collection_apps is 'Apps included in collections';
-
--- Add indexes
-create index collection_apps_collection_id_idx on public.collection_apps using btree (collection_id);
-
--- Function to add collection app
-create or replace function add_collection_app(p_collection_id text, p_app_id integer, p_title text)
-returns void
-set search_path = ''
-as $$
-begin
-  -- Check if collection_id exists in collections, if not insert it
-  if not exists (select 1 from public.collections where id = p_collection_id) then
-    insert into public.collections (id, private, user_id, type, title, description)
-    values (p_collection_id, false, null, 'app', p_title, 'Auto-generated');
-  end if;
-
-  -- Insert into collection_apps
-  insert into public.collection_apps (collection_id, app_id, source)
-  values (p_collection_id, p_app_id, 'sync')
-  on conflict do nothing;
-end;
-$$ language plpgsql security invoker;
-
--- Function to remove collection app
-create or replace function remove_collection_app(p_collection_id text, p_app_id integer)
-returns void
-set search_path = ''
-as $$
-begin
-  delete from public.collection_apps
-  where app_id = p_app_id
-  and collection_id = p_collection_id;
-end;
-$$ language plpgsql security invoker;
-
--- Create function to bulk remove apps from collections
-create or replace function bulk_remove_collection_apps(p_collection_id text, p_apps integer[])
-returns void
-set search_path = ''
-as $$
-begin
-  delete from public.collection_apps
-  where collection_id = p_collection_id
-  and app_id = any(p_apps);
-end;
-$$ language plpgsql security invoker;
-
--- Create function to get all apps in a user's master collections
-create or replace function get_master_collections_apps(p_user_id uuid)
-returns table (
-  tradelist json,
-  wishlist json,
-  library json,
-  blacklist json
-)
-set search_path = ''
-as $$
-with recursive collection_hierarchy as (
-  -- Find the user's master collections for the specified types
-  select id, type
-  from public.collections
-  where user_id = p_user_id
-    and master = true
-    and type in ('tradelist', 'wishlist', 'library', 'blacklist')
-
-  union all
-
-  -- Recursively find all child collections through collection_relations
-  select cr.collection_id, ch.type
-  from public.collection_relations cr
-  inner join collection_hierarchy ch on cr.parent_id = ch.id
-)
-select
-  -- Aggregate app_ids for each type into a JSON array
-  (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'tradelist')) as tradelist,
-  (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'wishlist')) as wishlist,
-  (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'library')) as library,
-  (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'blacklist')) as blacklist;
-$$ language sql stable security invoker;
-
--- Create function to clean app collections
-create or replace function clean_app_collections()
-returns void
-set search_path = ''
-as $$
+CREATE OR REPLACE FUNCTION public.clean_app_collections()
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
 declare
   v_app public.apps%rowtype;
   item text;
@@ -307,19 +210,15 @@ begin
     end if;
   end loop;
 end;
-$$ language plpgsql security definer;
+$function$
+;
 
--- Create trigger
-create trigger collection_apps_ensure_app_exists
-before insert on collection_apps
-for each row
-execute function ensure_app_exists();
-
--- Create trigger function to update app statistics on collection changes
-create or replace function collection_apps_update_app_stats()
-returns trigger
-set search_path = ''
-as $$
+CREATE OR REPLACE FUNCTION public.collection_apps_update_app_stats()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
 declare
   v_collection_data record;
   increment integer;
@@ -369,62 +268,7 @@ begin
   
   return null; -- This is an AFTER trigger, so the return value is ignored
 end;
-$$ language plpgsql security definer;
+$function$
+;
 
--- Create triggers to update app stats on collection app changes
-create trigger collection_apps_after_insert
-after insert on collection_apps
-for each row
-execute function collection_apps_update_app_stats();
 
-create trigger collection_apps_after_delete
-after delete on collection_apps
-for each row
-execute function collection_apps_update_app_stats();
-
--- Enable RLS
-alter table collection_apps enable row level security;
-
--- Allow read access for public collections and own collections
-create policy collection_apps_select on collection_apps
-for select
-to authenticated, anon
-using (
-  exists (
-    select 1 from collections
-    where
-      id = collection_id
-      and (
-        not private
-        or user_id = (select auth.uid())
-      )
-  )
-);
-
--- Allow creation for own collections only
-create policy collection_apps_insert on collection_apps
-for insert
-to authenticated
-with check (
-  exists (
-    select 1 from collections
-    where
-      id = collection_id
-      and user_id = (select auth.uid())
-  )
-);
-
--- Disallow update for all users
-
--- Allow deletion for own collections only
-create policy collection_apps_delete on collection_apps
-for delete
-to authenticated
-using (
-  exists (
-    select 1 from collections
-    where
-      id = collection_id
-      and user_id = (select auth.uid())
-  )
-);

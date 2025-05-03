@@ -802,6 +802,10 @@
                   App.fields.tradelists,
                   App.fields.blacklists,
                   App.fields.libraries,
+                  App.fields.bundles,
+                  App.fields.giveaways,
+                  App.fields.steamPackages,
+                  App.fields.steamBundles,
                   App.fields.positiveReviews,
                   App.fields.negativeReviews
                 ].includes(header.key)"

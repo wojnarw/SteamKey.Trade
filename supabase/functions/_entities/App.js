@@ -229,7 +229,7 @@ export class App extends Entity {
         cards: {
           type: 'integer',
           nullable: true,
-          title: 'Cards',
+          title: 'Trading Cards',
           description: 'The number of trading cards available.'
         },
         achievements: {
