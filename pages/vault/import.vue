@@ -102,7 +102,7 @@
       const { appids = [] } = data;
 
       if (appids.length === 0) {
-        snackbarStore.set('error', 'No items found in your Barter.vg inventory');
+        snackbarStore.set('error', 'No items found in your Barter.vg tradable collection');
         return;
       }
 
