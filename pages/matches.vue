@@ -260,6 +260,14 @@
         <div class=" text-disabled font-italic text-center">
           <p>No matches found.</p>
           <p>Try adjusting your filters or updating your wishlist and tradelist.</p>
+          <p v-if="singleApp">
+            Or, check out the best prices for this app on
+            <a
+              :href="`https://gg.deals/app/${selectedApp}`"
+              rel="noopener"
+              target="_blank"
+            >GG.Deals</a> and consider buying it.
+          </p>
         </div>
       </div>
 
