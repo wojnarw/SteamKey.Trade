@@ -393,13 +393,13 @@
                     <span class="text-decoration-line-through">
                       ${{ app.retailPrice }}
                     </span>
-                    <span class="text-disabled"> ({{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice) }}% off)</span>
+                    <span class="text-disabled"> ({{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice, 0) }}% off)</span>
                   </span>
                   <h1
                     v-if="!isNaN(parseFloat(app.discountedPrice))"
                     class="text-yellow"
                   >
-                    ${{ app.discountedPrice }}
+                    ${{ formatNumber(app.discountedPrice, 2, 2) }}
                   </h1>
                   <h2
                     v-else-if="!app.free"
@@ -422,7 +422,7 @@
                     v-if="!isNaN(parseFloat(app.marketPrice))"
                     class="text-yellow"
                   >
-                    ${{ app.marketPrice }}
+                    ${{ formatNumber(app.marketPrice, 2, 2) }}
                   </h1>
                   <h2
                     v-else
@@ -434,7 +434,7 @@
                     v-if="!isNaN(parseFloat(app.historicalLow))"
                     class="text-caption"
                   >
-                    ${{ formatNumber(app.historicalLow) }} <span class="text-disabled">historical low</span>
+                    ${{ formatNumber(app.historicalLow, 2, 2) }} <span class="text-disabled">historical low</span>
                   </span>
                 </v-col>
               </v-row>
@@ -463,7 +463,7 @@
               >
                 <h1
                   v-if="app.positiveReviews + app.negativeReviews"
-                  :class="(app.positiveReviews / (app.positiveReviews + app.negativeReviews)) > 0.5 ? 'text-success' : 'text-error'"
+                  :class="`${(app.positiveReviews / (app.positiveReviews + app.negativeReviews)) > 0.5 ? 'text-success' : 'text-error'} text-no-wrap`"
                 >
                   {{ formatNumber(100 * app.positiveReviews / (app.positiveReviews + app.negativeReviews)) }}%
                 </h1>

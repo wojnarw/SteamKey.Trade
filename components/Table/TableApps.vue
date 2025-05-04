@@ -828,10 +828,10 @@
                       icon="mdi-currency-usd"
                     />
                     <h2>
-                      {{ formatNumber(item[header.key]).split('.')[0] }}
+                      {{ formatNumber(item[header.key], 2, 2).split('.')[0] }}
                     </h2>
-                    <small v-if="formatNumber(item[header.key]).split('.')[1]">
-                      .{{ formatNumber(item[header.key]).split('.')[1].padEnd(2, '0') }}
+                    <small v-if="formatNumber(item[header.key], 2, 2).split('.')[1]">
+                      .{{ formatNumber(item[header.key], 2, 2).split('.')[1].padEnd(2, '0') }}
                     </small>
                   </div>
 
@@ -844,8 +844,8 @@
                         App.fields.marketPrice,
                         App.fields.historicalLow
                       ].includes(header.key)
-                        ? `$${formatNumber(item.snapshot.app[header.key])}`
-                        : formatNumber(item.snapshot.app[header.key])
+                        ? `$${formatNumber(item.snapshot.app[header.key], 2, 2)}`
+                        : formatNumber(item.snapshot.app[header.key], 2, 2)
                     }})
                   </small>
                 </span>
@@ -859,7 +859,7 @@
                   </div>
 
                   <small v-if="item.snapshot?.app?.[header.key] !== undefined && item[header.key] !== item.snapshot.app[header.key]">
-                    (was ${{ formatNumber(item.snapshot.app[header.key]) }})
+                    (was ${{ formatNumber(item.snapshot.app[header.key], 2, 2) }})
                   </small>
                 </span>
                 <span

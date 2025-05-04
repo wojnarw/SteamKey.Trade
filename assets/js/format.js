@@ -5,16 +5,18 @@ export { relativeDate, parseDate };
  * Formats a number according to the 'en-US' locale with a maximum of one decimal place.
  *
  * @param {number} number - The number to format.
+ * @param {boolean} [maxDigits=1] - The maximum number of digits after the decimal point.
+ * @param {boolean} [minDigits=0] - The minimum number of digits after the decimal point.
  * @returns {string|number} The formatted number as a string, or the original input if it is not a number.
  */
-export const formatNumber = number => {
+export const formatNumber = (number, maxDigits = 1, minDigits = 0) => {
   if (isNaN(number)) {
     return number;
   }
 
   return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 1
+    minimumFractionDigits: minDigits,
+    maximumFractionDigits: maxDigits
   }).format(number);
 };
 
