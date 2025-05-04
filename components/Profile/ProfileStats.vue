@@ -434,9 +434,9 @@
   </div>
   <div
     v-else
-    class="loading"
+    class="w-100"
   >
-    <v-progress-circular indeterminate />
+    <v-progress-linear indeterminate />
   </div>
 </template>
 

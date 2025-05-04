@@ -35,7 +35,7 @@
   const getRotateValue = index => {
     return props.items
       .slice(0, index)
-      .reduce((acc, item) => acc + (item.value / totalValue.value) * 360, 0) + 90;
+      .reduce((acc, item) => totalValue.value ? acc + (item.value / totalValue.value) * 360 : 0, 0) + 90;
   };
 
   const getModelValue = value => {
@@ -62,7 +62,7 @@
           />
           <!-- needed to avoid jittering -->
           <v-progress-circular
-            v-tooltip:end="`${item.title}: ${formatNumber(item.value * 100 / totalValue)}% (${item.value})`"
+            v-tooltip:end="`${item.title}: ${formatNumber(totalValue ? item.value * 100 / totalValue : 0)}% (${item.value})`"
             class="pie-segment"
             color="transparent"
             :model-value="getModelValue(item.value)"
