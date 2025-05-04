@@ -3,7 +3,7 @@
   const supabase = useSupabaseClient();
   const { User } = useORM();
 
-  const { isLoggedIn } = storeToRefs(useAuthStore());
+  const { isLoggedIn, fromPath } = storeToRefs(useAuthStore());
   const loggingIn = ref(false);
 
   const signInWithSteam = async () => {
@@ -23,7 +23,7 @@
     const { query } = currentRoute.value;
 
     if (isLoggedIn.value) {
-      await navigateTo('/');
+      await navigateTo(fromPath.value || '/');
     } else if (query['openid.identity'] && query['openid.sig'] && query['openid.signed'] && query['openid.assoc_handle']) {
       loggingIn.value = true;
 
@@ -35,7 +35,7 @@
       }
 
       loggingIn.value = false;
-      await navigateTo('/');
+      await navigateTo(fromPath.value || '/');
     } else {
       await signInWithSteam();
     }
@@ -62,10 +62,20 @@
           />
         </template>
         <template v-else>
-          <a
-            @click.prevent="isLoggedIn ? navigateTo('/') : signInWithSteam()"
-            v-text="'Click here'"
-          /> if you are not redirected automatically.
+          <nuxt-link
+            v-if="isLoggedIn"
+            :to="fromPath || '/'"
+          >
+            {{ 'Click here' }}
+          </nuxt-link>
+          <span
+            v-else
+            class="cursor-pointer"
+            @click="signInWithSteam"
+          >
+            Click here
+          </span>
+          if you are not redirected automatically.
         </template>
       </v-col>
     </v-row>

@@ -57,7 +57,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     setFromPath(fromPath) {
-      if (['/login', '/logout'].includes(fromPath)) {
+      if (fromPath?.startsWith('/login') || fromPath?.startsWith('/logout')) {
         return;
       }
 
@@ -109,6 +109,7 @@ export const useAuthStore = defineStore('auth', {
         this.setUser(null);
         this.setPreferences(null);
         this.setPassword(null);
+        this.setFromPath(null);
 
         collectionsStore.reset();
 

@@ -13,7 +13,7 @@
   const { Review } = useORM();
   const { user } = useAuthStore();
   const loading = ref(false);
-  const valid = ref(false);
+  const valid = ref(true);
 
   const { data: review, status, error } = useLazyAsyncData(`user-review-${props.userId}`, async () => {
     const reviews = await Review.query(supabase, [

@@ -212,6 +212,17 @@
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
+    <template #prepend>
+      <span class="text-warning text-no-wrap d-flex align-center">
+        <v-icon
+          class="mr-1"
+          color="warning"
+          icon="mdi-alert"
+          size="x-small"
+        />
+        Use with caution
+      </span>
+    </template>
     <template #append>
       <v-btn
         class="ml-2 bg-surface rounded"
@@ -248,16 +259,6 @@
     </template>
 
     <dialog-vault-unlocker />
-
-    <v-alert
-      class="flex-grow-0 pb-9 mb-4"
-      color="warning"
-      density="compact"
-      icon="mdi-alert"
-      variant="outlined"
-    >
-      This feature is experimental. Use at your own risk!
-    </v-alert>
 
     <div class="d-flex flex-grow-1">
       <v-row class="w-100">

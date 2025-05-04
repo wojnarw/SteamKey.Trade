@@ -68,6 +68,10 @@
   });
 
   onMounted(async () => {
+    if (!isLoggedIn) {
+      return;
+    }
+
     const instance = new Trade(props.id);
     await instance.view(user.id); // Mark the trade as viewed
   });

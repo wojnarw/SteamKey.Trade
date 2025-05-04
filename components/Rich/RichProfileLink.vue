@@ -16,8 +16,8 @@
       default: null
     },
     avatarSize: {
-      type: String,
-      default: '30'
+      type: [String, Number],
+      default: 30
     },
     hideAvatar: {
       type: Boolean,
@@ -39,7 +39,10 @@
 
   const { data: user, status: userStatus, error: userError } = useLazyAsyncData(`user-${props.userId}`, async () => {
     if (props.userId === null) {
-      const user = new User({ displayName: 'System' });
+      const user = new User({
+        displayName: 'System',
+        bio: 'I\'m totally not crashing right now!'
+      });
       return user.toObject();
     }
 
@@ -95,7 +98,7 @@
 
   const { online } = storeToRefs(useUsersStore());
   const isOnline = computed(() => {
-    return online.value?.[props.userId];
+    return online.value?.[props.userId] || props.userId === null; // System user is always online (I hope)
   });
 
   const onlineBorder = computed(() => {
@@ -252,10 +255,7 @@
           </div>
         </v-card-title>
         <v-card-text class="border py-2">
-          <span v-if="!user?.id">
-            I'm totally not crashing at the moment 😬
-          </span>
-          <span v-else-if="user.bio">
+          <span v-if="user.bio">
             {{ user.bio }}
           </span>
           <span

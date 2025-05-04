@@ -1,10 +1,8 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-  const {
-    isLoggedIn,
-    setFromPath
-  } = useAuthStore();
+  const { setFromPath } = useAuthStore();
+  const { isLoggedIn } = storeToRefs(useAuthStore());
 
-  if (isLoggedIn || ['/logout', '/login'].includes(to.path)) {
+  if (isLoggedIn.value || to.path.startsWith('/login') || to.path.startsWith('/logout') || from.path.startsWith('/login') || from.path.startsWith('/logout')) {
     return;
   }
 

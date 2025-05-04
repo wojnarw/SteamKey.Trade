@@ -49,10 +49,6 @@
 
   const { data: stats, /* status: statsStatus, */ error: statsError } = useLazyAsyncData(`user-stats-${user.id}`, () => {
     return user.getStatistics();
-  }, {
-    getCachedData: (key, nuxtApp) => {
-      return nuxtApp.payload.data[key] || nuxtApp.static.data[key];
-    }
   });
 
   const { data: tradesCommon, status: tradesStatus, error: tradesError } = useLazyAsyncData(`user-trades-with-${user.id}`, () => {
@@ -181,6 +177,7 @@
         <dialog-user-review
           v-if="tradesCommon"
           :user-id="user.id"
+          @submit="activeTab = 'Reviews'"
         >
           <template #activator="attrs">
             <v-btn

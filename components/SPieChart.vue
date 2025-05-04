@@ -11,7 +11,7 @@
       default: () => []
     },
     size: {
-      type: Number,
+      type: [String, Number],
       default: 100
     },
     legend: {

@@ -243,6 +243,18 @@
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
+    <template #prepend>
+      <span class="text-warning text-no-wrap d-flex align-center">
+        <v-icon
+          class="mr-1"
+          color="warning"
+          icon="mdi-alert"
+          size="x-small"
+        />
+        Proceed with caution
+      </span>
+    </template>
+
     <dialog-vault-security v-if="!user.publicKey" />
 
     <div class="h-100">

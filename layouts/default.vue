@@ -659,7 +659,7 @@
   .logo-chip {
     position: absolute;
     bottom: 0;
-    left: 2.5px;
+    left: 3.5px;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
     border: 3px solid rgb(var(--v-theme-surface));
 

@@ -34,11 +34,15 @@
     class="d-flex flex-column flex-grow-1 h-100"
   >
     <div class="d-flex align-center justify-space-between">
-      <v-breadcrumbs
-        v-if="breadcrumbs?.length"
-        :items="breadcrumbs"
-      />
-
+      <div class="d-flex align-center">
+        <v-breadcrumbs
+          v-if="breadcrumbs?.length"
+          :items="breadcrumbs"
+        />
+        <div>
+          <slot name="prepend" />
+        </div>
+      </div>
       <div>
         <slot name="append" />
       </div>

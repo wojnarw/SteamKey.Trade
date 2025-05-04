@@ -442,10 +442,12 @@
             app: App.toDB(item.snapshot?.app)
           }
         })),
+        itemsPerPage: 10,
+        hideDefaultFooter: props.items.length <= 10,
         headerProps: { class: 'text-overline', style: { lineHeight: 1.5 } }
       };
     } else {
-      // Data table
+      // Our own data table
       return {
         ...baseProps,
         queryGetter,
