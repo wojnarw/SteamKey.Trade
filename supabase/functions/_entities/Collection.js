@@ -370,11 +370,11 @@ export class Collection extends Entity {
    * Add apps to this collection.
    * @param {Number[]|String[]} appIds - The collection app IDs to add.
    * @param {string} [source='user'] - The source of the apps.
+   * @param {boolean} [onlyInsert=false] - Whether to only insert the apps.
    * @returns {Promise<boolean>} Whether the apps were added
    * @throws Will throw an error if the apps cannot be added.
    */
-  // TODO: Support tags?
-  async addApps(appIds, source = Collection.enums.source.user) {
+  async addApps(appIds, source = Collection.enums.source.user, onlyInsert = false) {
     if (!appIds || !Array.isArray(appIds)) {
       throw new Error('No apps to add');
     }
@@ -387,22 +387,40 @@ export class Collection extends Entity {
       throw new Error('Invalid source');
     }
 
-    const items = appIds.map((appId) => (this.constructor.toDB({
+    const records = appIds.map((appId) => (this.constructor.toDB({
       collectionId: this.id,
       appId: Number(appId),
       source
     }, Collection.apps.fields)));
 
-    const { error } = await this._client.rpc('bulk_insert', {
-      p_table: Collection.apps.table,
-      p_records: items
-    });
+    if (onlyInsert) {
+      const { error } = await this._client.rpc('bulk_insert', {
+        p_table: Collection.apps.table,
+        p_records: records
+      });
 
-    if (error) {
-      if (error.code === '23505') {
-        throw new Error('App already exists in collection');
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error('App already exists in collection');
+        }
+        throw error;
       }
-      throw error;
+    } else {
+      const batchSize = 1000;
+
+      // Split into batches for better performance
+      for (let i = 0; i < records.length; i += batchSize) {
+        const batchRecords = records.slice(i, i + batchSize);
+        const { error } = await this._client
+          .from(Collection.apps.table)
+          .upsert(batchRecords, {
+            ignoreDuplicates: true
+          });
+
+        if (error) {
+          throw error;
+        }
+      }
     }
 
     return true;

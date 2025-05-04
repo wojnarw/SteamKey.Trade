@@ -157,23 +157,27 @@
         totalItems.value = inputItems.length;
         processedItems.value = 0;
 
-        const appIdPromises = inputItems.map(async (title) => {
+        const batchSize = 20;
+        for (let i = 0; i < inputItems.length; i += batchSize) {
           if (internalValue.value === false) {
-            return null; // Abort if dialog is closed
+            break; // Abort if dialog is closed
           }
 
-          const results = await search(title);
-          processedItems.value++;
+          const batch = inputItems.slice(i, i + batchSize);
+          const appIdPromises = batch.map(async (title) => {
+            const results = await search(title);
+            processedItems.value++;
 
-          if (results && results.length > 0) {
-            // Get the appid from the best match
-            return results[0]?.item?.appid;
-          }
-          return null;
-        });
+            if (results && results.length > 0) {
+              // Get the appid from the best match
+              return results[0]?.item?.appid;
+            }
+            return null;
+          });
 
-        const resolvedAppIds = await Promise.all(appIdPromises);
-        finalAppIds = resolvedAppIds.filter(id => id !== null && !isNaN(id));
+          const resolvedAppIds = await Promise.all(appIdPromises);
+          finalAppIds.push(...resolvedAppIds.filter(id => id !== null && !isNaN(id)));
+        }
 
         if (finalAppIds.length !== inputItems.length) {
           validationError.value = 'Some app titles could not be found';

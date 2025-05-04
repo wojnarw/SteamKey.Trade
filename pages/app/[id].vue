@@ -51,7 +51,7 @@
     try {
       await Promise.all(collections.map(collection => {
         const instance = new Collection(collection);
-        return instance.addApps([appid]);
+        return instance.addApps([appid], Collection.enums.source.user, true);
       }));
       snackbarStore.set('success', 'Added to collections');
     } catch (error) {

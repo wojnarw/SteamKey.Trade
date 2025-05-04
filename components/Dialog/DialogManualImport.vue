@@ -69,25 +69,30 @@
     total.value = Object.keys(data).length;
 
     const imports = [];
-    await Promise.all(Object.keys(data).map(async query => {
+    const batchSize = 20;
+    const queries = Object.keys(data);
+    for (let i = 0; i < queries.length; i += batchSize) {
       if (internalValue.value === false) {
-        return;
+        break;
       }
 
-      const results = await search(query);
-      queried.value++;
-      if (results) {
-        imports.push({
-          query,
-          values: data[query].concat(['']),
-          type: VaultEntry.enums.type.key,
-          suggestions: results.slice(0, 100),
-          appid: results[0]?.item?.appid ?? null,
-          name: results[0]?.item?.names?.[0] ?? query,
-          score: results[0]?.score ?? 1
-        });
-      }
-    }));
+      const batch = queries.slice(i, i + batchSize);
+      await Promise.all(batch.map(async query => {
+        const results = await search(query);
+        queried.value++;
+        if (results) {
+          imports.push({
+            query,
+            values: data[query].concat(['']),
+            type: VaultEntry.enums.type.key,
+            suggestions: results.slice(0, 100),
+            appid: results[0]?.item?.appid ?? null,
+            name: results[0]?.item?.names?.[0] ?? query,
+            score: results[0]?.score ?? 1
+          });
+        }
+      }));
+    }
 
     emit('import', imports);
 
@@ -124,6 +129,7 @@
 
           <v-item-group
             v-model="selectedFormat"
+            :disabled="isLoading"
             mandatory
           >
             <v-row class="mt-2">
@@ -136,6 +142,7 @@
                 <v-item v-slot="{ isSelected, toggle }">
                   <v-card
                     :border="isSelected ? 'opacity-50 sm' : undefined"
+                    :style="{ pointerEvents: isLoading ? 'none' : undefined }"
                     variant="tonal"
                     @click="toggle"
                   >
@@ -170,6 +177,7 @@
           <v-textarea
             v-model="inputText"
             class="mt-4"
+            :disabled="isLoading"
             hide-details
             variant="outlined"
           />

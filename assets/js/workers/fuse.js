@@ -3,7 +3,8 @@ import Fuse from 'fuse.js';
 let fuse = null;
 
 const init = ({ data, options }) => {
-  fuse = new Fuse(data, options);
+  const index = Fuse.createIndex(options.keys, data);
+  fuse = new Fuse(data, options, index);
   self.postMessage({
     type: 'ready',
     payload: true

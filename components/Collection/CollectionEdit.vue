@@ -364,7 +364,7 @@
                   or
                   <dialog-add-apps
                     :collection-id="id"
-                    @submit="appsTable.refresh()"
+                    @submit="appsTable.refresh(); snackbarStore.set('success', 'Collection updated')"
                   >
                     <template #activator="attrs">
                       <v-btn

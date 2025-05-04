@@ -21,6 +21,7 @@ export const useAppsStore = defineStore('apps', {
     defaultOptions: markRaw({
       includeScore: true,
       threshold: 0.175,
+      limit: 20,
       keys: ['names']
     }),
     names: null,
