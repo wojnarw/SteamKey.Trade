@@ -116,6 +116,17 @@ begin
                 )
             )
           ) or
+          -- Check that assigned vault entries for selected trade apps don't already have a trade assigned.
+          (
+            new.sender_vaultless = false and 
+            exists (
+              select 1 from public.vault_entries ve
+              join public.trade_apps ta on ta.vault_entry_id = ve.id
+              where ta.trade_id = new.id
+                and ta.selected = true
+                and ve.trade_id is not null
+            )
+          ) or
           -- Verify that the count of selected sender trade apps equals the expected sender_total.
           not exists (
             select 1 from public.trade_apps
