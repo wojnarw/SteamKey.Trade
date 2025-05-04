@@ -67,6 +67,13 @@ export const useCollectionsStore = defineStore('collections', {
 
     setBlacklist(appids) {
       return this.setCollection('blacklist', appids);
+    },
+
+    reset() {
+      this.library = [];
+      this.wishlist = [];
+      this.tradelist = [];
+      this.blacklist = [];
     }
   }
 });

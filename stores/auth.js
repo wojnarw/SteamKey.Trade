@@ -96,6 +96,7 @@ export const useAuthStore = defineStore('auth', {
     onAuthStateChange(authEvent, session) {
       const supabase = useSupabaseClient();
       const { User } = useORM();
+      const collectionsStore = useCollectionsStore();
 
       const oldUser = this.user;
       const newUser = session?.user ?? null;
@@ -108,6 +109,8 @@ export const useAuthStore = defineStore('auth', {
         this.setUser(null);
         this.setPreferences(null);
         this.setPassword(null);
+
+        collectionsStore.reset();
 
         clearNuxtData(); // Remove personalized (or anonymous) cached data
 
