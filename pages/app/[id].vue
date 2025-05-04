@@ -61,6 +61,22 @@
   };
 
   const isReleased = computed(() => app.value?.releasedAt && new Date(app.value.releasedAt).getTime?.() < Date.now());
+  const updateEligable = computed(() => app.value?.updatedAt && new Date(app.value.updatedAt).getTime?.() < Date.now() - 1000 * 60 * 60 * 24); // if the app was last updated more than 24 hours ago
+  const requestUpdate = async () => {
+    if (!updateEligable.value) {
+      snackbarStore.set('error', 'App has already been updated in the last 24 hours, please try again later');
+      return;
+    }
+
+    try {
+      const instance = new App(appid);
+      await instance.queueUpdate();
+      snackbarStore.set('success', 'Requested update');
+    } catch (error) {
+      console.error(error);
+      snackbarStore.set('error', 'Unable to request update at this time');
+    }
+  };
 
   const socials = computed(() => [
     ...app.value?.website ? [{
@@ -853,6 +869,15 @@
     <v-footer class="mt-6 text-caption flex-grow-0">
       <v-spacer />
       Last updated: {{ formatDate(app.updatedAt) }}
+      <v-btn
+        v-if="isLoggedIn"
+        v-tooltip:top="'Request to queue app for update'"
+        class="ml-2"
+        density="compact"
+        icon="mdi-refresh"
+        variant="text"
+        @click="requestUpdate"
+      />
     </v-footer>
   </s-page-content>
 </template>

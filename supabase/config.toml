@@ -301,9 +301,11 @@ schema_paths = [
   "./schemas/storage/backgrounds.sql",
 
   # Depends on common
-  "./schemas/public/updater_queue.sql",
   "./schemas/public/apps.sql",
   "./schemas/public/tags.sql",
+
+  # Depends on apps
+  "./schemas/public/updater_queue.sql",
 
   # Depends on auth.users and common
   "./schemas/public/users.sql",

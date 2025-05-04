@@ -383,6 +383,21 @@ export class App extends Entity {
     });
   }
 
+  async queueUpdate() {
+    const { error } = await this._client
+      .from('updater_queue')
+      .insert({
+        type: 'app_update',
+        value: this.id.toString()
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  }
+
   static async getFacets(supabase, field) {
     const { data, error } = await supabase
       .from('app_facets')

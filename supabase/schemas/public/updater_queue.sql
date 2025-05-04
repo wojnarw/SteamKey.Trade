@@ -16,14 +16,12 @@ create table updater_queue (
   id uuid primary key default gen_random_uuid(),
   type updater_queue_type not null,
   value text default null,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  unique (type, value)
 );
 
 -- Add table comment
 comment on table updater_queue is 'Queue for background update tasks';
-
--- Enable RLS
-alter table updater_queue enable row level security;
 
 -- Add date management triggers
 create trigger updater_queue_update_dates
@@ -68,3 +66,27 @@ deleted as (
 select coalesce(array_agg(value::int), array[]::int[])
 from deleted;
 $$ language sql security invoker;
+
+-- Enable RLS
+alter table updater_queue enable row level security;
+
+-- Disallow read for all users
+
+-- Allow authenticated users to queue app updates only for existing apps not updated in past 24h
+create policy updater_queue_insert on updater_queue
+for insert
+to authenticated
+with check (
+  -- Only allow 'app_update' type
+  type = 'app_update' 
+  -- Ensure app exists and hasn't been updated in past 24h
+  and exists (
+    select 1 
+    from apps 
+    where id = value::integer 
+      and (updated_at is null or updated_at < now() - interval '24 hours')
+  )
+);
+
+-- Disallow update for all users
+-- Disallow deletion for all users
