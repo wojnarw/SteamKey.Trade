@@ -817,16 +817,16 @@
                   class="d-flex flex-column justify-center"
                 >
                   <!-- Prices -->
-                  <div class="d-flex flex-row align-baseline">
-                    <v-icon
-                      v-if="[
-                        App.fields.retailPrice,
-                        App.fields.discountedPrice,
-                        App.fields.marketPrice,
-                        App.fields.historicalLow
-                      ].includes(header.key)"
-                      icon="mdi-currency-usd"
-                    />
+                  <div
+                    v-if="[
+                      App.fields.retailPrice,
+                      App.fields.discountedPrice,
+                      App.fields.marketPrice,
+                      App.fields.historicalLow
+                    ].includes(header.key)"
+                    class="d-flex flex-row align-baseline"
+                  >
+                    <v-icon icon="mdi-currency-usd" />
                     <h2>
                       {{ formatNumber(item[header.key], 2, 2).split('.')[0] }}
                     </h2>
@@ -835,6 +835,17 @@
                     </small>
                   </div>
 
+                  <!-- Counts -->
+                  <div
+                    v-else
+                    class="d-flex flex-row align-baseline"
+                  >
+                    <h2>
+                      {{ formatNumber(item[header.key]) }}
+                    </h2>
+                  </div>
+
+                  <!-- Historical data -->
                   <small v-if="item.snapshot?.app?.[header.key] !== undefined && item[header.key] !== item.snapshot.app[header.key]">
                     (was
                     {{
