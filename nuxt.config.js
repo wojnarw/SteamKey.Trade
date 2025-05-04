@@ -116,5 +116,9 @@ export default {
     storage: 'localStorage'
   },
 
+  experimental: {
+    purgeCachedData: false
+  },
+
   compatibilityDate: '2024-08-13'
 };
