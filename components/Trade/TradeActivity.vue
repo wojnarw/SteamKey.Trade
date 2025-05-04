@@ -175,34 +175,22 @@
           size="small"
         >
           <div class="d-flex flex-column">
-            <span class="activity-body">
-              <template v-if="showTradeLinks">
-                <nuxt-link
-                  class="text-decoration-none text-primary"
-                  :to="`/trade/${activity.tradeId}`"
-                >
-                  <rich-profile-link
-                    hide-avatar
-                    no-link
-                    :user-id="activity.userId"
-                  />
-                  {{ ' ' }}
-                  {{ Trade.descriptions[activity.type] }}
-                  {{ ' ' }}
-                  <v-icon
-                    icon="mdi-arrow-right"
-                    size="small"
-                  />
-                </nuxt-link>
-              </template>
-              <template v-else>
-                <rich-profile-link
-                  hide-avatar
-                  :user-id="activity.userId"
+            <span class="activity-body ">
+              <rich-profile-link
+                hide-avatar
+                :user-id="activity.userId"
+              />
+              {{ ' ' }}
+              {{ Trade.descriptions[activity.type] }}
+              <nuxt-link
+                v-if="showTradeLinks"
+                :to="`/trade/${activity.tradeId}`"
+              >
+                <v-icon
+                  icon="mdi-arrow-right"
+                  size="small"
                 />
-                {{ ' ' }}
-                {{ Trade.descriptions[activity.type] }}
-              </template>
+              </nuxt-link>
             </span>
 
             <rich-date
