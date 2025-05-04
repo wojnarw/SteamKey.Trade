@@ -54,6 +54,7 @@
       >
         <template #[`item.avatar`]="{ item }">
           <rich-profile-link
+            hide-reputation
             hide-text
             :user-data="item"
             :user-id="item.id"

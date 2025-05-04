@@ -7,6 +7,7 @@
   const { slug } = route.params;
   const { User, Review } = useORM();
   const { user: authUser, isLoggedIn } = useAuthStore();
+  const { payload } = useNuxtApp();
 
   // I need the user ID before I can do anything else
   let user;
@@ -38,6 +39,8 @@
 
       user = users[0];
     }
+
+    payload.data[`user-${user.id}`] = user.toObject();
   } catch (error) {
     userError.value = error;
   }

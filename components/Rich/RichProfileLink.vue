@@ -112,27 +112,39 @@
       {{ errorMessage }}
     </span>
 
-    <span
-      v-else-if="!user || isLoading"
-      class="loading"
-    >
-      <v-skeleton-loader
+    <span v-else-if="!user || isLoading">
+      <v-avatar
         v-if="!hideAvatar"
-        type="avatar"
-        :width="avatarSize"
-      />
-      <v-skeleton-loader
+        :class="{ 'mr-1': !hideText }"
+        color="secondary"
+        :size="avatarSize"
+        :style="onlineBorder"
+      >
+        <v-skeleton-loader type="avatar" />
+      </v-avatar>
+      <span
         v-if="!hideText"
-        :class="{ 'ml-1': !hideAvatar }"
-        height="16"
-        width="100"
-      />
-      <v-skeleton-loader
-        v-if="!hideText"
-        class="ml-1"
-        height="14"
-        width="25"
-      />
+        :class="['d-inline-block', { 'ml-1': !hideAvatar }]"
+      >
+        <v-skeleton-loader
+          height="16"
+          style="transform: translateY(3px);"
+          width="100"
+        />
+      </span>
+
+      <span
+        v-if="!hideReputation"
+        class="d-inline-block"
+      >
+        <v-skeleton-loader
+          v-if="!hideText"
+          class="ml-1"
+          height="14"
+          style="transform: translateY(2px);"
+          width="20"
+        />
+      </span>
     </span>
 
     <v-tooltip
@@ -277,10 +289,6 @@
     }
 
     > .loading {
-      // dirty fix
-      height: 0rem;
-      transform: translateY(1.1rem);
-
       display: flex;
       align-items: center;
       justify-content: start;
