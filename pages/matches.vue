@@ -263,7 +263,7 @@
           <p v-if="singleApp">
             Or, check out the best prices for this app on
             <a
-              :href="`https://gg.deals/app/${selectedApp}`"
+              :href="`https://gg.deals/steam/app/${selectedApp}`"
               rel="noopener"
               target="_blank"
             >GG.Deals</a> and consider buying it.
