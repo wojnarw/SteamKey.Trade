@@ -399,16 +399,19 @@
           </v-card>
         </v-col>
         <v-col
-          class="d-flex flex-column"
+          class="d-flex flex-column ga-6"
           cols="12"
           lg="4"
           order="1"
           order-lg="2"
-          style="gap: 1.5em;"
         >
-          <chat-container :trade-id="props.id" />
+          <chat-container
+            class="flex-grow-1"
+            :trade-id="props.id"
+          />
 
           <trade-activity
+            class="flex-grow-1"
             :trade-id="props.id"
             @update="refresh"
           />

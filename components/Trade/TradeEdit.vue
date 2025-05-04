@@ -163,27 +163,49 @@
   }, { deep: true, immediate: true });
 
   watch(() => tradeApps.value, () => {
-    if (tradeApps.value && tradeApps.value.sender && tradeApps.value.receiver && (isCopy || isCounter)) {
+    if (tradeApps.value && tradeApps.value.sender && tradeApps.value.receiver && (!isNew || isCounter || isCopy)) {
       headless.value = tradeApps.value.sender.every(app => app.vaultEntryId);
 
       selectedCollections.value.sender = tradeApps.value.sender.map(app => app.collectionId).filter((id, index, self) => id && self.indexOf(id) === index);
       selectedCollections.value.receiver = tradeApps.value.receiver.map(app => app.collectionId).filter((id, index, self) => id && self.indexOf(id) === index);
 
-      const appids = [...tradeApps.value.sender, ...tradeApps.value.receiver]
+      // Check which app IDs need to be loaded
+      const existingAppIds = [
+        ...selectedApps.value.sender.map(app => app.id),
+        ...selectedApps.value.receiver.map(app => app.id)
+      ];
+
+      const appIdsToQuery = [...tradeApps.value.sender, ...tradeApps.value.receiver]
         .map(app => app.appId)
-        .filter((appId, index, self) => appId && self.indexOf(appId) === index);
-      if (!appids.length) {
+        .filter((appId, index, self) =>
+          appId &&
+          self.indexOf(appId) === index &&
+          !existingAppIds.includes(appId)
+        );
+
+      if (!appIdsToQuery.length) {
         return;
       }
 
+      // Only query apps that aren't already loaded
       App.query(supabase, [
-        { filter: 'in', params: [App.fields.id, appids] }
+        { filter: 'in', params: [App.fields.id, appIdsToQuery] }
       ]).then(instances => {
-        const data = instances.map(instance => instance.toObject());
-        selectedApps.value.sender = data.filter(app => tradeApps.value.sender.some(({ appId }) => appId === app.id));
-        selectedApps.value.receiver = data.filter(app => tradeApps.value.receiver.some(({ appId }) => appId === app.id));
-        mandatoryApps.value.sender = data.filter(app => tradeApps.value.sender.some(({ appId, mandatory }) => appId === app.id && mandatory));
-        mandatoryApps.value.receiver = data.filter(app => tradeApps.value.receiver.some(({ appId, mandatory }) => appId === app.id && mandatory));
+        const newApps = instances.map(instance => instance.toObject());
+        const allApps = [...selectedApps.value.sender, ...selectedApps.value.receiver, ...newApps];
+
+        selectedApps.value.sender = allApps.filter(app =>
+          tradeApps.value.sender.some(({ appId }) => appId === app.id)
+        );
+        selectedApps.value.receiver = allApps.filter(app =>
+          tradeApps.value.receiver.some(({ appId }) => appId === app.id)
+        );
+        mandatoryApps.value.sender = allApps.filter(app =>
+          tradeApps.value.sender.some(({ appId, mandatory }) => appId === app.id && mandatory)
+        );
+        mandatoryApps.value.receiver = allApps.filter(app =>
+          tradeApps.value.receiver.some(({ appId, mandatory }) => appId === app.id && mandatory)
+        );
       });
     }
   }, { deep: true, immediate: true });
@@ -449,12 +471,11 @@
           </v-card>
         </v-col>
         <v-col
-          class="d-flex flex-column"
+          class="d-flex flex-column ga-6"
           cols="12"
           lg="4"
           order="1"
           order-lg="2"
-          style="gap: 1.5em;"
         >
           <chat-container
             v-if="id"

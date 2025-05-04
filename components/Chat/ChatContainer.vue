@@ -210,8 +210,6 @@
 <style scoped>
   .chat-window {
     min-height: 200px;
-    height: 100%;
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

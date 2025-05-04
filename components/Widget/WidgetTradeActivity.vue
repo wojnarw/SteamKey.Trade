@@ -8,6 +8,7 @@
 
 <template>
   <TradeActivity
+    class="h-100"
     :limit="10"
     :show-trade-links="true"
     :title="activityTitle"

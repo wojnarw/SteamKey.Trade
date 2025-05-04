@@ -137,7 +137,7 @@ export class Entity {
    * @param {Object} record - The database record.
    * @returns {Object} The entity data object.
    */
-  static fromDB(record, fields = this.fields) {
+  static fromDB(record = {}, fields = this.fields) {
     const data = {};
     for (const [publicKey, dbKey] of Object.entries(fields)) {
       if (record[dbKey] !== undefined) {
@@ -155,7 +155,7 @@ export class Entity {
    * @param {Object} [fields=this.fields] - The field mapping to use.
    * @returns {Object} The database record.
    */
-  static toDB(data, fields = this.fields) {
+  static toDB(data = {}, fields = this.fields) {
     const record = {};
     for (const [publicKey, dbKey] of Object.entries(fields)) {
       if (data[publicKey] !== undefined) {
