@@ -856,7 +856,7 @@
                         App.fields.historicalLow
                       ].includes(header.key)
                         ? `$${formatNumber(item.snapshot.app[header.key], 2, 2)}`
-                        : formatNumber(item.snapshot.app[header.key], 2, 2)
+                        : formatNumber(item.snapshot.app[header.key])
                     }})
                   </small>
                 </span>
