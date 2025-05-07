@@ -1,8 +1,11 @@
-# 1) Serve static assets by extension
-/*.*   /:splat  200
+# 1) Serve your custom 404 page directly
+/404.html        /404.html   200
 
-# 2) Then send everything else to index.html
-/*     /index.html 200
+# 2) Pass through all requests for real files by extension
+/*.*             /:splat     200
 
-# 3) Finally, a proper 404.html for missing files
-/404.html  /404.html  200
+# 3) Serve your SPA shell index.html for its exact path
+/index.html      /index.html 200
+
+# 4) Finally, catch all "clean" URLs and serve the SPA
+/*               /index.html 200
