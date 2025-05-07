@@ -12,6 +12,13 @@ export default {
 
   ssr: false,
 
+  nitro: {
+    preset: 'cloudflare-pages',
+    prerender: {
+      ignore: ['/404']
+    }
+  },
+
   app: {
     head: {
       title: siteName,
