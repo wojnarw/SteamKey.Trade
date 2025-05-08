@@ -86,7 +86,7 @@ body:
         - label: Trades
           value: "Domain: Trades"
           description: "Trading functionality"
-`        - label: Users
+        - label: Users
           value: "Domain: Users"
           description: "User management"
         - label: Vault
