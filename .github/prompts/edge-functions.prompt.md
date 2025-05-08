@@ -1,7 +1,5 @@
 ---
-# Specify the following for Cursor rules
-description: Coding rules for Supabase Edge Functions
-globs: "supabase/functions/**/*.ts"
+description: 'Coding rules for Supabase Edge Functions'
 ---
 
 # Writing Supabase Edge Functions

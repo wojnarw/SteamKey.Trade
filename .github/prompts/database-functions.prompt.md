@@ -1,7 +1,5 @@
 ---
-# Specify the following for Cursor rules
-description: Guidelines for writing Supabase database functions
-globs: "**/*.sql"
+description: 'Guidelines for writing Supabase database functions'
 ---
 
 # Database: Create functions

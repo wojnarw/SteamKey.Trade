@@ -1,7 +1,5 @@
 ---
-# Specify the following for Cursor rules
-description: Guidelines for writing Postgres SQL
-globs: "**/*.sql"
+description: 'Guidelines for writing Postgres SQL'
 ---
 
 # Postgres SQL Style Guide

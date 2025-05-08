@@ -1,3 +1,7 @@
+---
+applyTo: '**/*.vue'
+---
+
 # SteamKey.Trade
 
 SteamKey.Trade is a platform for Steam product key trading. It features a secure vault for managing Steam keys, a robust trading system for exchanging keys with other users, and customizable collections to organize and showcase the apps, which is what can be activated by your keys on Steam.
@@ -33,7 +37,7 @@ The project uses a custom ORM system via `BaseEntity`, extended by each entity (
 ### ORM Utilities
 
 - **`toDB()` / `fromDB()`**: Map ORM fields to/from raw Supabase records.
-- Use `Entity.fields.fieldName` to access field metadata (especially inside data tables).
+- Use `Entity.fields.fieldName` to access raw field name (commonly used inside data tables).
 - Use ORM metadata:
   - `Entity.labels`
   - `Entity.descriptions`
@@ -76,7 +80,7 @@ const { data: users } = await useLazyAsyncData(`user-${id}`, () => {
 
 ## Data Tables
 
-For dynamic tables like `TableData`, `TableApps`, and `TableCollections`:
+For dynamic tables like `TableData` (generic), `TableApps` (apps), and `TableCollections` (collections):
 
 - Fields are accessed directly as: `item[Entity.fields.fieldName]`.
 
@@ -88,16 +92,6 @@ headers: [
   { text: User.labels.email, value: User.fields.email },
 ]
 ```
-
----
-
-## Supabase Functions
-
-- Edge Functions are written in Deno under `supabase/functions/`.
-- Register functions in `supabase/config.toml` with entrypoint pointing to the function's `index.js` file.
-- Use javascript, not typescript, for the functions.
-
----
 
 ## Naming & Structure
 
