@@ -1,16 +1,14 @@
 name: Issue Report
 description: Create a new issue for SteamKey.Trade
-title: ""
-labels: []
+
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to fill out this issue report!
-        
+
         Please provide as much detail as possible to help us address your issue efficiently.
-        
-        The issue type and domain selections will automatically apply appropriate labels to your issue.
+
   - type: textarea
     id: description
     attributes:
@@ -18,61 +16,85 @@ body:
       description: Please provide a detailed description of the issue
       placeholder: Include steps to reproduce, expected behavior, and actual behavior if applicable
     validations:
-      required: true  - type: dropdown
+      required: true
+
+  - type: dropdown
     id: type
     attributes:
       label: Issue Type
       description: What kind of issue is this?
       multiple: false
       options:
-        - label: "Type: Bug"
-          description: "Functionality that does not work as intended/expected"
-        - label: "Type: Enhancement"
-          description: "Functionality that enhances or optimizes existing features"
-        - label: "Type: Feature"
-          description: "New feature or request"
-        - label: "Type: Documentation"
-          description: "Improvements or additions to documentation"
-        - label: "Type: Discussion"
-          description: "Needs to be further discussed"
-        - label: "Type: Chore"
-          description: "Task that needs to be done"
+        - label: Type: Bug
+          value: "Type: Bug"
+          description: Functionality that does not work as intended/expected
+        - label: Type: Enhancement
+          value: "Type: Enhancement"
+          description: Functionality that enhances or optimizes existing features
+        - label: Type: Feature
+          value: "Type: Feature"
+          description: New feature or request
+        - label: Type: Documentation
+          value: "Type: Documentation"
+          description: Improvements or additions to documentation
+        - label: Type: Discussion
+          value: "Type: Discussion"
+          description: Needs to be further discussed
+        - label: Type: Chore
+          value: "Type: Chore"
+          description: Task that needs to be done
     validations:
-      required: true  - type: dropdown
+      required: true
+
+  - type: dropdown
     id: domain
     attributes:
       label: Domain
       description: Which part of the application is this issue related to?
       multiple: true
       options:
-        - label: "Domain: Apps"
-          description: "App related functionality"
-        - label: "Domain: Chat" 
-          description: "Chat functionality"
-        - label: "Domain: Code"
-          description: "Code implementation"
-        - label: "Domain: Collections"
-          description: "Collection management"
-        - label: "Domain: Layout"
-          description: "UI layout and design"
-        - label: "Domain: Matches"
-          description: "Trade matching functionality"
-        - label: "Domain: Notifications"
-          description: "Notification system"
-        - label: "Domain: Other"
-          description: "Other areas not listed"
-        - label: "Domain: Reviews"
-          description: "Review functionality"
-        - label: "Domain: Settings"
-          description: "User settings"
-        - label: "Domain: Trades"
-          description: "Trading functionality"
-        - label: "Domain: Users"
-          description: "User management"
-        - label: "Domain: Vault"
-          description: "Vault functionality"
+        - label: Domain: Apps
+          value: "Domain: Apps"
+          description: App related functionality
+        - label: Domain: Chat
+          value: "Domain: Chat"
+          description: Chat functionality
+        - label: Domain: Code
+          value: "Domain: Code"
+          description: Code implementation
+        - label: Domain: Collections
+          value: "Domain: Collections"
+          description: Collection management
+        - label: Domain: Layout
+          value: "Domain: Layout"
+          description: UI layout and design
+        - label: Domain: Matches
+          value: "Domain: Matches"
+          description: Trade matching functionality
+        - label: Domain: Notifications
+          value: "Domain: Notifications"
+          description: Notification system
+        - label: Domain: Other
+          value: "Domain: Other"
+          description: Other areas not listed
+        - label: Domain: Reviews
+          value: "Domain: Reviews"
+          description: Review functionality
+        - label: Domain: Settings
+          value: "Domain: Settings"
+          description: User settings
+        - label: Domain: Trades
+          value: "Domain: Trades"
+          description: Trading functionality
+        - label: Domain: Users
+          value: "Domain: Users"
+          description: User management
+        - label: Domain: Vault
+          value: "Domain: Vault"
+          description: Vault functionality
     validations:
       required: true
+
   - type: markdown
     attributes:
       value: |

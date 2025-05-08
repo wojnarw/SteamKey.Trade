@@ -2,47 +2,16 @@ name: Issue Labeler
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
 
 jobs:
-  apply-labels:
+  add-form-labels:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
-      - name: Apply issue type and domain labels
-        uses: actions/github-script@v6
+      - name: Apply labels from issue form
+        uses: actions-ecosystem/action-add-labels@v1
         with:
-          script: |
-            const issue = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
-            });
-              const body = issue.data.body;
-            const labels = [];
-              // Parse issue type - now matches the label format
-            const typeMatch = body.match(/### Issue Type\s*\n\s*([^\n]*Type: [^\n]+)/);
-            if (typeMatch && typeMatch[1]) {
-              // Extract just the label part
-              const typeLabel = typeMatch[1].split(/\r?\n/)[0].trim();
-              labels.push(typeLabel);
-            }
-            
-            // Parse domains (can be multiple)
-            const domainMatches = body.matchAll(/- ([^\n]*Domain: [^\n]+)/g);
-            for (const match of domainMatches) {
-              if (match[1]) {
-                // Extract just the label part
-                const domainLabel = match[1].split(/\r?\n/)[0].trim();
-                labels.push(domainLabel);
-              }
-            }
-            
-            // Apply the labels to the issue
-            await github.rest.issues.setLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: labels
-            });
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: |
+            ${{ github.event.issue.fields.type }}
+            ${{ join(github.event.issue.fields.domain, '\n') }}
