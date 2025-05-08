@@ -1,5 +1,6 @@
 name: Issue Report
 description: Create a new issue for SteamKey.Trade
+projects: ["Revadike/5"]
 
 body:
   - type: markdown
@@ -8,15 +9,6 @@ body:
         Thanks for taking the time to fill out this issue report!
 
         Please provide as much detail as possible to help us address your issue efficiently.
-
-  - type: input
-    id: title
-    attributes:
-      label: Short title
-      description: A short, clear summary of the issue
-      placeholder: e.g. "Bundles feed"
-    validations:
-      required: true
 
   - type: textarea
     id: description
@@ -34,18 +26,12 @@ body:
       description: What kind of issue is this?
       multiple: false
       options:
-        - label: Bug
-          value: "Type: Bug"
-        - label: Enhancement
-          value: "Type: Enhancement"
-        - label: Feature
-          value: "Type: Feature"
-        - label: Documentation
-          value: "Type: Documentation"
-        - label: Discussion
-          value: "Type: Discussion"
-        - label: Chore
-          value: "Type: Chore"
+        - "Type: Bug"
+        - "Type: Enhancement"
+        - "Type: Feature"
+        - "Type: Documentation"
+        - "Type: Discussion"
+        - "Type: Chore"
     validations:
       required: true
 
@@ -56,31 +42,18 @@ body:
       description: Which part of the application is this issue related to?
       multiple: true
       options:
-        - label: Apps
-          value: "Domain: Apps"
-        - label: Chat
-          value: "Domain: Chat"
-        - label: Code
-          value: "Domain: Code"
-        - label: Collections
-          value: "Domain: Collections"
-        - label: Layout
-          value: "Domain: Layout"
-        - label: Matches
-          value: "Domain: Matches"
-        - label: Notifications
-          value: "Domain: Notifications"
-        - label: Other
-          value: "Domain: Other"
-        - label: Reviews
-          value: "Domain: Reviews"
-        - label: Settings
-          value: "Domain: Settings"
-        - label: Trades
-          value: "Domain: Trades"
-        - label: Users
-          value: "Domain: Users"
-        - label: Vault
-          value: "Domain: Vault"
+        - "Domain: Apps"
+        - "Domain: Chat"
+        - "Domain: Code"
+        - "Domain: Collections"
+        - "Domain: Layout"
+        - "Domain: Matches"
+        - "Domain: Notifications"
+        - "Domain: Other"
+        - "Domain: Reviews"
+        - "Domain: Settings"
+        - "Domain: Trades"
+        - "Domain: Users"
+        - "Domain: Vault"
     validations:
       required: true
