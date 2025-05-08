@@ -25,24 +25,24 @@ body:
       description: What kind of issue is this?
       multiple: false
       options:
-        - label: Type: Bug
+        - label: Bug
           value: "Type: Bug"
-          description: Functionality that does not work as intended/expected
-        - label: Type: Enhancement
+          description: "Functionality that does not work as intended/expected"
+        - label: Enhancement
           value: "Type: Enhancement"
-          description: Functionality that enhances or optimizes existing features
-        - label: Type: Feature
+          description: "Functionality that enhances or optimizes existing features"
+        - label: Feature
           value: "Type: Feature"
-          description: New feature or request
-        - label: Type: Documentation
+          description: "New feature or request"
+        - label: Documentation
           value: "Type: Documentation"
-          description: Improvements or additions to documentation
-        - label: Type: Discussion
+          description: "Improvements or additions to documentation"
+        - label: Discussion
           value: "Type: Discussion"
-          description: Needs to be further discussed
-        - label: Type: Chore
+          description: "Needs to be further discussed"
+        - label: Chore
           value: "Type: Chore"
-          description: Task that needs to be done
+          description: "Task that needs to be done"
     validations:
       required: true
 
@@ -53,45 +53,45 @@ body:
       description: Which part of the application is this issue related to?
       multiple: true
       options:
-        - label: Domain: Apps
+        - label: Apps
           value: "Domain: Apps"
-          description: App related functionality
-        - label: Domain: Chat
+          description: "App related functionality"
+        - label: Chat
           value: "Domain: Chat"
-          description: Chat functionality
-        - label: Domain: Code
+          description: "Chat functionality"
+        - label: Code
           value: "Domain: Code"
-          description: Code implementation
-        - label: Domain: Collections
+          description: "Code implementation"
+        - label: Collections
           value: "Domain: Collections"
-          description: Collection management
-        - label: Domain: Layout
+          description: "Collection management"
+        - label: Layout
           value: "Domain: Layout"
-          description: UI layout and design
-        - label: Domain: Matches
+          description: "UI layout and design"
+        - label: Matches
           value: "Domain: Matches"
-          description: Trade matching functionality
-        - label: Domain: Notifications
+          description: "Trade matching functionality"
+        - label: Notifications
           value: "Domain: Notifications"
-          description: Notification system
-        - label: Domain: Other
+          description: "Notification system"
+        - label: Other
           value: "Domain: Other"
-          description: Other areas not listed
-        - label: Domain: Reviews
+          description: "Other areas not listed"
+        - label: Reviews
           value: "Domain: Reviews"
-          description: Review functionality
-        - label: Domain: Settings
+          description: "Review functionality"
+        - label: Settings
           value: "Domain: Settings"
-          description: User settings
-        - label: Domain: Trades
+          description: "User settings"
+        - label: Trades
           value: "Domain: Trades"
-          description: Trading functionality
-        - label: Domain: Users
+          description: "Trading functionality"
+`        - label: Users
           value: "Domain: Users"
-          description: User management
-        - label: Domain: Vault
+          description: "User management"
+        - label: Vault
           value: "Domain: Vault"
-          description: Vault functionality
+          description: "Vault functionality"
     validations:
       required: true
 
