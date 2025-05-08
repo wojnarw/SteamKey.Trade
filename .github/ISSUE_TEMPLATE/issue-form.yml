@@ -9,6 +9,15 @@ body:
 
         Please provide as much detail as possible to help us address your issue efficiently.
 
+  - type: input
+    id: title
+    attributes:
+      label: Short title
+      description: A short, clear summary of the issue
+      placeholder: e.g. "Bundles feed"
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:
@@ -27,22 +36,16 @@ body:
       options:
         - label: Bug
           value: "Type: Bug"
-          description: "Functionality that does not work as intended/expected"
         - label: Enhancement
           value: "Type: Enhancement"
-          description: "Functionality that enhances or optimizes existing features"
         - label: Feature
           value: "Type: Feature"
-          description: "New feature or request"
         - label: Documentation
           value: "Type: Documentation"
-          description: "Improvements or additions to documentation"
         - label: Discussion
           value: "Type: Discussion"
-          description: "Needs to be further discussed"
         - label: Chore
           value: "Type: Chore"
-          description: "Task that needs to be done"
     validations:
       required: true
 
@@ -55,47 +58,29 @@ body:
       options:
         - label: Apps
           value: "Domain: Apps"
-          description: "App related functionality"
         - label: Chat
           value: "Domain: Chat"
-          description: "Chat functionality"
         - label: Code
           value: "Domain: Code"
-          description: "Code implementation"
         - label: Collections
           value: "Domain: Collections"
-          description: "Collection management"
         - label: Layout
           value: "Domain: Layout"
-          description: "UI layout and design"
         - label: Matches
           value: "Domain: Matches"
-          description: "Trade matching functionality"
         - label: Notifications
           value: "Domain: Notifications"
-          description: "Notification system"
         - label: Other
           value: "Domain: Other"
-          description: "Other areas not listed"
         - label: Reviews
           value: "Domain: Reviews"
-          description: "Review functionality"
         - label: Settings
           value: "Domain: Settings"
-          description: "User settings"
         - label: Trades
           value: "Domain: Trades"
-          description: "Trading functionality"
         - label: Users
           value: "Domain: Users"
-          description: "User management"
         - label: Vault
           value: "Domain: Vault"
-          description: "Vault functionality"
     validations:
       required: true
-
-  - type: markdown
-    attributes:
-      value: |
-        You can attach screenshots or additional information by dragging and dropping files here.
