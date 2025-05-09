@@ -33,10 +33,7 @@
         { filter: 'eq', params: [User.fields.customUrl, slug] }
       ]);
 
-      console.log({ users });
-
       if (!users.length) {
-        console.error('User not found');
         throw new Error('User not found');
       }
 
