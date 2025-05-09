@@ -1,4 +1,6 @@
 <script setup>
+  import debounce from 'lodash/debounce';
+
   import { parseDate } from '~/assets/js/date';
 
   const snackbarStore = useSnackbarStore();
@@ -263,7 +265,9 @@
     loading.value = false;
   };
 
-  const refresh = () => loadItems({ itemsPerPage: itemsPerPage.value, page: prevPage.value, search: search.value, sortBy: sortBy.value });
+  const debouncedLoadItems = debounce(loadItems, 500);
+
+  const refresh = () => debouncedLoadItems({ itemsPerPage: itemsPerPage.value, page: prevPage.value, search: search.value, sortBy: sortBy.value });
 
   defineExpose({
     loading,
@@ -292,7 +296,7 @@
     :search="search"
     :show-select="showSelect"
     @click:row="(_, { item }) => emit('click:row', toRaw(item))"
-    @update:options="loadItems"
+    @update:options="debouncedLoadItems"
   >
     <template #no-data>
       <span class="text-disabled font-italic">
