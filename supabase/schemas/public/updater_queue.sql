@@ -41,7 +41,8 @@ set search_path = ''
 as $$
 begin
   insert into public.updater_queue (type, value)
-  select 'app_update', unnest(p_appids)::text;
+  select 'app_update', unnest(p_appids)::text
+  on conflict do nothing;
 end;
 $$ language plpgsql security invoker
 set statement_timeout to '300s';
