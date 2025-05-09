@@ -63,9 +63,20 @@ deleted as (
   delete from public.updater_queue
   where id in (select id from to_delete)
   returning value
+),
+additional as (
+  select id::text as value
+  from public.apps
+  where id not in (select value::int from deleted)
+  order by updated_at asc nulls first
+  limit p_count - (select count(*) from deleted)
 )
 select coalesce(array_agg(value::int), array[]::int[])
-from deleted;
+from (
+  select value from deleted
+  union all
+  select value from additional
+) combined;
 $$ language sql security invoker;
 
 -- Enable RLS
