@@ -10,7 +10,7 @@
   const { payload } = useNuxtApp();
 
   // I need the user ID before I can do anything else
-  let user;
+  let user = {};
   const userError = ref(null);
   try {
     if (isSteamID64(slug)) {
@@ -33,7 +33,10 @@
         { filter: 'eq', params: [User.fields.customUrl, slug] }
       ]);
 
+      console.log({ users });
+
       if (!users.length) {
+        console.error('User not found');
         throw new Error('User not found');
       }
 
@@ -80,7 +83,7 @@
         fatal: true
       });
     }
-  });
+  }, { immediate: true });
 
   const background = computed(() => {
     if (!user.background) {
