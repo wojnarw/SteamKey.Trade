@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <TradeActivity
+  <trade-activity
     class="h-100"
     :limit="10"
     :show-trade-links="true"

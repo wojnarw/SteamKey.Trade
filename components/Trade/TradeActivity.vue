@@ -61,6 +61,10 @@
         if (!trades.value || !trades.value.length) {
           await refresh();
         }
+        // If user has no trades, return an empty array instead of loading global activities
+        if (!trades.value || !trades.value.length) {
+          return [];
+        }
         return await Trade.getActivities(supabase, trades.value.map(trade => trade.id), 10);
       } else {
         return await Trade.getActivities(supabase, null, 10);
@@ -100,10 +104,14 @@
     } else if (isLoggedIn.value) {
       // User's personal trade activities
       refresh().then(() => {
-        const filter = `trade_id=eq.${trades.value.map(trade => trade.id).join(',')}`;
-        channel = supabase.channel(`${Trade.activity.table}_${user.value.id}`)
-          .on('postgres_changes', { ...baseConfig, filter }, handleNewActivity)
-          .subscribe();
+        // Only set up the subscription if the user has trades
+        if (trades.value && trades.value.length > 0) {
+          const filter = `trade_id=eq.${trades.value.map(trade => trade.id).join(',')}`;
+          channel = supabase.channel(`${Trade.activity.table}_${user.value.id}`)
+            .on('postgres_changes', { ...baseConfig, filter }, handleNewActivity)
+            .subscribe();
+        }
+        // No subscription needed if user has no trades
       });
     } else {
       // Global trade activities
