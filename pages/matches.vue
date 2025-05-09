@@ -11,14 +11,40 @@
   const singleApp = ref(false);
   const selectedApp = useSearchParam('app', null);
 
-  // When user or app is set in URL, infer single mode
-  watch([selectedUser, selectedApp], ([newUser, newApp]) => {
-    singleUser.value = newUser !== null;
-    singleApp.value = newApp !== null;
-  }, { immediate: true });
-
   const loading = ref(false);
   const matches = ref([]);
+  const userPage = ref(1);
+  const batchSize = 10;
+  const hasMoreUsers = ref(true);
+  const processedUsers = ref(new Set());
+
+  const reset = () => {
+    matches.value = [];
+    userPage.value = 1;
+    hasMoreUsers.value = true;
+    processedUsers.value.clear();
+  };
+
+  // When user or app is set in URL, infer single mode
+  watch([selectedUser, selectedApp], ([newUser, newApp]) => {
+    const isSingleUser = newUser !== null;
+    if (singleUser.value !== isSingleUser) {
+      singleUser.value = isSingleUser;
+    }
+    const isSingleApp = newApp !== null;
+    if (singleApp.value !== isSingleApp) {
+      singleApp.value = isSingleApp;
+    }
+  }, { immediate: true });
+  // When user or app is set in URL, update selected values
+  watch([singleUser, singleApp], ([newSingleUser, newSingleApp]) => {
+    if (!newSingleUser) {
+      selectedUser.value = null;
+    }
+    if (!newSingleApp) {
+      selectedApp.value = null;
+    }
+  }, { immediate: true });
 
   // Function to get user collection apps to match against
   const getCollectionApps = async (users) => {
@@ -51,79 +77,83 @@
     return results;
   };
 
-  // Get users to match against
+  // Get users to match against in batches
   const getUsers = async () => {
     const userIds = [];
 
     if (singleUser.value) {
-      if (!selectedUser.value) {
-        return userIds;
-      }
       userIds.push(selectedUser.value);
+      hasMoreUsers.value = false;
     } else {
-      // Fetch active users (limited to 100 for performance)
+      // Fetch active users in batches for infinite scrolling
       const { data, error } = await supabase
         .from(User.table)
         .select(User.fields.id)
         .neq(User.fields.id, authUser.id)
-        .limit(100);
+        .order('updated_at', { ascending: false }) // most recently active first
+        .range((userPage.value - 1) * batchSize, userPage.value * batchSize - 1);
 
       if (error) {
         throw error;
       }
 
+      // Update hasMoreUsers flag based on if we received fewer results than requested
+      hasMoreUsers.value = data.length === batchSize;
       userIds.push(...data.map(user => user[User.fields.id]));
     }
 
     return userIds;
   };
 
-  // Filter matches by specific app if selected
-  const filterMatchesByApp = (collectionsData) => {
-    if (!singleApp.value || !selectedApp.value) {
-      return collectionsData;
-    }
-
-    const appId = selectedApp.value;
-    const filteredData = {};
-
-    for (const [userId, collections] of Object.entries(collectionsData)) {
-      filteredData[userId] = {
-        tradelist: collections.tradelist.filter(id => id === appId),
-        wishlist: collections.wishlist.filter(id => id === appId)
-      };
-    }
-
-    return filteredData;
-  };
-
   // Load matches based on current filters
   const loadMatches = async () => {
-    loading.value = true;
-    matches.value = [];
+    reset();
 
     try {
+      await loadMoreMatches({ done: () => {} });
+    } catch (error) {
+      console.error('Error loading matches:', error);
+      snackbarStore.set('error', 'Error loading matches');
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Load more matches for infinite scrolling
+  const loadMoreMatches = async ({ done }) => {
+    if (!hasMoreUsers.value) {
+      done('empty');
+      return;
+    }
+
+    try {
+      loading.value = true;
       const users = await getUsers();
-      if (!users.length) {
-        snackbarStore.set('error', 'No users to match');
-        loading.value = false;
+
+      // Filter out users we've already processed
+      const newUsers = users.filter(userId => !processedUsers.value.has(userId));
+
+      if (!newUsers.length) {
+        userPage.value++;
+        done(hasMoreUsers.value ? 'ok' : 'empty');
         return;
       }
 
-      // Get all collection data
-      let collectionsData = await getCollectionApps([authUser.id, ...users]);
+      // Mark these users as processed
+      newUsers.forEach(userId => processedUsers.value.add(userId));
 
-      // Apply app filter if needed
-      if (singleApp.value && selectedApp.value) {
-        collectionsData = filterMatchesByApp(collectionsData);
-      }
+      // Get all collection data
+      const collectionsData = await getCollectionApps([authUser.id, ...newUsers]);
 
       // My have and want
       const myHave = collectionsData[authUser.id].tradelist;
       const myWant = collectionsData[authUser.id].wishlist;
 
+      // Track if this batch found any valid matches
+      let validMatchesFound = false;
+
       // Process each user for matches
-      for (const userId of users) {
+      for (const userId of newUsers) {
         if (!collectionsData[userId]) { continue; }
 
         const theirHave = collectionsData[userId].tradelist;
@@ -135,22 +165,37 @@
         // Find matching apps (what I want that they have)
         const want = myWant.filter(appId => theirHave.includes(appId));
 
-        // Only add users with at least one match
-        if (have.length > 0 || want.length > 0) {
+        if (singleUser.value || (singleApp.value && [...have, ...want].includes(Number(selectedApp.value))) || (have.length > 0 && want.length > 0 && !singleApp.value)) {
           matches.value.push({
             user: userId,
             have,
             want
           });
+          validMatchesFound = true;
         }
       }
 
-      if (matches.value.length === 0) {
+      // Auto-load next batch if no matches found and more users are available
+      if (!validMatchesFound && hasMoreUsers.value) {
+        userPage.value++;
+        // Instead of recursive call, we'll just let the function return
+        // and the infinite scroll component will trigger another load if needed
+        done('ok');
+        return;
+      }
+
+      // Increment the page for next load
+      userPage.value++;
+
+      if (userPage.value === 2 && matches.value.length === 0) {
         snackbarStore.set('warning', 'No matches found with current filters');
       }
+
+      done(hasMoreUsers.value ? 'ok' : 'empty');
     } catch (error) {
-      console.error('Error loading matches:', error);
-      snackbarStore.set('error', 'Error loading matches');
+      console.error('Error loading more matches:', error);
+      snackbarStore.set('error', 'Error loading more matches');
+      done('error');
     } finally {
       loading.value = false;
     }
@@ -257,7 +302,7 @@
         v-if="matches.length === 0 && !loading"
         class="d-flex justify-center align-center h-100"
       >
-        <div class=" text-disabled font-italic text-center">
+        <div class="text-disabled font-italic text-center">
           <p>No matches found.</p>
           <p>Try adjusting your filters or updating your wishlist and tradelist.</p>
           <br>
@@ -273,7 +318,7 @@
       </div>
 
       <div
-        v-if="loading"
+        v-if="loading && matches.length === 0"
         class="d-flex justify-center align-center h-100"
       >
         <v-progress-circular
@@ -283,81 +328,106 @@
         />
       </div>
 
-      <nuxt-link
-        v-for="match in matches"
-        :key="`match-${match.user}`"
-        v-tooltip:top="`Click to trade with this user`"
-        class="text-decoration-none text-primary mb-4"
-        target="_blank"
-        :to="`/trade/new?partner=${match.user}`"
+      <v-infinite-scroll
+        empty-text=""
+        margin="100"
+        mode="intersect"
+        @load="loadMoreMatches"
       >
-        <v-card
-          v-ripple
-          class="cursor-pointer mb-4"
-          variant="outlined"
+        <div
+          v-for="match in matches"
+          :key="`match-${match.user}`"
         >
-          <v-card-title class="d-flex align-center ga-2">
-            Match with
-            <rich-profile-link
-              no-link
-              :user-id="match.user"
+          <v-card class="border rounded-lg mb-4">
+            <v-card-title class="d-flex align-center ga-2">
+              Match with
+
+              <rich-profile-link :user-id="match.user" />
+
+              <v-spacer />
+
+              <v-btn
+                v-tooltip:top="`Click to trade with this user`"
+                target="_blank"
+                :to="`/trade/new?partner=${match.user}`"
+                variant="tonal"
+              >
+                <v-icon
+                  icon="mdi-plus"
+                  start
+                />
+                Trade
+              </v-btn>
+            </v-card-title>
+            <v-divider />
+            <v-row class="pa-2">
+              <v-col
+                cols="12"
+                lg="6"
+              >
+                <h3 class="mb-2 d-flex align-center ga-1">
+                  <v-icon icon="mdi-heart-circle-outline" />
+                  <span class="text-disabled">You have</span>
+                  <strong>{{ match.have.length }}</strong>
+                  <span class="text-disabled">
+                    {{ match.have.length === 1 ? 'item' : 'items' }} they want
+                  </span>
+                </h3>
+                <table-apps
+                  v-if="match.have.length"
+                  :only-apps="match.have"
+                  simple
+                  style="min-height: 0;"
+                />
+                <v-alert
+                  v-else
+                  density="compact"
+                  text="Nothing to offer"
+                  type="info"
+                  variant="tonal"
+                />
+              </v-col>
+              <v-col
+                cols="12"
+                lg="6"
+              >
+                <h3 class="mb-2 d-flex align-center ga-1">
+                  <v-icon icon="mdi-heart-circle-outline" />
+                  <span class="text-disabled">They have</span>
+                  <strong>{{ match.want.length }}</strong>
+                  <span class="text-disabled">
+                    {{ match.want.length === 1 ? 'item' : 'items' }} you want
+                  </span>
+                </h3>
+                <table-apps
+                  v-if="match.want.length"
+                  :only-apps="match.want"
+                  simple
+                  style="min-height: 0;"
+                />
+                <v-alert
+                  v-else
+                  density="compact"
+                  text="Nothing you want"
+                  type="info"
+                  variant="tonal"
+                />
+              </v-col>
+            </v-row>
+          </v-card>
+        </div>
+
+        <!-- Loading indicator for infinite scroll -->
+        <template #loading>
+          <div class="d-flex justify-center py-4">
+            <v-progress-circular
+              v-if="hasMoreUsers"
+              color="primary"
+              indeterminate
             />
-          </v-card-title>
-          <v-divider />
-          <v-row class="pa-2">
-            <v-col
-              cols="12"
-              md="6"
-            >
-              <h3 class="mb-2 d-flex align-center">
-                <v-icon
-                  class="mr-2"
-                  icon="mdi-swap-horizontal-circle-outline"
-                />
-                You have {{ match.have.length }} {{ match.have.length === 1 ? 'item' : 'items' }} they want
-              </h3>
-              <table-apps
-                v-if="match.have.length"
-                :only-apps="match.have"
-                simple
-                style="min-height: 0; pointer-events: none;"
-              />
-              <v-alert
-                v-else
-                density="compact"
-                text="Nothing to offer"
-                type="info"
-                variant="tonal"
-              />
-            </v-col>
-            <v-col
-              cols="12"
-              md="6"
-            >
-              <h3 class="mb-2 d-flex align-center">
-                <v-icon
-                  class="mr-2"
-                  icon="mdi-heart-circle-outline"
-                />
-                They have {{ match.want.length }} {{ match.want.length === 1 ? 'item' : 'items' }} you want
-              </h3>
-              <table-apps
-                v-if="match.want.length"
-                :only-apps="match.want"
-                simple
-                style="min-height: 0; pointer-events: none;"
-              />
-              <v-alert
-                v-else
-                density="compact"
-                text="Nothing you want"
-                type="info"
-                variant="tonal"
-              />
-            </v-col>
-          </v-row>
-        </v-card>
-      </nuxt-link>
+          </div>
+        </template>
+      </v-infinite-scroll>
     </v-card>
   </s-page-content>
 </template>
