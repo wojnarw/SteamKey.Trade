@@ -4,6 +4,7 @@
   const snackbarStore = useSnackbarStore();
   const { Collection } = useORM();
   const { updateUserCollections, user } = useAuthStore();
+  const router = useRouter();
 
   const props = defineProps({
     id: {
@@ -496,7 +497,7 @@
       >
         <v-btn
           variant="text"
-          @click="navigateTo(`/collection/${collection.id}`)"
+          @click="router.back"
         >
           Cancel
         </v-btn>
