@@ -334,6 +334,7 @@
                 v-if="user.bio"
                 border="start"
                 class="ma-2 text-caption"
+                style="white-space: pre-wrap;"
               >
                 {{ user.bio }}
               </v-alert>

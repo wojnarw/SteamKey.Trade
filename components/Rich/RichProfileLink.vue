@@ -255,7 +255,10 @@
           </div>
         </v-card-title>
         <v-card-text class="border py-2">
-          <span v-if="user.bio">
+          <span
+            v-if="user.bio"
+            style="white-space: pre-wrap;"
+          >
             {{ user.bio }}
           </span>
           <span
