@@ -366,7 +366,7 @@
                 lg="6"
               >
                 <h3 class="mb-2 d-flex align-center ga-1">
-                  <v-icon icon="mdi-heart-circle-outline" />
+                  <v-icon icon="mdi-swap-horizontal-circle-outline" />
                   <span class="text-disabled">You have</span>
                   <strong>{{ match.have.length }}</strong>
                   <span class="text-disabled">

@@ -644,7 +644,10 @@
                     'text-purple': inTradelist(item.id) && inWishlist(item.id) && !inLibrary(item.id),
                   }"
                 >
-                  <v-list-item-title class="font-weight-bold">
+                  <v-list-item-title
+                    v-tooltip:top="item[App.fields.title] || `Unknown App ${item.id}`"
+                    class="font-weight-bold"
+                  >
                     {{ item[App.fields.title] || `Unknown App ${item.id}` }}
                   </v-list-item-title>
                   <v-list-item-subtitle
