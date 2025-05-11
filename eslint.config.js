@@ -1,16 +1,21 @@
+import globals from 'globals';
 import js from '@eslint/js';
 import vue from 'eslint-plugin-vue';
-import vuetify from 'eslint-config-vuetify';
 import vueEslintParser from 'vue-eslint-parser';
+import vuetify from 'eslint-config-vuetify';
 import withNuxt from './.nuxt/eslint.config.mjs';
 
 export default withNuxt(
   js.configs.recommended,
   ...vue.configs['flat/recommended'],
   {
-    files: ['**/*.js', '**/*.vue'],
+    files: ['**/*.js', '**/*.cjs', '**/*.vue'],
     languageOptions: {
-      parser: vueEslintParser
+      parser: vueEslintParser,
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
     },
     ignores: ['dist/*'],
     plugins: { vue },
