@@ -129,7 +129,9 @@ export class User extends Entity {
         newTrade: 'new_trade',
         acceptedTrade: 'accepted_trade',
         newVaultEntry: 'new_vault_entry',
-        unreadMessages: 'unread_messages'
+        unreadMessages: 'unread_messages',
+        disputedTrade: 'disputed_trade',
+        resolvedTrade: 'resolved_trade'
       })
     });
   }
@@ -176,7 +178,9 @@ export class User extends Entity {
       newTrade: 'New Trade',
       acceptedTrade: 'Accepted Trade',
       newVaultEntry: 'New Vault Entry',
-      unreadMessages: 'Unread Messages'
+      unreadMessages: 'Unread Messages',
+      disputedTrade: 'Disputed Trade',
+      resolvedTrade: 'Resolved Trade'
     });
   }
 
@@ -186,7 +190,9 @@ export class User extends Entity {
       newTrade: 'You received a new trade offer',
       acceptedTrade: 'Your trade offer was accepted',
       newVaultEntry: 'You received a new item in your vault',
-      unreadMessages: 'You have unread messages'
+      unreadMessages: 'You have unread messages',
+      disputedTrade: 'Your trade has been disputed',
+      resolvedTrade: 'Your trade dispute has been resolved'
     });
   }
 

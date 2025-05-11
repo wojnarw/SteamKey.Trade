@@ -16,7 +16,7 @@ create table preferences (
   app_columns text[] default array['title', 'type', 'retail_price', 'market_price', 'plus_one', 'cards', 'achievements', 'tradelists', 'wishlists']::text[],
   dark_mode boolean default true,
   dashboard_widgets widget[] default array['welcome', 'users_online', 'stats', 'trade_activity']::widget[],
-  enabled_notifications notification[] default array['new_trade', 'accepted_trade', 'new_vault_entry', 'unread_messages']::notification[],
+  enabled_notifications notification[] default array['new_trade', 'accepted_trade', 'new_vault_entry', 'unread_messages', 'disputed_trade', 'resolved_trade']::notification[],
   incoming_criteria jsonb default '{
     "collections": {"only":[],"except":[]},
     "tags": {"only":[],"except":[]},

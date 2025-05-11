@@ -1,6 +1,6 @@
 -- Create notification enum
 create type notification as enum (
-  'new_trade', 'accepted_trade', 'new_vault_entry', 'unread_messages'
+  'new_trade', 'accepted_trade', 'new_vault_entry', 'unread_messages', 'disputed_trade', 'resolved_trade'
 );
 
 -- Create notifications table

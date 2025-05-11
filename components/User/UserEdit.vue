@@ -1,4 +1,5 @@
 <script setup>
+  import { isSteamID64 } from '~/assets/js/validate';
   import countries from '~/supabase/functions/_assets/countries.json';
 
   const { user: authUser, preferences, setPhotoUrl, setPreferences } = useAuthStore();
@@ -14,7 +15,7 @@
   // Custom URL validation
   const urlRules = [
     v => /^[a-zA-Z0-9_-]+$/.test(v) || 'Only letters, numbers, underscores and hyphens are allowed',
-    v => !v || !/^76561\d{12}$/.test(v) || 'Steam ID is not allowed as custom URL'
+    v => !v || !isSteamID64(v) || 'Steam ID is not allowed as custom URL'
   ];
 
   const regions = countries.map(country => ({
@@ -213,77 +214,49 @@
 
             <v-col
               cols="12"
-              md="5"
-            >
-              <v-text-field
-                v-model="user.displayName"
-                :hint="User.descriptions.displayName"
-                :label="User.labels.displayName"
-                persistent-hint
-                required
-              />
-            </v-col>
-
-            <v-col
-              cols="12"
-              md="4"
-            >
-              <v-text-field
-                v-model="user.customUrl"
-                :hint="User.descriptions.customUrl"
-                :label="User.labels.customUrl"
-                persistent-hint
-                :rules="urlRules"
-              />
-            </v-col>
-
-            <v-col
-              cols="12"
-              md="3"
-            >
-              <v-combobox
-                hint="Your connected Steam account"
-                :items="[authUser.steamId]"
-                label="Steam Connection"
-                menu-icon=""
-                :model-value="authUser.steamId"
-                persistent-hint
-                readonly
-                variant="plain"
-              >
-                <template #selection>
-                  <v-chip
-                    size="small"
-                    @click="() => navigateTo(`https://steamcommunity.com/profiles/${authUser.steamId}`, {
-                      external: true,
-                      open: { target: '_blank' }
-                    })"
-                  >
-                    <v-icon
-                      class="mr-1"
-                      icon="mdi-steam"
-                    />
-                    {{ authUser.steamId }}
-                  </v-chip>
-                </template>
-              </v-combobox>
-            </v-col>
-
-            <v-col
-              cols="12"
               md="9"
             >
               <v-row>
+                <v-col
+                  cols="12"
+                  md="8"
+                >
+                  <v-text-field
+                    v-model="user.displayName"
+                    :hint="User.descriptions.displayName"
+                    :label="User.labels.displayName"
+                    persistent-hint
+                    required
+                  />
+                </v-col>
+
+                <v-col
+                  cols="12"
+                  md="4"
+                >
+                  <v-text-field
+                    v-model="user.customUrl"
+                    :hint="User.descriptions.customUrl"
+                    :label="User.labels.customUrl"
+                    persistent-hint
+                    :rules="urlRules"
+                  />
+                </v-col>
+
                 <v-col cols="12">
                   <v-textarea
                     v-model="user.bio"
                     :hint="User.descriptions.bio"
                     :label="User.labels.bio"
                     persistent-hint
-                    rows="3"
+                    rows="4"
                   />
                 </v-col>
-                <v-col cols="12">
+
+                <v-col
+                  cols="12"
+                  md="8"
+                >
                   <v-select
                     v-model="user.region"
                     clearable
@@ -292,6 +265,38 @@
                     :label="User.labels.region"
                     persistent-hint
                   />
+                </v-col>
+
+                <v-col
+                  cols="12"
+                  md="4"
+                >
+                  <v-combobox
+                    hint="Your connected Steam account"
+                    :items="[authUser.steamId]"
+                    label="Steam Connection"
+                    menu-icon=""
+                    :model-value="authUser.steamId"
+                    persistent-hint
+                    readonly
+                    variant="plain"
+                  >
+                    <template #selection>
+                      <v-chip
+                        size="small"
+                        @click="() => navigateTo(`https://steamcommunity.com/profiles/${authUser.steamId}`, {
+                          external: true,
+                          open: { target: '_blank' }
+                        })"
+                      >
+                        <v-icon
+                          class="mr-1"
+                          icon="mdi-steam"
+                        />
+                        {{ authUser.steamId }}
+                      </v-chip>
+                    </template>
+                  </v-combobox>
                 </v-col>
               </v-row>
             </v-col>
