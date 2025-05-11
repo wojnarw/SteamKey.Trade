@@ -194,11 +194,12 @@
         }
 
         const apps = Object.values(tradeApps.value).flat();
-        if (apps.every(({ vaultEntryId }) => vaultEntryId) || (trade.value.senderVaultless && trade.value.receiverVaultless)) {
+        const bothVaultless = trade.value.senderVaultless && trade.value.receiverVaultless;
+        if (apps.every(({ vaultEntryId }) => vaultEntryId) || bothVaultless) {
           status = Trade.enums.status.completed;
         }
 
-        await instance.setApps(apps, true);
+        await instance.setApps(apps, true); // Update selection and connected vault entries
       }
 
       instance.status = status;
