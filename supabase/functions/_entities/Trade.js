@@ -1,4 +1,5 @@
 import { Entity } from './BaseEntity.js';
+import { User } from './User.js';
 
 export class Trade extends Entity {
   static get table() {
@@ -306,20 +307,29 @@ export class Trade extends Entity {
    * Retrieves a list of views of the current trade.
    *
    * @returns {Promise<Array<Object>>} A promise that resolves to an array of trade view objects.
+   * @param {boolean} [withUser=false] - If true, includes user information in the result.
    * @throws Will throw an error if the Supabase query fails.
    */
-  async getViews() {
+  async getViews(withUser = false) {
     const { table, fields } = this.constructor.views;
     const { data, error } = await this._client
       .from(table)
-      .select()
-      .eq(fields.tradeId, this.id);
+      .select(withUser ? `*, user:${User.table}!inner(*)` : '*')
+      .eq(fields.tradeId, this.id)
+      .order(fields.createdAt, { ascending: false });
 
     if (error) {
       throw error;
     }
 
-    return data.map((view) => this.constructor.fromDB(view, fields));
+    return data
+      .map((view) => ({
+        ...this.constructor.fromDB(view, fields),
+        ...(withUser ? { user: User.fromDB(view.user) } : {})
+      }))
+      .sort((a, b) => {
+        return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+      });
   }
 
   /**

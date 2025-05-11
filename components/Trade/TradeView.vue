@@ -1,5 +1,6 @@
 <script setup>
   import { validate } from 'uuid';
+  import { relativeDate } from '~/assets/js/date';
 
   const props = defineProps({
     id: {
@@ -64,7 +65,7 @@
 
   const { data: tradeViews } = useLazyAsyncData(`trade-views-${props.id}`, async () => {
     const instance = new Trade(props.id);
-    return instance.getViews();
+    return instance.getViews(true);
   });
 
   onMounted(async () => {
@@ -284,40 +285,14 @@
             :loading="submitting"
           >
             <v-card-title class="d-flex align-center text-button">
-              <v-tooltip
-                location="bottom"
-                open-on-click
-              >
-                <template #activator="attrs">
-                  <span
-                    v-bind="attrs.props"
-                    class="cursor-pointer"
-                  >
+              <span>
 
-                    <v-icon
-                      class="mr-1"
-                      icon="mdi-swap-horizontal"
-                    />
-                    Trade offer:
-                  </span>
-                </template>
-                <p class="text-center font-weight-bold">
-                  Viewed by
-                </p>
-                <p
-                  v-for="item in tradeViews"
-                  :key="item.userId"
-                  class="text-no-wrap d-flex align-center"
-                >
-                  <rich-profile-link
-                    hide-avatar
-                    no-link
-                    :user-id="item.userId"
-                  />
-                  <v-spacer class="mx-1" />
-                  <rich-date :date="item.updatedAt || item.createdAt" />
-                </p>
-              </v-tooltip>
+                <v-icon
+                  class="mr-1"
+                  icon="mdi-swap-horizontal"
+                />
+                Trade offer:
+              </span>
 
               <v-icon
                 class="ml-2 mr-1"
@@ -342,6 +317,48 @@
                 </nuxt-link>
                 )
               </span>
+
+              <v-avatar
+                v-for="item in (tradeViews || []).slice(0, 3)"
+                :key="item.userId"
+                v-tooltip="`${item.user.displayName || item.user.steamId} lurked ${relativeDate(item.updatedAt || item.createdAt)}`"
+                class="ml-2"
+                size="24"
+              >
+                <rich-image
+                  :alt="item.userId"
+                  contain
+                  icon="mdi-account"
+                  :image="item.user.avatar"
+                  :title="item.userId"
+                />
+              </v-avatar>
+
+              <v-tooltip
+                v-if="tradeViews?.length > 3"
+                location="bottom"
+                open-on-click
+              >
+                <template #activator="attrs">
+                  <span
+                    class="cursor-pointer ml-2 text-disabled"
+                    v-bind="attrs.props"
+                  >
+                    +{{ tradeViews.length - 3 }}</span>
+                </template>
+                <p class="text-center font-weight-bold">
+                  Lurkers
+                </p>
+                <p
+                  v-for="item in tradeViews.slice(3)"
+                  :key="item.userId"
+                  class="text-no-wrap d-flex align-center"
+                >
+                  {{ item.user.displayName || item.user.steamId }}
+                  <v-spacer class="mx-1" />
+                  <rich-date :date="item.updatedAt || item.createdAt" />
+                </p>
+              </v-tooltip>
               <v-spacer class="my-1" />
               <v-chip
                 v-if="isDisputed"
