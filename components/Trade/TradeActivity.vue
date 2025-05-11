@@ -106,7 +106,9 @@
       refresh().then(() => {
         // Only set up the subscription if the user has trades
         if (trades.value && trades.value.length > 0) {
-          const filter = `trade_id=eq.${trades.value.map(trade => trade.id).join(',')}`;
+          // Use the 'in' operator to handle multiple UUIDs properly
+          const tradeIds = trades.value.map(trade => `"${trade.id}"`).join(',');
+          const filter = `trade_id=in.(${tradeIds})`;
           channel = supabase.channel(`${Trade.activity.table}_${user.value.id}`)
             .on('postgres_changes', { ...baseConfig, filter }, handleNewActivity)
             .subscribe();
