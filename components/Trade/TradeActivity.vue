@@ -258,7 +258,7 @@
     }
 
     .activity-body {
-      color: white;
+      color: rgba(var(--v-primary-base));
       font-size: 1rem;
       word-wrap: break-word;
     }
