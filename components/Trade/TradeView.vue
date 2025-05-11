@@ -561,7 +561,6 @@
           </v-btn>
           <dialog-confirm
             v-if="trade.senderId === user.id && trade.status === Trade.enums.status.accepted && trade.receiverVaultless"
-            v-model="tradeApps.sender"
             color="warning"
             confirm-text="Agree"
             title="Exchange off-platform"
@@ -592,6 +591,7 @@
               </v-alert>
             </template>
           </dialog-confirm>
+
           <dialog-vault-selector
             v-if="trade.senderId === user.id && trade.status === Trade.enums.status.accepted && !trade.receiverVaultless"
             v-model="tradeApps.sender"
