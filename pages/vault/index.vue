@@ -64,7 +64,7 @@
       title: activeTab.value === 'sent' ? VaultEntry.labels.to : VaultEntry.labels.from,
       value: `${VaultEntry.table}.${Trade.table}`
     }]),
-    { title: VaultEntry.labels.actions, value: 'actions', sortable: false }
+    { title: VaultEntry.labels.actions, value: 'actions', sortable: false, align: 'end' }
   ]);
 
   const queryGetter = () => {
