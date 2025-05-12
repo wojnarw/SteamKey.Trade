@@ -321,7 +321,7 @@
               <v-avatar
                 v-for="item in (tradeViews || []).slice(0, 3)"
                 :key="item.userId"
-                v-tooltip="`${item.user.displayName || item.user.steamId} lurked ${relativeDate(item.updatedAt || item.createdAt)}`"
+                v-tooltip="`Viewed by ${item.user.displayName || item.user.steamId} ${relativeDate(item.updatedAt || item.createdAt)}`"
                 class="ml-2"
                 size="24"
               >
@@ -347,7 +347,7 @@
                     +{{ tradeViews.length - 3 }}</span>
                 </template>
                 <p class="text-center font-weight-bold">
-                  Lurkers
+                  Viewers
                 </p>
                 <p
                   v-for="item in tradeViews.slice(3)"
