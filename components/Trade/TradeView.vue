@@ -326,11 +326,10 @@
                 size="24"
               >
                 <rich-image
-                  :alt="item.userId"
+                  :alt="item.user.displayName || item.user.steamId"
                   contain
                   icon="mdi-account"
                   :image="item.user.avatar"
-                  :title="item.userId"
                 />
               </v-avatar>
 
