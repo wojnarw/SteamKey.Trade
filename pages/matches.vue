@@ -11,6 +11,14 @@
   const singleApp = ref(false);
   const selectedApp = useSearchParam('app', null);
 
+  // Match filtering option
+  const matchFilterOptions = [
+    { value: 'all', title: 'Everything' },
+    { value: 'oneSide', title: 'Onsided matches' },
+    { value: 'bothSides', title: 'Mutual matches' }
+  ];
+  const matchFilter = ref('oneSide'); // Default to one side matching apps
+
   const loading = ref(false);
   const matches = ref([]);
   const userPage = ref(1);
@@ -119,6 +127,22 @@
     }
   };
 
+  // Filter matches based on user preference
+  const filterMatches = (matchData) => {
+    const { have, want } = matchData;
+
+    // Apply filter based on matchFilter value
+    switch (matchFilter.value) {
+      case 'bothSides':
+        return have.length > 0 && want.length > 0;
+      case 'oneSide':
+        return have.length > 0 || want.length > 0;
+      case 'all':
+      default:
+        return true;
+    }
+  };
+
   // Load more matches for infinite scrolling
   const loadMoreMatches = async ({ done }) => {
     if (!hasMoreUsers.value) {
@@ -165,7 +189,8 @@
         // Find matching apps (what I want that they have)
         const want = myWant.filter(appId => theirHave.includes(appId));
 
-        if (singleUser.value || (singleApp.value && [...have, ...want].includes(Number(selectedApp.value))) || (have.length > 0 && want.length > 0 && !singleApp.value)) {
+        // Only add match if it passes the filter
+        if (filterMatches({ have, want })) {
           matches.value.push({
             user: userId,
             have,
@@ -218,85 +243,190 @@
   ];
 
   useHead({ title });
+
+  definePageMeta({
+    middleware: 'authenticated'
+  });
 </script>
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
     <v-card class="h-100 pa-4">
-      <div class="d-flex flex-column flex-md-row align-md-center justify-space-between ga-4 mb-4">
-        <!-- User selection -->
-        <div class="d-flex align-center ga-4">
-          <v-radio-group
-            v-model="singleUser"
-            hide-details
-            inline
-          >
-            <v-radio
-              label="All users"
-              :value="false"
-            />
-            <v-radio
-              label="Single user"
-              :value="true"
-            />
-          </v-radio-group>
-
-          <dialog-select-user
-            v-if="singleUser"
-            @select:user="user => selectedUser = user"
-          >
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="tonal"
+      <!-- Filters section -->
+      <v-card class="mb-4 border rounded-lg">
+        <v-card-title class="text-tonal">
+          <v-icon
+            class="mr-2"
+            icon="mdi-filter-outline"
+          />
+          Match Filters
+        </v-card-title>
+        <v-divider />
+        <v-card-text>
+          <v-row>
+            <!-- User selection -->
+            <v-col
+              cols="12"
+              sm="6"
+              xl="3"
+            >
+              <v-card
+                class="h-100"
+                variant="flat"
               >
-                {{ selectedUser ? 'Change user' : 'Select user' }}
-              </v-btn>
-            </template>
-          </dialog-select-user>
-        </div>
+                <v-card-subtitle>User Filter</v-card-subtitle>
+                <v-card-text>
+                  <v-btn-toggle
+                    v-model="singleUser"
+                    class="mb-2 border"
+                    color="tonal"
+                  >
+                    <v-btn :value="false">
+                      <v-icon
+                        icon="mdi-account-group"
+                        start
+                      />
+                      All Users
+                    </v-btn>
+                    <v-btn :value="true">
+                      <v-icon
+                        icon="mdi-account"
+                        start
+                      />
+                      Single User
+                    </v-btn>
+                  </v-btn-toggle>
 
-        <!-- App selection -->
-        <div class="d-flex align-center ga-2">
-          <v-radio-group
-            v-model="singleApp"
-            hide-details
-            inline
-          >
-            <v-radio
-              label="All Apps"
-              :value="false"
-            />
-            <v-radio
-              label="Single App"
-              :value="true"
-            />
-          </v-radio-group>
+                  <div
+                    v-if="singleUser"
+                    class="mt-2"
+                  >
+                    <dialog-select-user @select:user="user => selectedUser = user">
+                      <template #activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          block
+                          variant="tonal"
+                        >
+                          <v-icon
+                            icon="mdi-account-search"
+                            start
+                          />
+                          {{ selectedUser ? 'Change User' : 'Select User' }}
+                        </v-btn>
+                      </template>
+                    </dialog-select-user>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
 
-          <dialog-select-app
-            v-if="singleApp"
-            @select:app="app => selectedApp = app"
-          >
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                variant="tonal"
+            <!-- App selection -->
+            <v-col
+              cols="12"
+              sm="6"
+              xl="3"
+            >
+              <v-card
+                class="h-100"
+                variant="flat"
               >
-                {{ selectedApp ? 'Change App' : 'Select App' }}
-              </v-btn>
-            </template>
-          </dialog-select-app>
-        </div>
+                <v-card-subtitle>App Filter</v-card-subtitle>
+                <v-card-text>
+                  <v-btn-toggle
+                    v-model="singleApp"
+                    class="mb-2 border"
+                    color="tonal"
+                  >
+                    <v-btn :value="false">
+                      <v-icon
+                        icon="mdi-apps"
+                        start
+                      />
+                      All Apps
+                    </v-btn>
+                    <v-btn :value="true">
+                      <v-icon
+                        icon="mdi-gamepad-variant"
+                        start
+                      />
+                      Single App
+                    </v-btn>
+                  </v-btn-toggle>
 
-        <v-btn
-          :disabled="(singleUser && !selectedUser) || (singleApp && !selectedApp)"
-          :loading="loading"
-          variant="tonal"
-          @click="handleLoadMatches"
-        >
-          Find Matches
-        </v-btn>
-      </div>
+                  <div
+                    v-if="singleApp"
+                    class="mt-2"
+                  >
+                    <dialog-select-app @select:app="app => selectedApp = app">
+                      <template #activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          block
+                          variant="tonal"
+                        >
+                          <v-icon
+                            icon="mdi-gamepad-square"
+                            start
+                          />
+                          {{ selectedApp ? 'Change App' : 'Select App' }}
+                        </v-btn>
+                      </template>
+                    </dialog-select-app>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+
+            <!-- Match type filter -->
+            <v-col
+              cols="12"
+              xl="6"
+            >
+              <v-card
+                class="h-100"
+                variant="flat"
+              >
+                <v-card-subtitle>Match Type</v-card-subtitle>
+                <v-card-text>
+                  <v-btn-toggle
+                    v-model="matchFilter"
+                    class="mb-2 border"
+                    color="tonal"
+                    divided
+                  >
+                    <v-btn
+                      v-for="option in matchFilterOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      <v-icon
+                        icon="mdi-filter-outline"
+                        start
+                      />
+                      {{ option.title }}
+                    </v-btn>
+                  </v-btn-toggle>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <div class="d-flex justify-center mt-2">
+            <v-btn
+              block
+              color="tonal"
+              :disabled="loading || (singleUser && !selectedUser) || (singleApp && !selectedApp)"
+              prepend-icon="mdi-magnify"
+              size="large"
+              variant="tonal"
+              @click="handleLoadMatches"
+            >
+              {{ loading ? 'Loading...' : 'Find Matches' }}
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
 
       <div
         v-if="matches.length === 0 && !loading"
@@ -322,7 +452,6 @@
         class="d-flex justify-center align-center h-100"
       >
         <v-progress-circular
-          color="primary"
           indeterminate
           size="64"
         />
@@ -382,6 +511,7 @@
                 <v-alert
                   v-else
                   density="compact"
+                  icon="mdi-information"
                   text="Nothing to offer"
                   type="info"
                   variant="tonal"
@@ -408,6 +538,7 @@
                 <v-alert
                   v-else
                   density="compact"
+                  icon="mdi-information"
                   text="Nothing you want"
                   type="info"
                   variant="tonal"
@@ -422,7 +553,6 @@
           <div class="d-flex justify-center py-4">
             <v-progress-circular
               v-if="hasMoreUsers"
-              color="primary"
               indeterminate
             />
           </div>
