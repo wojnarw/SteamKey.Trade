@@ -324,11 +324,12 @@
                 :to="`/user/${item.user.customUrl || item.user.steamId}`"
               >
                 <v-avatar
+                  v-ripple
                   v-tooltip="`Viewed by ${item.user.displayName || item.user.steamId} ${relativeDate(item.updatedAt || item.createdAt)}`"
                   class="ml-2"
-                  size="24"
                   :icon="item.user?.avatar ? undefined : 'mdi-account'"
-                  :image="item.user?.avatar ? user.avatar : undefined"
+                  :image="item.user?.avatar ? item.user.avatar : undefined"
+                  size="24"
                 />
               </nuxt-link>
 
