@@ -318,20 +318,24 @@
                 )
               </span>
 
-              <v-avatar
+              <nuxt-link
                 v-for="item in (tradeViews || []).slice(0, 3)"
                 :key="item.userId"
-                v-tooltip="`Viewed by ${item.user.displayName || item.user.steamId} ${relativeDate(item.updatedAt || item.createdAt)}`"
-                class="ml-2"
-                size="24"
+                :to="`/user/${item.user.customUrl || item.user.steamId}`"
               >
-                <rich-image
-                  :alt="item.user.displayName || item.user.steamId"
-                  contain
-                  icon="mdi-account"
-                  :image="item.user.avatar"
-                />
-              </v-avatar>
+                <v-avatar
+                  v-tooltip="`Viewed by ${item.user.displayName || item.user.steamId} ${relativeDate(item.updatedAt || item.createdAt)}`"
+                  class="ml-2"
+                  size="24"
+                >
+                  <rich-image
+                    :alt="item.user.displayName || item.user.steamId"
+                    contain
+                    icon="mdi-account"
+                    :image="item.user.avatar"
+                  />
+                </v-avatar>
+              </nuxt-link>
 
               <v-tooltip
                 v-if="tradeViews?.length > 3"
