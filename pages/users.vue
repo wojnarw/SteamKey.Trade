@@ -53,11 +53,10 @@
         @click:row="(item) => navigateTo(`/user/${item[User.fields.customUrl] || item[User.fields.steamId]}`)"
       >
         <template #[`item.avatar`]="{ item }">
-          <rich-profile-link
-            hide-reputation
-            hide-text
-            :user-data="item"
-            :user-id="item.id"
+          <v-avatar
+            color="surface-variant"
+            :icon="item.avatar ? undefined : 'mdi-account'"
+            :image="item.avatar ? user.avatar : undefined"
           />
         </template>
 
