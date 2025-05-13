@@ -145,6 +145,10 @@
 
   const dialog = ref(false);
 
+  const impersonate = (steamId) => {
+    return User.login(supabase, null, steamId);
+  };
+
   const title = computed(() => user?.displayName || slug || 'Unknown user');
   const breadcrumbs = computed(() => [
     {
@@ -174,6 +178,23 @@
       :loading="isLoading"
     >
       <template #append>
+        <!-- TODO: Implement user roles -->
+        <v-btn
+          v-if="authUser?.steamId === '76561198042965266'"
+          class="ml-2 bg-surface rounded"
+          :icon="$vuetify.display.xs"
+          :rounded="$vuetify.display.xs"
+          variant="flat"
+          @click="impersonate(user.steamId)"
+        >
+          <v-icon
+            class="mr-0 mr-sm-2"
+            icon="mdi-account-switch"
+          />
+          <span class="d-none d-sm-block">
+            Impersonate
+          </span>
+        </v-btn>
         <dialog-user-review
           v-if="tradesCommon"
           :user-id="user.id"

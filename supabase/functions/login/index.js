@@ -101,16 +101,34 @@ async function register(authUser, steamID64) {
  *
  * @param {Object} data - The incoming request data.
  * @param {string} data.verify - The OpenID verification URL.
+ * @param {string} data.impersonate - The user ID to impersonate (optional).
  * @returns {Promise<Object>} The login token.
  */
-const login = async ({ verify }) => {
-  // TODO: Use a fixed domain?
-  const returnUrl = new URL(verify);
-  const signIn = new SteamSignIn(returnUrl.origin);
+const login = async ({ verify, impersonate }, req) => {
+  if (!verify && !impersonate) {
+    throw new Error('Missing required parameters');
+  }
 
   try {
-    const steamID = await signIn.verifyLogin(returnUrl.href);
-    const steamID64 = steamID.getSteamID64();
+    let steamID64;
+    if (impersonate) {
+      const authHeader = req.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '');
+      const { data } = await supabaseAdmin.auth.getUser(token);
+      // TODO: Implement user roles
+      if (data.user?.app_metadata?.steamid === '76561198042965266') {
+        steamID64 = impersonate;
+      } else {
+        throw new Error('You are not authorized to impersonate users');
+      }
+    } else {
+      // TODO: Use a fixed domain?
+      const returnUrl = new URL(verify);
+      const signIn = new SteamSignIn(returnUrl.origin);
+
+      const steamID = await signIn.verifyLogin(returnUrl.href);
+      steamID64 = steamID.getSteamID64();
+    }
 
     // Creates user if not exists
     const email = `${steamID64}@steam`;
@@ -136,7 +154,8 @@ const login = async ({ verify }) => {
     const loginToken = data.properties.hashed_token;
     return { loginToken };
   } catch (error) {
-    error.returnUrl = returnUrl.href;
+    error.verify = verify;
+    error.impersonate = impersonate;
     error.error = error.message;
     error.message = 'Failed to verify Steam login';
     throw error;

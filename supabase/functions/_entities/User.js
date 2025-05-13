@@ -200,12 +200,13 @@ export class User extends Entity {
    * Logs in a user with a Steam OpenID login.
    * @param {SupabaseClient} supabase - The Supabase client.
    * @param {string} verify - The OpenID verification URL.
+   * @param {string} impersonate - The SteamID64 of the user to impersonate (admin-only).
    * @returns {Promise<User>} The logged-in user.
    * @throws {Error} If the login fails.
    */
-  static async login(supabase, verify) {
+  static async login(supabase, verify, impersonate) {
     const { data, error: loginError } = await supabase.functions.invoke('login', {
-      body: { verify }
+      body: { verify, impersonate }
     });
 
     if (loginError) {
@@ -220,6 +221,8 @@ export class User extends Entity {
     if (!loginToken) {
       throw new Error('Received no login token');
     }
+
+    await supabase.auth.signOut();
 
     const { data: { user: authUser }, error } = await supabase.auth.verifyOtp({
       token_hash: loginToken,
