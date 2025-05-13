@@ -56,7 +56,7 @@
           <v-avatar
             color="surface-variant"
             :icon="item.avatar ? undefined : 'mdi-account'"
-            :image="item.avatar ? user.avatar : undefined"
+            :image="item.avatar ? item.avatar : undefined"
           />
         </template>
 
