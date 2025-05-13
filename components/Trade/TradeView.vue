@@ -327,14 +327,9 @@
                   v-tooltip="`Viewed by ${item.user.displayName || item.user.steamId} ${relativeDate(item.updatedAt || item.createdAt)}`"
                   class="ml-2"
                   size="24"
-                >
-                  <rich-image
-                    :alt="item.user.displayName || item.user.steamId"
-                    contain
-                    icon="mdi-account"
-                    :image="item.user.avatar"
-                  />
-                </v-avatar>
+                  :icon="item.user?.avatar ? undefined : 'mdi-account'"
+                  :image="item.user?.avatar ? user.avatar : undefined"
+                />
               </nuxt-link>
 
               <v-tooltip
