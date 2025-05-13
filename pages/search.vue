@@ -115,7 +115,7 @@
             title: user[User.fields.displayName] || user[User.fields.id],
             subtitle: user[User.fields.steamId],
             prependAvatar: user[User.fields.avatar],
-            to: `/user/${user[User.fields.id]}`
+            to: `/user/${user[User.fields.customUrl] || user[User.fields.steamId]}`
           })),
           count
         };
