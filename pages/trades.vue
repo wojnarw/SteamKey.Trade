@@ -185,7 +185,7 @@
               #[`item.${header}`]="{ item }"
             >
               <v-chip color="grey">
-                <strong class="text-white">
+                <strong class="text-primary">
                   {{ item[header === 'have' ? Trade.fields.senderTotal : Trade.fields.receiverTotal] }}
                 </strong>
                 <span class="text-grey ml-1">
