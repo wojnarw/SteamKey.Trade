@@ -10,7 +10,7 @@
   const { user } = useAuthStore();
   const { VaultEntry } = useORM();
 
-  const internalValue = ref(false);
+  const internalValue = defineModel({ type: Boolean, default: false });
   const item = ref({ appid: props.appid, type: VaultEntry.enums.type.key, values: [''] });
   const loading = ref(false);
 
