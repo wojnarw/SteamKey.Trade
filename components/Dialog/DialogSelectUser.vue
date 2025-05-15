@@ -1,7 +1,7 @@
 <script setup>
   import debounce from 'lodash/debounce';
 
-  const props = defineProps({
+  defineProps({
     title: {
       type: String,
       default: 'Select user'
@@ -9,10 +9,6 @@
     selectText: {
       type: String,
       default: 'Select'
-    },
-    returnObject: {
-      type: Boolean,
-      default: false
     }
   });
 
@@ -66,15 +62,9 @@
     debouncedFetchSuggestions(searchTerm);
   };
 
-  const selectUser = async (userId) => {
-    let user = userId || selectedUser.value;
-    if (props.returnObject && typeof user === 'string') {
-      const instance = new User(user);
-      await instance.load();
-      user = instance.toObject();
-    }
+  const selectUser = (userId = selectedUser.value) => {
     internalValue.value = false;
-    emit('select:user', user?.id && !props.returnObject ? user.id : user);
+    emit('select:user', userId);
   };
 </script>
 
@@ -105,12 +95,11 @@
           label="Search"
           :loading="loading"
           placeholder="Type to search..."
-          :return-object="returnObject"
           @update:search="onSearch"
         >
-          <template #item="{ item, props: itemProps }">
+          <template #item="{ item, props }">
             <v-list-item
-              v-bind="itemProps"
+              v-bind="props"
               :title="item.raw[User.fields.displayName]"
             >
               <template #prepend>
