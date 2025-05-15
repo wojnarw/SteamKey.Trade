@@ -47,6 +47,9 @@
     const entry = model.value.find(item => item.appId === appid);
     return entry?.vaultEntryId;
   }));
+  const missingPartnerVault = computed(() => {
+    return user.value && !user.value.publicKey;
+  });
 
   const vaultEntries = ref([]);
   watch([
@@ -166,6 +169,7 @@
                 <v-select
                   v-model="model[index].vaultEntryId"
                   clearable
+                  :disabled="missingPartnerVault"
                   hide-details
                   item-title="value"
                   item-value="id"
@@ -188,14 +192,18 @@
 
           <div class="mt-4 text-center">
             <small
-              v-if="isIncomplete"
+              v-if="isIncomplete || missingPartnerVault"
               class="text-warning"
             >
               <v-icon
                 icon="mdi-alert-circle-outline"
                 start
               />
-              Incomplete! Please select a vault entry for each app.
+              {{
+                missingPartnerVault
+                  ? 'Partner vault not set up. Ask them to, or use the off-platform option.'
+                  : 'Incomplete! Please select a vault entry for each app.'
+              }}
             </small>
           </div>
         </v-container>
@@ -243,7 +251,7 @@
         <v-spacer />
         <v-btn
           color="primary"
-          :disabled="!validPassword || isIncomplete || loading"
+          :disabled="!validPassword || isIncomplete || loading || missingPartnerVault"
           :loading="loading"
           variant="tonal"
           @click="submit"
