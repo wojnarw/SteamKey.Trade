@@ -11,11 +11,12 @@
   const route = useRoute();
   const supabase = useSupabaseClient();
 
+  const table = ref(null);
   const activeTab = useSearchParam('tab', 'unsent');
   const activeApp = useSearchParam('appid', null);
   const activeDialog = ref(route.query.appid && route.query.action === 'add');
 
-  const { data: counts } = useLazyAsyncData('vault-counts', async () => {
+  const { data: counts, refresh } = useLazyAsyncData('vault-counts', async () => {
     const baseQuery = () => supabase
       .from(App.table)
       .select(`*,
@@ -126,8 +127,11 @@
     }
   };
 
-  const onImport = () => {
-    loadEntries(activeApp.value);
+  const onImport = async () => {
+    await Promise.all([
+      table.value?.refresh?.(),
+      refresh()
+    ]);
     activeDialog.value = false;
   };
 
@@ -144,7 +148,6 @@
     snackbarStore.set('success', 'Copied to clipboard');
   };
 
-  const table = ref(null);
   const reveal = async item => {
     const instance = new VaultEntry(item[VaultEntry.table][VaultEntry.fields.id]);
     instance.revealedAt = new Date();

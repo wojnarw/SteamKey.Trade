@@ -31,14 +31,24 @@
   const importToVault = async () => {
     loading.value = true;
 
-    item.value.values = item.value.values.filter(Boolean);
-    await VaultEntry.addValues(supabase, user.id, [item.value]);
+    try {
+      item.value.values = item.value.values.filter(Boolean);
+      await VaultEntry.addValues(supabase, user.id, [item.value]);
 
-    loading.value = false;
-    internalValue.value = false;
+      // Reset
+      encrypted.value = false;
+      item.value.type = VaultEntry.enums.type.key;
+      item.value.values = [''];
 
-    emit('import');
+      internalValue.value = false;
+      emit('import');
+    } catch (error) {
+      console.error('Error importing to vault:', error);
+    } finally {
+      loading.value = false;
+    }
   };
+
 </script>
 
 <template>
