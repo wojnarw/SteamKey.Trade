@@ -211,10 +211,6 @@
   }, { deep: true, immediate: true });
 
   watch(() => selectedApps.value, () => {
-    if (isCopy || isCounter) {
-      return;
-    }
-
     trade.value.senderTotal = Math.max(Math.min(selectedApps.value.sender.length, trade.value.senderTotal), mandatoryApps.value.sender.length);
     trade.value.receiverTotal = Math.max(Math.min(selectedApps.value.receiver.length, trade.value.receiverTotal), mandatoryApps.value.receiver.length);
 
@@ -318,15 +314,6 @@
     }
   };
 
-  const title = isNew ? 'New trade' : 'Editing trade';
-  const breadcrumbs = [
-    { title: 'Home', to: '/' },
-    { title: 'Trades', to: '/trades' },
-    { title: isNew ? 'New' : 'Edit', disabled: true }
-  ];
-
-  useHead({ title });
-
   // Calculate square grid values for trade apps display
   const getGridStyle = (count) => {
     if (!count) { return {}; }
@@ -339,6 +326,15 @@
       'grid-template-rows': `repeat(${Math.ceil(count / columns)}, 1fr)`
     };
   };
+
+  const title = isNew ? 'New trade' : 'Editing trade';
+  const breadcrumbs = [
+    { title: 'Home', to: '/' },
+    { title: 'Trades', to: '/trades' },
+    { title: isNew ? 'New' : 'Edit', disabled: true }
+  ];
+
+  useHead({ title });
 </script>
 
 <template>
