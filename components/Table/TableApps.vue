@@ -262,12 +262,21 @@
             )
           )
         `)
+        // This filter applies to the embedded alias – only matching rows where collection_id is the desired value.
+        .in(`collection.${Collection.apps.fields.collectionId}`, props.onlyCollections);
+
+      if (props.includeApps?.length) {
         // The OR clause says: either the embedded alias exists (i.e. there is a match for collection_id)
         // or the app id is in the given list.
-        .or(`collection.not.is.null, ${App.fields.id}.in.(${(props.includeApps || []).join(',')})`)
-        // This filter applies to the embedded alias – only matching rows where collection_id is the desired value.
-        .in(`collection.${Collection.apps.fields.collectionId}`, props.onlyCollections)
-        .not(App.fields.id, 'in', `(${(props.excludeApps || []).join(',')})`);
+        query = query.or(`collection.not.is.null, ${App.fields.id}.in.(${(props.includeApps || []).join(',')})`);
+      } else {
+        // If no includeApps are specified, we want to exclude apps that are not in the collection.
+        query = query.or(`collection.not.is.null, ${App.fields.id}.is.null`);
+      }
+
+      if (props.excludeApps?.length) {
+        query = query.not(App.fields.id, 'in', `(${props.excludeApps.join(',')})`);
+      }
 
       if (selectedOnly) {
         query = query.in(App.fields.id, selected.value.map(({ id }) => id));

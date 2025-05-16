@@ -176,6 +176,11 @@
       return;
     }
 
+    // Skip loading if already loading
+    if (loading.value) {
+      return;
+    }
+
     loading.value = true;
     // prevPage.value = page;
 
