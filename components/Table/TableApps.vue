@@ -249,11 +249,11 @@
       let query = supabase
         .from(App.table)
         .select(`*,
-          collection:${Collection.apps.table}(
+          collection:${Collection.apps.table}!inner(
             ${Collection.apps.fields.collectionId},
             ...${Collection.table}(
               ${Collection.fields.userId},
-              tags:${Collection.tags.table}(
+              tags:${Collection.tags.table}!inner(
                 ${Collection.tags.fields.collectionId},
                 ${Collection.tags.fields.appId},
                 ${Collection.tags.fields.tagId},
