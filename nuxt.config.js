@@ -103,6 +103,32 @@ export default {
         transformAssetUrls
       }
     },
+    optimizeDeps: {
+      include: [
+        // Supabase and its dependencies
+        'cookie',
+        '@supabase/postgrest-js',
+        '@supabase/supabase-js',
+
+        // Vue Devtools
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+
+        // JSON Schema
+        'ajv',
+        'ajv-formats',
+
+        // Utilities
+        'lodash/debounce',
+        'fuse.js',
+        'uuid',
+        'json-to-csv-export',
+        'jsonata',
+
+        // Image cropping
+        'cropperjs/dist/cropper.esm'
+      ]
+    },
     resolve: {
       alias: {
         '@': __dirname,

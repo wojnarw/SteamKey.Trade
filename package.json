@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "@nuxtjs/supabase": "^1.5.0",
+    "@nuxtjs/supabase": "^1.5.1",
     "@pinia/nuxt": "^0.11.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
@@ -61,22 +61,22 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@nuxt/devtools": "^2.4.0",
-    "@nuxt/eslint": "^1.3.0",
+    "@nuxt/devtools": "^2.4.1",
+    "@nuxt/eslint": "^1.4.0",
     "@nuxt/types": "^2.18.1",
     "@nuxtjs/google-fonts": "^3.2.0",
     "dotenv": "^16.5.0",
-    "eslint": "^9.26.0",
+    "eslint": "^9.27.0",
     "eslint-config-vuetify": "^4.0.0",
     "eslint-plugin-vue": "^10.1.0",
-    "nuxt": "^3.17.2",
-    "sass": "^1.88.0",
+    "nuxt": "^3.17.3",
+    "sass": "^1.89.0",
     "supabase": "^2.22.12",
     "vite-plugin-vuetify": "^2.1.1",
-    "vue": "^3.5.13",
+    "vue": "^3.5.14",
     "vue-eslint-parser": "^10.1.3",
     "vue-router": "^4.5.1",
-    "vuetify": "^3.8.4"
+    "vuetify": "^3.8.5"
   },
   "resolutions": {
     "cookie": "0.7.2"
