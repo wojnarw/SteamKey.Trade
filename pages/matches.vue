@@ -13,11 +13,11 @@
 
   // Match filtering option
   const matchFilterOptions = [
-    { value: 'all', title: 'Everything' },
-    { value: 'oneSide', title: 'Onsided matches' },
-    { value: 'bothSides', title: 'Mutual matches' }
+    { value: 'mutual', title: 'Mutual', description: 'Show results where both sides have something the other wants' },
+    { value: 'partial', title: 'Partial', description: 'Show results where at least one side has something the other wants' },
+    { value: 'all', title: 'Everything', description: 'Show all results, even if nobody wants anything from the other' }
   ];
-  const matchFilter = ref('oneSide'); // Default to one side matching apps
+  const matchFilter = ref('partial'); // Default to one side matching apps
 
   const loading = ref(false);
   const matches = ref([]);
@@ -133,9 +133,9 @@
 
     // Apply filter based on matchFilter value
     switch (matchFilter.value) {
-      case 'bothSides':
+      case 'mutual':
         return have.length > 0 && want.length > 0;
-      case 'oneSide':
+      case 'partial':
         return have.length > 0 || want.length > 0;
       case 'all':
       default:
@@ -251,186 +251,141 @@
 
 <template>
   <s-page-content :breadcrumbs="breadcrumbs">
-    <v-card class="h-100 pa-4">
+    <v-card class="d-flex flex-column flex-grow-1 pa-4">
       <!-- Filters section -->
-      <v-card class="mb-4 border rounded-lg">
-        <v-card-title class="text-tonal">
-          <v-icon
-            class="mr-2"
-            icon="mdi-filter-outline"
-          />
-          Match Filters
-        </v-card-title>
-        <v-divider />
-        <v-card-text>
-          <v-row>
-            <!-- User selection -->
-            <v-col
-              cols="12"
-              sm="6"
-              xl="3"
-            >
-              <v-card
-                class="h-100"
-                variant="flat"
+      <v-card class="mb-4 border rounded-lg flex-grow-0 pt-4">
+        <div class="d-flex flex-lg-row flex-column justify-space-between">
+          <v-card
+            class="h-100"
+            variant="flat"
+          >
+            <v-card-subtitle>User Filter</v-card-subtitle>
+            <v-card-text>
+              <v-btn-toggle
+                v-model="singleUser"
+                class="border"
+                color="tonal"
+                mandatory
               >
-                <v-card-subtitle>User Filter</v-card-subtitle>
-                <v-card-text>
-                  <v-btn-toggle
-                    v-model="singleUser"
-                    class="mb-2 border"
-                    color="tonal"
-                  >
-                    <v-btn :value="false">
-                      <v-icon
-                        icon="mdi-account-group"
-                        start
-                      />
-                      All Users
-                    </v-btn>
-                    <v-btn :value="true">
-                      <v-icon
-                        icon="mdi-account"
-                        start
-                      />
-                      Single User
-                    </v-btn>
-                  </v-btn-toggle>
-
-                  <div
-                    v-if="singleUser"
-                    class="mt-2"
-                  >
-                    <dialog-select-user @select:user="user => selectedUser = user">
-                      <template #activator="{ props }">
+                <v-btn :value="false">
+                  <v-icon
+                    icon="mdi-account-group"
+                    start
+                  />
+                  All Users
+                </v-btn>
+                <dialog-select-user @select:user="user => selectedUser = user">
+                  <template #activator="{ props: dialogProps }">
+                    <v-hover>
+                      <template #default="{ isHovering, props: hoverProps }">
                         <v-btn
-                          v-bind="props"
-                          block
-                          variant="tonal"
+                          v-bind="{ ...hoverProps, ...dialogProps }"
+                          :value="true"
                         >
                           <v-icon
-                            icon="mdi-account-search"
+                            :icon="selectedUser ? 'mdi-account-check' : 'mdi-account'"
                             start
                           />
-                          {{ selectedUser ? 'Change User' : 'Select User' }}
+                          {{ isHovering ? (selectedUser ? 'Change User' : 'Select User') : 'Single User' }}
                         </v-btn>
                       </template>
-                    </dialog-select-user>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
+                    </v-hover>
+                  </template>
+                </dialog-select-user>
+              </v-btn-toggle>
+            </v-card-text>
+          </v-card>
 
-            <!-- App selection -->
-            <v-col
-              cols="12"
-              sm="6"
-              xl="3"
-            >
-              <v-card
-                class="h-100"
-                variant="flat"
+          <!-- App selection -->
+          <v-card
+            class="h-100"
+            variant="flat"
+          >
+            <v-card-subtitle>App Filter</v-card-subtitle>
+            <v-card-text>
+              <v-btn-toggle
+                v-model="singleApp"
+                class="border"
+                color="tonal"
+                mandatory
               >
-                <v-card-subtitle>App Filter</v-card-subtitle>
-                <v-card-text>
-                  <v-btn-toggle
-                    v-model="singleApp"
-                    class="mb-2 border"
-                    color="tonal"
-                  >
-                    <v-btn :value="false">
-                      <v-icon
-                        icon="mdi-apps"
-                        start
-                      />
-                      All Apps
-                    </v-btn>
-                    <v-btn :value="true">
-                      <v-icon
-                        icon="mdi-gamepad-variant"
-                        start
-                      />
-                      Single App
-                    </v-btn>
-                  </v-btn-toggle>
-
-                  <div
-                    v-if="singleApp"
-                    class="mt-2"
-                  >
-                    <dialog-select-app @select:app="app => selectedApp = app">
-                      <template #activator="{ props }">
+                <v-btn :value="false">
+                  <v-icon
+                    icon="mdi-apps"
+                    start
+                  />
+                  All Apps
+                </v-btn>
+                <dialog-select-app @select:app="app => selectedApp = app">
+                  <template #activator="{ props: dialogProps }">
+                    <v-hover>
+                      <template #default="{ isHovering, props: hoverProps }">
                         <v-btn
-                          v-bind="props"
-                          block
-                          variant="tonal"
+                          v-bind="{ ...hoverProps, ...dialogProps }"
+                          :value="true"
                         >
                           <v-icon
-                            icon="mdi-gamepad-square"
+                            :icon="selectedApp ? 'mdi-puzzle-check' : 'mdi-puzzle'"
                             start
                           />
-                          {{ selectedApp ? 'Change App' : 'Select App' }}
+                          {{ isHovering ? (selectedApp ? 'Change App' : 'Select App') : 'Single App' }}
                         </v-btn>
                       </template>
-                    </dialog-select-app>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
+                    </v-hover>
+                  </template>
+                </dialog-select-app>
+              </v-btn-toggle>
+            </v-card-text>
+          </v-card>
 
-            <!-- Match type filter -->
-            <v-col
-              cols="12"
-              xl="6"
-            >
-              <v-card
-                class="h-100"
-                variant="flat"
+          <!-- Match type filter -->
+          <v-card
+            class="h-100"
+            variant="flat"
+          >
+            <v-card-subtitle>Match Type</v-card-subtitle>
+            <v-card-text>
+              <v-btn-toggle
+                v-model="matchFilter"
+                class="border"
+                color="tonal"
+                divided
+                mandatory
               >
-                <v-card-subtitle>Match Type</v-card-subtitle>
-                <v-card-text>
-                  <v-btn-toggle
-                    v-model="matchFilter"
-                    class="mb-2 border"
-                    color="tonal"
-                    divided
-                  >
-                    <v-btn
-                      v-for="option in matchFilterOptions"
-                      :key="option.value"
-                      :value="option.value"
-                    >
-                      <v-icon
-                        icon="mdi-filter-outline"
-                        start
-                      />
-                      {{ option.title }}
-                    </v-btn>
-                  </v-btn-toggle>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
+                <v-btn
+                  v-for="option in matchFilterOptions"
+                  :key="option.value"
+                  v-tooltip:top="option.description"
+                  :value="option.value"
+                >
+                  <v-icon
+                    icon="mdi-crosshairs-gps"
+                    start
+                  />
+                  {{ option.title }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-card-text>
+          </v-card>
+        </div>
 
-          <div class="d-flex justify-center mt-2">
-            <v-btn
-              block
-              color="tonal"
-              :disabled="loading || (singleUser && !selectedUser) || (singleApp && !selectedApp)"
-              prepend-icon="mdi-magnify"
-              size="large"
-              variant="tonal"
-              @click="handleLoadMatches"
-            >
-              {{ loading ? 'Loading...' : 'Find Matches' }}
-            </v-btn>
-          </div>
-        </v-card-text>
+        <v-btn
+          block
+          class="rounded-0"
+          color="tonal"
+          :disabled="loading || (singleUser && !selectedUser) || (singleApp && !selectedApp)"
+          prepend-icon="mdi-magnify"
+          size="large"
+          variant="tonal"
+          @click="handleLoadMatches"
+        >
+          {{ loading ? 'Loading...' : 'Find Matches' }}
+        </v-btn>
       </v-card>
 
       <div
         v-if="matches.length === 0 && !loading"
-        class="d-flex justify-center align-center h-100"
+        class="d-flex justify-center align-center flex-grow-1"
       >
         <div class="text-disabled font-italic text-center">
           <p>No matches found.</p>
@@ -448,8 +403,8 @@
       </div>
 
       <div
-        v-if="loading && matches.length === 0"
-        class="d-flex justify-center align-center h-100"
+        v-else-if="loading && matches.length === 0"
+        class="d-flex justify-center align-center flex-grow-1"
       >
         <v-progress-circular
           indeterminate
@@ -458,8 +413,9 @@
       </div>
 
       <v-infinite-scroll
+        v-else
         empty-text=""
-        margin="100"
+        margin="500"
         mode="intersect"
         @load="loadMoreMatches"
       >
