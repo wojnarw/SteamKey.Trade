@@ -20,7 +20,8 @@ export const processSteamReviews = async (appids) => {
       const url = new URL(`https://store.steampowered.com/appreviews/${appid}`);
       url.searchParams.append('json', 1);
       url.searchParams.append('review_type', 'all');
-      url.searchParams.append('purchase_type', 'steam');
+      // url.searchParams.append('purchase_type', 'steam');
+      url.searchParams.append('purchase_type', 'all');
       url.searchParams.append('filter_offtopic_activity', 0);
       url.searchParams.append('num_per_page', 0);
       url.searchParams.append('language', 'all');
