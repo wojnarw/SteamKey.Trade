@@ -2,6 +2,8 @@
 applyTo: '**/*.vue'
 ---
 
+The following only applies when making new vue files, ignore othwerise.
+
 # SteamKey.Trade
 
 SteamKey.Trade is a platform for Steam product key trading. It features a secure vault for managing Steam keys, a robust trading system for exchanging keys with other users, and customizable collections to organize and showcase the apps, which is what can be activated by your keys on Steam.

@@ -59,7 +59,7 @@
   const { refreshTags } = useTagsStore();
   onMounted(async () => {
     document.addEventListener('keydown', event => {
-      if (event.key === 'f' && (event.ctrlKey || event.metaKey)) {
+      if (event.key === 'f' && (event.ctrlKey || event.metaKey) && !searchIsExpanded.value) {
         event.preventDefault();
         searchIsExpanded.value = true;
         $search.value.focus();
