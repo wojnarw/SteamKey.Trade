@@ -28,7 +28,7 @@ export const processGGDealsPrices = async (lastCheck) => {
       const response = await fetch(currentUrl, {
         headers: {
           'X-API-Key': Deno.env.get('GGDEALS_API_KEY')
-        },
+        }
       });
 
       if (response.status === 400) {
@@ -36,7 +36,7 @@ export const processGGDealsPrices = async (lastCheck) => {
         try {
           errBody = await response.json();
         } catch {
-          throw new Error(`GG Deals API returned 400: unknown error`);
+          throw new Error('GG Deals API returned 400: unknown error');
         }
 
         const isBadSince =
@@ -91,7 +91,7 @@ export const processGGDealsPrices = async (lastCheck) => {
         records.push({
           [App.fields.id]: parseInt(appid),
           [App.fields.marketPrice]: currentPrice,
-          [App.fields.historicalLow]: historicalPrice,
+          [App.fields.historicalLow]: historicalPrice
         });
       }
     }
