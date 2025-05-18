@@ -155,7 +155,11 @@
     if (props.items) {
       return {
         ...baseProps,
-        items: props.items.map(item => Collection.toDB(item)),
+        items: props.items.map(item => ({
+          ...Collection.toDB(item),
+          subcollections: item.subcollections,
+          apps: item.apps
+        })),
         headerProps: { class: 'text-overline', style: { lineHeight: 1.5 } }
       };
     } else {
