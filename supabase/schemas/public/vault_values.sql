@@ -2,7 +2,7 @@
 create table vault_values (
   vault_entry_id uuid references vault_entries(id) on delete cascade,
   receiver_id uuid references users(id) on delete cascade,
-  value text not null,
+  value text not null check (char_length(value) <= 1024),
   created_at timestamptz default now(),
   primary key (vault_entry_id, receiver_id)
 );
