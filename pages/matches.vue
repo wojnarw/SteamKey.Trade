@@ -4,6 +4,12 @@
   const snackbarStore = useSnackbarStore();
   const { user: authUser } = useAuthStore();
   const supabase = useSupabaseClient();
+  const { data: totalUsers } = await useLazyAsyncData('total-users', async () => {
+    const { count } = await supabase
+      .from(User.table)
+      .select('', { count: 'exact', head: true });
+    return count;
+  });
 
   const singleUser = ref(false);
   const selectedUser = useSearchParam('user', null);
@@ -23,13 +29,13 @@
   const matches = ref([]);
   const userPage = ref(1);
   const batchSize = 10;
-  const hasMoreUsers = ref(true);
   const processedUsers = ref(new Set());
+  const hasMoreUsers = computed(() => processedUsers.value.size < (singleUser.value ? 1 : (totalUsers.value - 1)));
+  const collectionsData = ref({});
 
   const reset = () => {
     matches.value = [];
     userPage.value = 1;
-    hasMoreUsers.value = true;
     processedUsers.value.clear();
   };
 
@@ -54,21 +60,10 @@
     }
   }, { immediate: true });
 
-  // Function to get user collection apps to match against
   const getCollectionApps = async (users) => {
     const results = {};
 
-    // Get auth user's master collections apps (tradelist, wishlist)
-    const authUserApps = await Collection.getMasterCollectionsApps(supabase, authUser.id);
-    results[authUser.id] = {
-      tradelist: authUserApps?.tradelist || [],
-      wishlist: authUserApps?.wishlist || []
-    };
-
-    // Get selected or all users' master collections apps
     for (const userId of users) {
-      if (userId === authUser.id) { continue; }
-
       try {
         const userApps = await Collection.getMasterCollectionsApps(supabase, userId);
         if (userApps) {
@@ -91,22 +86,20 @@
 
     if (singleUser.value) {
       userIds.push(selectedUser.value);
-      hasMoreUsers.value = false;
     } else {
       // Fetch active users in batches for infinite scrolling
       const { data, error } = await supabase
         .from(User.table)
         .select(User.fields.id)
         .neq(User.fields.id, authUser.id)
-        .order('updated_at', { ascending: false }) // most recently active first
+        .order(User.fields.updatedAt, { ascending: false }) // most recently active first
+        .order(User.fields.createdAt, { ascending: false }) // then by account creation date
         .range((userPage.value - 1) * batchSize, userPage.value * batchSize - 1);
 
       if (error) {
         throw error;
       }
 
-      // Update hasMoreUsers flag based on if we received fewer results than requested
-      hasMoreUsers.value = data.length === batchSize;
       userIds.push(...data.map(user => user[User.fields.id]));
     }
 
@@ -152,36 +145,27 @@
 
     try {
       loading.value = true;
+
       const users = await getUsers();
-
-      // Filter out users we've already processed
-      const newUsers = users.filter(userId => !processedUsers.value.has(userId));
-
-      if (!newUsers.length) {
-        userPage.value++;
-        done(hasMoreUsers.value ? 'ok' : 'empty');
+      if (users.length === 0) {
+        done('empty');
         return;
       }
 
-      // Mark these users as processed
-      newUsers.forEach(userId => processedUsers.value.add(userId));
+      collectionsData.value = {
+        ...collectionsData.value,
+        ...(await getCollectionApps([authUser.id, ...users].filter(userId => !collectionsData.value[userId])))
+      };
 
-      // Get all collection data
-      const collectionsData = await getCollectionApps([authUser.id, ...newUsers]);
+      const myHave = collectionsData.value[authUser.id].tradelist;
+      const myWant = collectionsData.value[authUser.id].wishlist;
 
-      // My have and want
-      const myHave = collectionsData[authUser.id].tradelist;
-      const myWant = collectionsData[authUser.id].wishlist;
-
-      // Track if this batch found any valid matches
       let validMatchesFound = false;
+      for (const userId of users) {
+        if (!collectionsData.value[userId]) { continue; }
 
-      // Process each user for matches
-      for (const userId of newUsers) {
-        if (!collectionsData[userId]) { continue; }
-
-        const theirHave = collectionsData[userId].tradelist;
-        const theirWant = collectionsData[userId].wishlist;
+        const theirHave = collectionsData.value[userId].tradelist;
+        const theirWant = collectionsData.value[userId].wishlist;
 
         // Find matching apps (what I have that they want)
         const have = myHave.filter(appId => theirWant.includes(appId));
@@ -200,20 +184,15 @@
         }
       }
 
-      // Auto-load next batch if no matches found and more users are available
-      if (!validMatchesFound && hasMoreUsers.value) {
-        userPage.value++;
-        // Instead of recursive call, we'll just let the function return
-        // and the infinite scroll component will trigger another load if needed
-        done('ok');
-        return;
-      }
-
-      // Increment the page for next load
+      users.forEach(userId => processedUsers.value.add(userId));
       userPage.value++;
 
-      if (userPage.value === 2 && matches.value.length === 0) {
-        snackbarStore.set('warning', 'No matches found with current filters');
+      if (!validMatchesFound && hasMoreUsers.value) {
+        // If no valid matches found, but more users to process, try again
+        await loadMoreMatches({ done });
+      } else if (!validMatchesFound && !hasMoreUsers.value) {
+        // If no valid matches and no more users, show empty state
+        snackbarStore.set('warning', 'No matches found');
       }
 
       done(hasMoreUsers.value ? 'ok' : 'empty');
@@ -226,10 +205,6 @@
     }
   };
 
-  // Call loadMatches when the action is triggered
-  const handleLoadMatches = () => loadMatches();
-
-  // Apply filters on page load if parameters exist
   onMounted(() => {
     if (selectedUser.value || selectedApp.value) {
       loadMatches();
@@ -377,7 +352,7 @@
           prepend-icon="mdi-magnify"
           size="large"
           variant="tonal"
-          @click="handleLoadMatches"
+          @click="loadMatches"
         >
           {{ loading ? 'Loading...' : 'Find Matches' }}
         </v-btn>
@@ -387,7 +362,10 @@
         v-if="matches.length === 0 && !loading"
         class="d-flex justify-center align-center flex-grow-1"
       >
-        <div class="text-disabled font-italic text-center">
+        <div
+          v-if="processedUsers.size > 0"
+          class="text-disabled font-italic text-center"
+        >
           <p>No matches found.</p>
           <p>Try adjusting your filters or updating your wishlist and tradelist.</p>
           <br>
