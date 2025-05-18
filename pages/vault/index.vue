@@ -16,6 +16,11 @@
   const activeApp = useSearchParam('appid', null);
   const activeDialog = ref(route.query.appid && route.query.action === 'add');
 
+  // Reset active app when tab changes
+  watch(activeTab, () => {
+    activeApp.value = null;
+  });
+
   const { data: counts, refresh } = useLazyAsyncData('vault-counts', async () => {
     const baseQuery = () => supabase
       .from(App.table)

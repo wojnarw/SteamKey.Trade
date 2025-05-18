@@ -296,34 +296,40 @@
           .select(`*,
             ${VaultEntry.table}!inner(*)
           `)
+          // Only our vault apps (we don't have access to other's vault items anyway)
           .eq(`${VaultEntry.table}.${VaultEntry.fields.userId}`, user.value.id)
+          // Only unsent vault items
           .is(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, null);
       }
 
       const query = supabase
         .from(App.table)
         .select(`*,
+          ${VaultEntry.table}!inner(
+            *,
+            ${Trade.table}!inner(
+              ${Trade.fields.status}
+            )
+          ),
           ${Trade.apps.table}!inner(
+            ${Trade.apps.fields.appId},
             ${Trade.apps.fields.tradeId},
             ${Trade.apps.fields.selected},
             ${Trade.apps.fields.userId}
-          ), 
-          ${Trade.table}(
-            ${Trade.fields.senderId},
-            ${Trade.fields.receiverId},
-            ${Trade.fields.status}
           )
         `)
-        // Only completed trades
-        .eq(`${Trade.table}.${Trade.fields.status}`, Trade.enums.status.completed)
-        // Only my trades
-        .or(`${Trade.fields.senderId}.eq.${user.value.id},${Trade.fields.receiverId}.eq.${user.value.id}`, { referencedTable: Trade.table })
-        // Only selected apps in the trade
+        // Only our vault apps (we don't have access to other's vault items anyway)
+        .eq(`${VaultEntry.table}.${VaultEntry.fields.userId}`, user.value.id)
+        // Only sent vault items
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
+        // Only those that were selected in a trade
         .eq(`${Trade.apps.table}.${Trade.apps.fields.selected}`, true);
 
       if (props.onlyVaultSent) {
+        // Only items that came from me
         return query.eq(`${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
       } else if (props.onlyVaultReceived) {
+        // Only items that came from the other user
         return query.neq(`${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
       }
     }
