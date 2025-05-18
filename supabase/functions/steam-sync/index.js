@@ -34,7 +34,7 @@ const syncCollection = async (supabase, user, collectionType, fetchApps) => {
   const newApps = await fetchApps();
   const newAppIds = newApps.map(({ appId }) => Number(appId));
 
-  const collectionsApps = await Collection.getMasterCollectionsApps(supabase, user.id);
+  const collectionsApps = await Collection.getMasterCollectionsApps(supabase, user.id, Collection.enums.source.sync);
   const existingAppIds = collectionsApps?.[collectionType] || [];
 
   const { fields, table } = Collection.apps;
@@ -42,16 +42,22 @@ const syncCollection = async (supabase, user, collectionType, fetchApps) => {
   const appsToAdd = newAppIds.filter(appId => !existingAppIds.includes(appId));
 
   if (appsToRemove.length > 0) {
-    const { error: deleteError } = await supabase
-      .from(table)
-      .delete()
-      .eq(fields.collectionId, collection.id)
-      .in(fields.appId, appsToRemove)
-      // Avoid deleting apps manually added by users (only delete synced apps)
-      .eq(fields.source, Collection.enums.source.sync);
+    const batchSize = 1000;
 
-    if (deleteError) {
-      throw new Error(`Failed to remove apps from collection: ${deleteError.message}`);
+    // Split into batches for better performance
+    for (let i = 0; i < appsToRemove.length; i += batchSize) {
+      const batchApps = appsToRemove.slice(i, i + batchSize);
+      const { error: deleteError } = await supabase
+        .from(table)
+        .delete()
+        .eq(fields.collectionId, collection.id)
+        .in(fields.appId, batchApps)
+        // Avoid deleting apps manually added by users (only delete synced apps)
+        .eq(fields.source, Collection.enums.source.sync);
+
+      if (deleteError) {
+        throw new Error(`Failed to remove apps from collection (batch ${i / batchSize + 1}): ${deleteError.message}`);
+      }
     }
   }
 

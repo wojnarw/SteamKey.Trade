@@ -516,16 +516,22 @@ export class Collection extends Entity {
    * Get all app IDs of the user master collection.
    * @param {import('@supabase/supabase-js').SupabaseClient} supabase - The Supabase client.
    * @param {string} userId - The ID of the user.
+   * @param {string} source - The source of the apps.
    * @returns {Promise<Object[]>} The app IDs list per collection type.
    */
-  static async getMasterCollectionsApps(supabase, userId) {
+  static async getMasterCollectionsApps(supabase, userId, source) {
     if (!supabase || !userId) {
       throw new Error('Missing required parameters');
     }
 
+    if (!Object.values(Collection.enums.source).includes(source)) {
+      throw new Error('Invalid source');
+    }
+
     const { data, error } = await supabase
       .rpc('get_master_collections_apps', {
-        p_user_id: userId
+        p_user_id: userId,
+        p_source: source
       })
       .single();
 

@@ -62,7 +62,10 @@ end;
 $$ language plpgsql security invoker;
 
 -- Create function to get all apps in a user's master collections
-create or replace function get_master_collections_apps(p_user_id uuid)
+create or replace function get_master_collections_apps(
+  p_user_id uuid,
+  p_source collection_apps_source default null
+)
 returns table (
   tradelist json,
   wishlist json,
@@ -87,15 +90,19 @@ with recursive collection_hierarchy as (
   inner join collection_hierarchy ch on cr.parent_id = ch.id
 )
 select
-  -- Aggregate app_ids for each type into a JSON array
+  -- Aggregate app_ids for each type into a JSON array, filtered by source if provided
   (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'tradelist')) as tradelist,
+   where collection_id in (select id from collection_hierarchy where type = 'tradelist')
+     and (p_source is null or source = p_source)) as tradelist,
   (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'wishlist')) as wishlist,
+   where collection_id in (select id from collection_hierarchy where type = 'wishlist')
+     and (p_source is null or source = p_source)) as wishlist,
   (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'library')) as library,
+   where collection_id in (select id from collection_hierarchy where type = 'library')
+     and (p_source is null or source = p_source)) as library,
   (select json_agg(app_id) from public.collection_apps 
-   where collection_id in (select id from collection_hierarchy where type = 'blacklist')) as blacklist;
+   where collection_id in (select id from collection_hierarchy where type = 'blacklist')
+     and (p_source is null or source = p_source)) as blacklist;
 $$ language sql stable security invoker;
 
 -- Create function to clean app collections
