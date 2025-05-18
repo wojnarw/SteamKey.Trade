@@ -44,10 +44,14 @@
   const handlePaste = event => {
     event.preventDefault();
     const pastedText = event.clipboardData.getData('text');
-    model.value = {
-      ...model.value,
-      values: [...model.value.values.filter(Boolean), ...pastedText.split('\n').filter(Boolean), '']
-    };
+    const items = pastedText.split('\n').filter(Boolean);
+    const currentIndex = focusedIndex.value;
+    const newValues = items.map(item => item.trim()).filter(Boolean);
+    model.value.values.splice(currentIndex, 1, ...newValues);
+    model.value.values = [...model.value.values.filter(Boolean), ''];
+    nextTick(() => {
+      inputRefs.value[currentIndex + newValues.length]?.focus();
+    });
   };
 
   const handleValueUpdate = () => {
