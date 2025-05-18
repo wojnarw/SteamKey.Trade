@@ -34,12 +34,14 @@ const syncCollection = async (supabase, user, collectionType, fetchApps) => {
   const newApps = await fetchApps();
   const newAppIds = newApps.map(({ appId }) => Number(appId));
 
-  const collectionsApps = await Collection.getMasterCollectionsApps(supabase, user.id, Collection.enums.source.sync);
-  const existingAppIds = collectionsApps?.[collectionType] || [];
+  const syncedCollectionsApps = await Collection.getMasterCollectionsApps(supabase, user.id, Collection.enums.source.sync);
+  const collectionsApps = await Collection.getMasterCollectionsApps(supabase, user.id);
+  const existingSyncedApps = syncedCollectionsApps?.[collectionType] || [];
+  const existingApps = collectionsApps?.[collectionType] || [];
 
   const { fields, table } = Collection.apps;
-  const appsToRemove = existingAppIds.filter(appId => !newAppIds.includes(appId));
-  const appsToAdd = newAppIds.filter(appId => !existingAppIds.includes(appId));
+  const appsToRemove = existingSyncedApps.filter(appId => !newAppIds.includes(appId));
+  const appsToAdd = newAppIds.filter(appId => !existingApps.includes(appId));
 
   if (appsToRemove.length > 0) {
     const batchSize = 1000;

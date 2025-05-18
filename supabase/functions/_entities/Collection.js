@@ -524,7 +524,7 @@ export class Collection extends Entity {
       throw new Error('Missing required parameters');
     }
 
-    if (!Object.values(Collection.enums.source).includes(source)) {
+    if (source && !Object.values(Collection.enums.source).includes(source)) {
       throw new Error('Invalid source');
     }
 
