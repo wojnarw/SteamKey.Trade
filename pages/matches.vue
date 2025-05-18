@@ -4,12 +4,6 @@
   const snackbarStore = useSnackbarStore();
   const { user: authUser } = useAuthStore();
   const supabase = useSupabaseClient();
-  const { data: totalUsers } = await useLazyAsyncData('total-users', async () => {
-    const { count } = await supabase
-      .from(User.table)
-      .select('', { count: 'exact', head: true });
-    return count;
-  });
 
   const singleUser = ref(false);
   const selectedUser = useSearchParam('user', null);
@@ -17,20 +11,18 @@
   const singleApp = ref(false);
   const selectedApp = useSearchParam('app', null);
 
-  // Match filtering option
   const matchFilterOptions = [
     { value: 'mutual', title: 'Mutual', description: 'Show results where both sides have something the other wants' },
     { value: 'partial', title: 'Partial', description: 'Show results where at least one side has something the other wants' },
     { value: 'all', title: 'Everything', description: 'Show all results, even if nobody wants anything from the other' }
   ];
-  const matchFilter = ref('partial'); // Default to one side matching apps
+  const matchFilter = ref(selectedUser.value ? 'all' : selectedApp.value ? 'partial' : 'mutual');
 
   const loading = ref(false);
   const matches = ref([]);
   const userPage = ref(1);
   const batchSize = 10;
   const processedUsers = ref(new Set());
-  const hasMoreUsers = computed(() => processedUsers.value.size < (singleUser.value ? 1 : (totalUsers.value - 1)));
   const collectionsData = ref({});
 
   const reset = () => {
@@ -106,43 +98,23 @@
     return userIds;
   };
 
-  // Load matches based on current filters
-  const loadMatches = async () => {
-    reset();
-
-    try {
-      await loadMoreMatches({ done: () => {} });
-    } catch (error) {
-      console.error('Error loading matches:', error);
-      snackbarStore.set('error', 'Error loading matches');
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  // Filter matches based on user preference
   const filterMatches = (matchData) => {
     const { have, want } = matchData;
+    const hasSelectedApp = selectedApp.value ? [have, want].flat().includes(Number(selectedApp.value)) : true;
 
-    // Apply filter based on matchFilter value
     switch (matchFilter.value) {
       case 'mutual':
-        return have.length > 0 && want.length > 0;
+        return have.length > 0 && want.length > 0 && hasSelectedApp;
       case 'partial':
-        return have.length > 0 || want.length > 0;
+        return (have.length > 0 || want.length > 0) && hasSelectedApp;
       case 'all':
       default:
-        return true;
+        return hasSelectedApp;
     }
   };
 
   // Load more matches for infinite scrolling
   const loadMoreMatches = async ({ done }) => {
-    if (!hasMoreUsers.value) {
-      done('empty');
-      return;
-    }
-
     try {
       loading.value = true;
 
@@ -187,15 +159,11 @@
       users.forEach(userId => processedUsers.value.add(userId));
       userPage.value++;
 
-      if (!validMatchesFound && hasMoreUsers.value) {
-        // If no valid matches found, but more users to process, try again
+      if (!validMatchesFound) {
         await loadMoreMatches({ done });
-      } else if (!validMatchesFound && !hasMoreUsers.value) {
-        // If no valid matches and no more users, show empty state
-        snackbarStore.set('warning', 'No matches found');
       }
 
-      done(hasMoreUsers.value ? 'ok' : 'empty');
+      done('ok');
     } catch (error) {
       console.error('Error loading more matches:', error);
       snackbarStore.set('error', 'Error loading more matches');
@@ -203,6 +171,11 @@
     } finally {
       loading.value = false;
     }
+  };
+
+  const loadMatches = () => {
+    reset();
+    return loadMoreMatches({ done: () => {} });
   };
 
   onMounted(() => {
@@ -485,10 +458,7 @@
         <!-- Loading indicator for infinite scroll -->
         <template #loading>
           <div class="d-flex justify-center py-4">
-            <v-progress-circular
-              v-if="hasMoreUsers"
-              indeterminate
-            />
+            <v-progress-circular indeterminate />
           </div>
         </template>
       </v-infinite-scroll>

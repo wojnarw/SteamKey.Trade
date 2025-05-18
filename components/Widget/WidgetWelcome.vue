@@ -97,10 +97,10 @@
               :rounded="$vuetify.display.mdAndUp || 'xs'"
               size="large"
               :text="$vuetify.display.mdAndUp ? undefined : 'Search'"
-              :to="`/search?q=${have || want}&in=apps`"
+              :to="`/matches?app=${have || want}`"
               variant="tonal"
             />
-            <!-- TODO: search in /collections instead with proper filters -->
+            <!-- TODO: Match specifically for either have or want -->
           </v-col>
         </v-row>
       </div>
