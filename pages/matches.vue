@@ -14,7 +14,7 @@
   const matchFilterOptions = [
     { value: 'mutual', title: 'Mutual', description: 'Show results where both sides have something the other wants' },
     { value: 'partial', title: 'Partial', description: 'Show results where at least one side has something the other wants' },
-    { value: 'all', title: 'Everything', description: 'Show all results, even if nobody wants anything from the other' }
+    { value: 'all', title: 'Everything', description: 'Show all results, even if nobody wants anything from each other' }
   ];
   const matchFilter = ref(selectedUser.value ? 'all' : selectedApp.value ? 'partial' : 'mutual');
 
@@ -366,7 +366,7 @@
       <v-infinite-scroll
         v-else
         empty-text=""
-        margin="500"
+        margin="100"
         mode="intersect"
         @load="loadMoreMatches"
       >
@@ -401,14 +401,14 @@
                 cols="12"
                 lg="6"
               >
-                <h3 class="mb-2 d-flex align-center ga-1">
+                <span class="mb-2 d-flex align-center ga-1">
                   <v-icon icon="mdi-swap-horizontal-circle-outline" />
                   <span class="text-disabled">You have</span>
                   <strong>{{ match.have.length }}</strong>
                   <span class="text-disabled">
                     {{ match.have.length === 1 ? 'item' : 'items' }} they want
                   </span>
-                </h3>
+                </span>
                 <table-apps
                   v-if="match.have.length"
                   :only-apps="match.have"
@@ -428,14 +428,14 @@
                 cols="12"
                 lg="6"
               >
-                <h3 class="mb-2 d-flex align-center ga-1">
+                <span class="mb-2 d-flex align-center ga-1">
                   <v-icon icon="mdi-heart-circle-outline" />
                   <span class="text-disabled">They have</span>
                   <strong>{{ match.want.length }}</strong>
                   <span class="text-disabled">
                     {{ match.want.length === 1 ? 'item' : 'items' }} you want
                   </span>
-                </h3>
+                </span>
                 <table-apps
                   v-if="match.want.length"
                   :only-apps="match.want"
