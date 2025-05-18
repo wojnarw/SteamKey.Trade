@@ -19,7 +19,7 @@
   const queryGetter = () => {
     return supabase
       .from(Trade.table)
-      .select(`${headers.map(header => header.value).join(',')}, ${Trade.apps.table}!inner(*)`)
+      .select(`${Trade.fields.id}, ${headers.map(header => header.value).join(',')}, ${Trade.apps.table}!inner(*)`)
       .eq(`${Trade.apps.table}.${Trade.apps.fields.appId}`, props.appid);
   };
 </script>

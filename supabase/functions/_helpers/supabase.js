@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
  * This way your row-level-security (RLS) policies are applied.
  *
  * @param {Request} req - The incoming HTTP request
- * @returns {SupabaseClient} Supabase client
+ * @param {import('@supabase/supabase-js').SupabaseClient} supabase - Supabase client
  */
 export const createAuthenticatedClient = req => {
   const authHeader = req.headers.get('Authorization');

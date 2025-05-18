@@ -90,7 +90,7 @@ const fetchWishlist = async (steamId) => {
     params: { steamid: steamId }
   });
 
-  // TODO: Save   and priority as tag
+  // TODO: Save date_added and priority as tag
   return items.map(({ appid, date_added }) => ({
     appId: Number(appid),
     createdAt: new Date(date_added * 1000)
