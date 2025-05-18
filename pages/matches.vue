@@ -119,7 +119,7 @@
       loading.value = true;
 
       const users = await getUsers();
-      if (users.length === 0) {
+      if (users.length === 0 || (singleUser.value && processedUsers.value.has(selectedUser.value))) {
         done('empty');
         return;
       }
