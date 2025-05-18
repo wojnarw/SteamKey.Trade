@@ -21,37 +21,43 @@
     activeApp.value = null;
   });
 
+  // TODO: Use vault entry count instead of app count
   const { data: counts, refresh } = useLazyAsyncData('vault-counts', async () => {
+    // Same query as TableApps
     const baseQuery = () => supabase
       .from(App.table)
       .select(`*,
+        ${VaultEntry.table}!inner(
+          ${VaultEntry.fields.userId},
+          ${VaultEntry.fields.tradeId}
+        ),
         ${Trade.apps.table}!inner(
+          ${Trade.apps.fields.appId},
           ${Trade.apps.fields.tradeId},
           ${Trade.apps.fields.selected},
           ${Trade.apps.fields.userId}
-        ), 
-        ${Trade.table}(
-          ${Trade.fields.senderId},
-          ${Trade.fields.receiverId},
-          ${Trade.fields.status}
         )
       `, { count: 'exact', head: true })
-      // Only completed trades
-      .eq(`${Trade.table}.${Trade.fields.status}`, Trade.enums.status.completed)
-      // Only my trades
-      .or(`${Trade.fields.senderId}.eq.${user.value.id},${Trade.fields.receiverId}.eq.${user.value.id}`, { referencedTable: Trade.table })
-      // Only selected apps in the trade
-      .eq(`${Trade.apps.table}.${Trade.apps.fields.selected}`, true);
+      // Only our vault apps (we don't have access to other's vault items anyway)
+      .eq(`${VaultEntry.table}.${VaultEntry.fields.userId}`, user.value.id);
 
     const [unsent, sent, received] = await Promise.all([
-      supabase
-        .from(VaultEntry.table)
-        .select('*', { count: 'exact', head: true })
-        .eq(VaultEntry.fields.userId, user.value.id)
-        .is(VaultEntry.fields.tradeId, null),
       baseQuery()
+        // Only unsent vault items
+        .is(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, null),
+      baseQuery()
+        // Only sent vault items
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
+        // Only those that were selected in a trade
+        .eq(`${Trade.apps.table}.${Trade.apps.fields.selected}`, true)
+        // Only items that came from me
         .eq(`${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id),
       baseQuery()
+        // Only sent vault items
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
+        // Only those that were selected in a trade
+        .eq(`${Trade.apps.table}.${Trade.apps.fields.selected}`, true)
+        // Only items that came from the other user
         .neq(`${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id)
     ]);
 
@@ -77,9 +83,10 @@
     const query = supabase
       .from(VaultEntry.values.table)
       .select(`*,
-      ${VaultEntry.table}!inner (*,
-        ${Trade.table}(*)
-      )`)
+        ${VaultEntry.table}!inner(*,
+          ${Trade.table}(*)
+        )
+      `)
       .eq(VaultEntry.values.fields.receiverId, user.value.id)
       .eq(`${VaultEntry.table}.${VaultEntry.fields.appId}`, activeApp.value);
 
@@ -394,7 +401,7 @@
                 v-if="activeApp"
                 ref="table"
                 class="flex-grow-1"
-                :default-sort-by="[{ key: VaultEntry.values.fields.createdAt, order: 'desc' }]"
+                :default-sort-by="[{ key: VaultEntry.values.fields.createdAt, order: 'desc' }, { key: VaultEntry.values.fields.value, order: 'asc' }]"
                 :headers="headers"
                 :map-item="mapItem"
                 must-sort

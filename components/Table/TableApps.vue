@@ -294,7 +294,10 @@
         return supabase
           .from(App.table)
           .select(`*,
-            ${VaultEntry.table}!inner(*)
+            ${VaultEntry.table}!inner(
+              ${VaultEntry.fields.userId},
+              ${VaultEntry.fields.tradeId}
+            )
           `)
           // Only our vault apps (we don't have access to other's vault items anyway)
           .eq(`${VaultEntry.table}.${VaultEntry.fields.userId}`, user.value.id)
@@ -306,10 +309,8 @@
         .from(App.table)
         .select(`*,
           ${VaultEntry.table}!inner(
-            *,
-            ${Trade.table}!inner(
-              ${Trade.fields.status}
-            )
+            ${VaultEntry.fields.userId},
+            ${VaultEntry.fields.tradeId}
           ),
           ${Trade.apps.table}!inner(
             ${Trade.apps.fields.appId},
