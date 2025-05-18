@@ -206,7 +206,8 @@
 
       <v-card
         elevation="8"
-        width="300"
+        max-width="500"
+        width="100%"
       >
         <v-card-title class="border d-flex flex-row align-center ga-2">
           <v-avatar
