@@ -2,10 +2,6 @@
   import { formatUrl } from '~/assets/js/format';
 
   defineProps({
-    label: {
-      type: String,
-      default: undefined
-    },
     disabled: {
       type: Boolean,
       default: false
@@ -200,130 +196,127 @@
 </script>
 
 <template>
-  <div>
-    <v-combobox
-      ref="input"
-      v-model:search="search"
-      append-inner-icon="mdi-link"
-      chips
-      closable-chips
-      :disabled="disabled || showLinkEditor"
-      :error-messages="error"
-      hide-details="auto"
-      :label="label"
-      :model-value="model"
-      multiple
-      @click:append-inner="addLink"
-      @keydown="onKeydown"
-      @update:model-value="onUpdate"
-    >
-      <template #chip="{ props, item, index }">
-        <v-chip
-          v-bind="props"
-          :prepend-icon="typeof item.raw === 'string' ? 'mdi-link' : (item.raw?.icon || 'mdi-link')"
-          @click.stop="editLink(typeof item.raw === 'string' ? item.raw : item.raw, index)"
-        >
+  <v-combobox
+    ref="input"
+    v-bind="$attrs"
+    v-model:search="search"
+    append-inner-icon="mdi-link"
+    chips
+    closable-chips
+    :disabled="disabled || showLinkEditor"
+    :error-messages="error"
+    :model-value="model"
+    multiple
+    @click:append-inner="addLink"
+    @keydown="onKeydown"
+    @update:model-value="onUpdate"
+  >
+    <template #chip="{ props, item, index }">
+      <v-chip
+        v-bind="props"
+        :prepend-icon="typeof item.raw === 'string' ? 'mdi-link' : (item.raw?.icon || 'mdi-link')"
+        @click.stop="editLink(typeof item.raw === 'string' ? item.raw : item.raw, index)"
+      >
+        {{ typeof item.raw === 'string' ? formatUrl(item.raw) : (item.raw?.title || formatUrl(item.raw?.url || '')) }}
+      </v-chip>
+    </template>
+    <template #item="{ item }">
+      <v-list-item>
+        <template #prepend>
+          <v-icon :icon="typeof item.raw === 'string' ? 'mdi-link' : (item.raw?.icon || 'mdi-link')" />
+        </template>
+        <v-list-item-title>
           {{ typeof item.raw === 'string' ? formatUrl(item.raw) : (item.raw?.title || formatUrl(item.raw?.url || '')) }}
-        </v-chip>
-      </template>
-      <template #item="{ item }">
-        <v-list-item>
-          <template #prepend>
-            <v-icon :icon="typeof item.raw === 'string' ? 'mdi-link' : (item.raw?.icon || 'mdi-link')" />
-          </template>
-          <v-list-item-title>
-            {{ typeof item.raw === 'string' ? formatUrl(item.raw) : (item.raw?.title || formatUrl(item.raw?.url || '')) }}
-          </v-list-item-title>
-          <v-list-item-subtitle>
-            {{ typeof item.raw === 'string' ? item.raw : (item.raw?.url || '') }}
-          </v-list-item-subtitle>
-        </v-list-item>
-      </template>
-    </v-combobox>
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          {{ typeof item.raw === 'string' ? item.raw : (item.raw?.url || '') }}
+        </v-list-item-subtitle>
+      </v-list-item>
+    </template>
+  </v-combobox>
 
-    <v-dialog
-      v-model="showLinkEditor"
-      max-width="500px"
-    >
-      <v-card>
-        <v-card-title>
-          {{ editingIndex >= 0 ? 'Edit Link' : 'Add Link' }}
-        </v-card-title>
-        <v-card-text>
-          <v-form @submit.prevent="saveLink">
-            <v-text-field
-              v-model="currentLinkItem.url"
-              label="URL"
-              required
-              :rules="[(v) => !!v || 'URL is required']"
-            />
+  <v-dialog
+    v-model="showLinkEditor"
+    max-width="500px"
+  >
+    <v-card>
+      <v-card-title>
+        {{ editingIndex >= 0 ? 'Edit Link' : 'Add Link' }}
+      </v-card-title>
+      <v-card-text>
+        <v-form @submit.prevent="saveLink">
+          <v-text-field
+            v-model="currentLinkItem.url"
+            label="URL"
+            required
+            :rules="[(v) => !!v || 'URL is required']"
+          />
 
-            <v-text-field
-              v-model="currentLinkItem.title"
-              hint="Leave blank to use formatted URL"
-              label="Title"
-              persistent-hint
-            />
+          <v-text-field
+            v-model="currentLinkItem.title"
+            hint="Leave blank to use formatted URL"
+            label="Title"
+            persistent-hint
+          />
 
-            <v-combobox
-              v-model="currentLinkItem.icon"
-              hint="Choose an icon or enter an MDI icon name"
-              :items="iconOptions"
-              label="Icon"
-              persistent-hint
+          <v-combobox
+            v-model="currentLinkItem.icon"
+            hint="Choose an icon or enter an MDI icon name"
+            :items="iconOptions"
+            label="Icon"
+            persistent-hint
+          >
+            <template #selection="{ item }">
+              <div class="d-flex align-center">
+                <v-icon
+                  class="mr-2"
+                  :icon="typeof item === 'string' ? item : (item?.value || 'mdi-link')"
+                />
+                {{ typeof item === 'string' ? item : (item?.value || 'mdi-link') }}
+              </div>
+            </template>
+            <template #item="{ item }">
+              <v-list-item>
+                <template #prepend>
+                  <v-icon :icon="typeof item.value === 'string' ? item.value : (item?.value || 'mdi-link')" />
+                </template>
+                <v-list-item-title>{{ typeof item.value === 'string' ? item.value : (item?.value || 'mdi-link') }}</v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-combobox>
+
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <v-chip
+              v-for="icon in iconOptions"
+              :key="icon"
+              class="ma-1"
+              :color="currentLinkItem.icon === icon ? 'primary' : undefined"
+              :prepend-icon="icon"
+              :variant="currentLinkItem.icon === icon ? 'elevated' : 'tonal'"
+              @click="currentLinkItem.icon = icon"
             >
-              <template #selection="{ item }">
-                <div class="d-flex align-center">
-                  <v-icon
-                    class="mr-2"
-                    :icon="typeof item === 'string' ? item : (item?.value || 'mdi-link')"
-                  />
-                  {{ typeof item === 'string' ? item : (item?.value || 'mdi-link') }}
-                </div>
-              </template>
-              <template #item="{ item }">
-                <v-list-item>
-                  <template #prepend>
-                    <v-icon :icon="typeof item.value === 'string' ? item.value : (item?.value || 'mdi-link')" />
-                  </template>
-                  <v-list-item-title>{{ typeof item.value === 'string' ? item.value : (item?.value || 'mdi-link') }}</v-list-item-title>
-                </v-list-item>
-              </template>
-            </v-combobox>
-
-            <div class="d-flex flex-wrap gap-2 mt-4">
-              <v-chip
-                v-for="icon in iconOptions"
-                :key="icon"
-                class="ma-1"
-                :color="currentLinkItem.icon === icon ? 'primary' : undefined"
-                :prepend-icon="icon"
-                :variant="currentLinkItem.icon === icon ? 'elevated' : 'tonal'"
-                @click="currentLinkItem.icon = icon"
-              >
-                {{ icon.replace('mdi-', '') }}
-              </v-chip>
-            </div>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="error"
-            variant="text"
-            @click="cancelEdit"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            variant="text"
-            @click="saveLink"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
+              {{ icon.replace('mdi-', '') }}
+            </v-chip>
+          </div>
+        </v-form>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          color="error"
+          variant="text"
+          @click="cancelEdit"
+        >
+          Cancel
+        </v-btn>
+        <v-btn
+          color="primary"
+          variant="text"
+          @click="saveLink"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>

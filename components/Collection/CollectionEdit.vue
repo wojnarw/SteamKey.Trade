@@ -20,7 +20,15 @@
 
   const { data: collection, status: collectionStatus, error: collectionError } = useLazyAsyncData(`collection-${props.id || 'new'}`, async () => {
     if (isNew) {
-      return (new Collection()).toObject();
+      const data = (new Collection()).toObject();
+      return {
+        ...data,
+        userId: user.id,
+        private: true,
+        master: false,
+        type: Collection.enums.type.custom,
+        links: []
+      };
     }
 
     try {
@@ -259,68 +267,9 @@
                 :label="Collection.labels.master"
               />
             </v-col>
-
-            <v-col cols="12">
-              <v-textarea
-                v-model="collection.description"
-                auto-grow
-                hide-details
-                :label="Collection.labels.description"
-                :placeholder="Collection.descriptions.description"
-                rows="3"
-              />
-            </v-col>
           </v-row>
         </v-card-text>
       </v-card>
-
-      <v-expansion-panels class="mb-4">
-        <v-expansion-panel>
-          <v-expansion-panel-title>
-            <v-icon
-              class="mr-2"
-              icon="mdi-cog"
-            />
-            More options
-          </v-expansion-panel-title>
-          <v-expansion-panel-text>
-            <v-row>
-              <v-col
-                cols="12"
-                md="6"
-              >
-                <input-date
-                  v-model="collection.startsAt"
-                  clearable
-                  :hint="Collection.descriptions.startsAt"
-                  :label="Collection.labels.startsAt"
-                  :max-date="collection.endsAt"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col
-                cols="12"
-                md="6"
-              >
-                <input-date
-                  v-model="collection.endsAt"
-                  clearable
-                  :hint="Collection.descriptions.endsAt"
-                  :label="Collection.labels.endsAt"
-                  :min-date="collection.startsAt"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12">
-                <input-links
-                  v-model="collection.links"
-                  :label="Collection.labels.externalLinks"
-                />
-              </v-col>
-            </v-row>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
 
       <v-card class="d-flex flex-column flex-grow-1 mb-4">
         <v-tabs v-model="activeTab">
@@ -490,6 +439,66 @@
           </v-window-item>
         </v-window>
       </v-card>
+
+      <v-expansion-panels class="mb-4">
+        <v-expansion-panel>
+          <v-expansion-panel-title>
+            <v-icon
+              class="mr-2"
+              icon="mdi-cog"
+            />
+            More options
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-row>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="collection.description"
+                  auto-grow
+                  :hint="Collection.descriptions.description"
+                  :label="Collection.labels.description"
+                  persistent-hint
+                  rows="3"
+                />
+              </v-col>
+              <v-col
+                cols="12"
+                md="6"
+              >
+                <input-date
+                  v-model="collection.startsAt"
+                  clearable
+                  :hint="Collection.descriptions.startsAt"
+                  :label="Collection.labels.startsAt"
+                  :max-date="collection.endsAt"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col
+                cols="12"
+                md="6"
+              >
+                <input-date
+                  v-model="collection.endsAt"
+                  clearable
+                  :hint="Collection.descriptions.endsAt"
+                  :label="Collection.labels.endsAt"
+                  :min-date="collection.startsAt"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12">
+                <input-links
+                  v-model="collection.links"
+                  :hint="Collection.descriptions.links"
+                  :label="Collection.labels.links"
+                  persistent-hint
+                />
+              </v-col>
+            </v-row>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
 
       <v-footer
         class="flex-grow-0"
