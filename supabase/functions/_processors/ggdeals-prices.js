@@ -79,14 +79,17 @@ export const processGGDealsPrices = async (lastCheck) => {
     const records = [];
     for (const { steamIds, prices } of Object.values(allGames)) {
       for (const appid of steamIds) {
-        const currentPrice = Math.min(
-          parseFloat(prices.currentRetail),
-          parseFloat(prices.currentKeyshops)
-        );
-        const historicalPrice = Math.min(
-          parseFloat(prices.historicalRetail),
-          parseFloat(prices.historicalKeyshops)
-        );
+        const getMin = (...vals) => {
+          const nums = vals
+            .filter(v => v != null)
+            .map(Number)
+            .filter(v => !isNaN(v));
+
+          return nums.length ? Math.min(...nums) : null;
+        };
+
+        const currentPrice = getMin(prices.currentRetail, prices.currentKeyshops);
+        const historicalPrice = getMin(prices.historicalRetail, prices.historicalKeyshops);
 
         records.push({
           [App.fields.id]: parseInt(appid),
