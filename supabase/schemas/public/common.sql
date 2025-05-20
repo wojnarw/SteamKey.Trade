@@ -282,3 +282,30 @@ begin
   return;
 end;
 $$ language plpgsql security definer;
+
+-- Function to check if url host is allowed
+create or replace function public.is_allowed_host(url text, allowed_hosts text[]) 
+returns boolean
+set search_path = ''
+as $$
+declare
+  host text;
+  pattern text;
+  regex_pattern text;
+begin
+  if url !~ '^https?://' then
+    return false;
+  end if;
+
+  host := pg_net.net_split_host(url);
+
+  foreach pattern in array allowed_hosts loop
+    regex_pattern := '^' || replace(pattern, '*', '.*') || '$';
+    if host ~ regex_pattern then
+      return true;
+    end if;
+  end loop;
+
+  return false;
+end;
+$$ language plpgsql strict immutable security invoker;
