@@ -289,6 +289,7 @@ returns boolean
 set search_path = ''
 as $$
 declare
+  raw_host text;
   host text;
   pattern text;
   regex_pattern text;
@@ -297,7 +298,9 @@ begin
     return false;
   end if;
 
-  host := pg_net.net_split_host(url);
+  raw_host := substring(url from '^https?://([^/]+)');
+  raw_host := regexp_replace(raw_host, '^[^@]+@', '');
+  host := regexp_replace(raw_host, ':\d+$', '');
 
   foreach pattern in array allowed_hosts loop
     regex_pattern := '^' || replace(pattern, '*', '.*') || '$';
