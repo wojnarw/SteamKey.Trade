@@ -284,7 +284,7 @@ end;
 $$ language plpgsql security definer;
 
 -- Function to check if url host is allowed
-create or replace function public.is_allowed_host(url text, allowed_hosts text[]) 
+create or replace function is_allowed_host(url text, allowed_hosts text[]) 
 returns boolean
 set search_path = ''
 as $$
