@@ -32,8 +32,21 @@ create table users (
     and (custom_url !~ '^76561\d{12}$')
   ),
   display_name text default null,
-  avatar text default null,
-  background text default null,
+  avatar text default null check (
+    avatar is null or is_allowed_host(avatar, array[
+      'localhost',
+      '127.0.0.1',
+      'avatars.steamstatic.com',
+      '*.supabase.co'
+    ])
+  ),
+  background text default null check (
+    background is null or is_allowed_host(background, array[
+      'localhost',
+      '127.0.0.1',
+      '*.supabase.co'
+    ])
+  ),
   bio text default null,
   region country_code default null,
   public_key text default null,
