@@ -59,7 +59,7 @@ export const useTagsStore = defineStore('tags', {
      */
     async refreshTags() {
       // Refresh tags if they are not set or if they are older than 24 hours
-      if (this.names && this.types && this.refreshedAt && Date.now() - this.refreshedAt < 24 * 60 * 60 * 1000) {
+      if (Object.keys(this.names || {}).length && Object.keys(this.types || {}).length && this.refreshedAt && Date.now() - this.refreshedAt < 24 * 60 * 60 * 1000) {
         return;
       }
 
