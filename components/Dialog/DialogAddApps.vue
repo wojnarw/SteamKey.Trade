@@ -2,9 +2,9 @@
   import jsonata from 'jsonata';
 
   const props = defineProps({
-    collectionId: {
-      type: String,
-      required: true
+    collection: {
+      type: Object,
+      default: null
     }
   });
 
@@ -184,10 +184,22 @@
         }
       }
 
-      const instance = new Collection(props.collectionId);
+      let instance = new Collection(props.collection.id);
+      Object.assign(instance, props.collection);
+
+      const isNew = !!instance.isNew;
+      if (isNew) {
+        instance = await instance.save();
+      }
+
       await instance.addApps(finalAppIds);
 
-      emit('submit', finalAppIds);
+      if (isNew) {
+        useSnackbarStore().set('success', 'Collection created');
+        await navigateTo(`/collection/${instance.id}/edit`);
+      } else {
+        emit('submit', finalAppIds);
+      }
 
       internalValue.value = false;
       resetForm();

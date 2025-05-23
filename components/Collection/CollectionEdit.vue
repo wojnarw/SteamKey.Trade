@@ -23,6 +23,7 @@
       const data = (new Collection()).toObject();
       return {
         ...data,
+        title: 'My collection',
         userId: user.id,
         private: true,
         master: false,
@@ -313,13 +314,14 @@
                   />
                   or
                   <dialog-add-apps
-                    :collection-id="id"
+                    :collection="collection"
                     @submit="appsTable.refresh(); snackbarStore.set('success', 'Collection updated')"
                   >
                     <template #activator="attrs">
                       <v-btn
                         v-bind="attrs.props"
                         :block="!$vuetify.display.smAndUp"
+                        :disabled="isNew && !collection.title"
                         prepend-icon="mdi-plus"
                         variant="tonal"
                       >
