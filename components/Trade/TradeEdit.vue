@@ -192,7 +192,12 @@
         { filter: 'in', params: [App.fields.id, appIdsToQuery] }
       ]).then(instances => {
         const newApps = instances.map(instance => instance.toObject());
-        const allApps = [...selectedApps.value.sender, ...selectedApps.value.receiver, ...newApps];
+        const allApps = Array.from(
+          new Map([...selectedApps.value.sender, ...selectedApps.value.receiver, ...newApps]
+            .filter(app => app.id)
+            .map(app => [app.id, app]))
+            .values()
+        );
 
         selectedApps.value.sender = allApps.filter(app =>
           tradeApps.value.sender.some(({ appId }) => appId === app.id)
