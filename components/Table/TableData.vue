@@ -241,7 +241,7 @@
         });
       }
 
-      if (sortBy && sortBy.length) {
+      if (sortBy?.length) {
         sortBy.forEach(({ key, order }) => {
           query = query.order(props.mapKey(key), {
             ascending: order === 'asc',
@@ -251,7 +251,9 @@
       }
 
       // Force returning the count
-      query.headers.Prefer = 'count=exact';
+      const isLastPage = page * itemsPerPage >= totalItems.value;
+      query.headers.Prefer = isLastPage ? 'count=exact' : 'count=estimated';
+
       const { data, error, count } = await query.range((page - 1) * itemsPerPage, page * itemsPerPage - 1); // for some reason it adds 1 to the end index
       if (error) {
         throw error;
