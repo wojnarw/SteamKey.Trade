@@ -329,9 +329,10 @@
         />
 
         <v-chip
-          v-if="showSelect && maxSelection > 0"
+          v-if="showSelect && selected.length > 0"
           :color="selectedOnly ? 'success' : ''"
           filter
+          size="large"
           @click="selectedOnly = !selectedOnly"
         >
           {{ selected.length }}{{ maxSelection ? `/${maxSelection}` : '' }} selected

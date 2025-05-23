@@ -166,8 +166,19 @@
     if (tradeApps.value && tradeApps.value.sender && tradeApps.value.receiver && (!isNew || isCounter || isCopy)) {
       headless.value = tradeApps.value.sender.every(app => app.vaultEntryId);
 
-      selectedCollections.value.sender = tradeApps.value.sender.map(app => app.collectionId).filter((id, index, self) => id && self.indexOf(id) === index);
-      selectedCollections.value.receiver = tradeApps.value.receiver.map(app => app.collectionId).filter((id, index, self) => id && self.indexOf(id) === index);
+      for (const side of sides) {
+        const collectionIds = tradeApps.value[side].map(app => app.collectionId);
+
+        if (!selectedCollections.value[side]) {
+          selectedCollections.value[side] = [];
+        }
+
+        for (const id of collectionIds) {
+          if (!selectedCollections.value[side].includes(id)) {
+            selectedCollections.value[side].push(id);
+          }
+        }
+      }
 
       // Check which app IDs need to be loaded
       const existingAppIds = [
@@ -330,6 +341,10 @@
       'grid-template-columns': `repeat(${columns}, 1fr)`,
       'grid-template-rows': `repeat(${Math.ceil(count / columns)}, 1fr)`
     };
+  };
+
+  const removeApp = (side, appId) => {
+    selectedApps.value[side] = selectedApps.value[side].filter(app => app.id !== appId);
   };
 
   const title = isNew ? 'New trade' : 'Editing trade';
@@ -529,25 +544,35 @@
                       class="flex-grow-1 app-grid"
                       :style="getGridStyle(selectedApps[side].length)"
                     >
-                      <nuxt-link
+                      <div
                         v-for="app in selectedApps[side]"
                         :key="`summary-${app.id}`"
-                        class="app-grid-item"
-                        rel="noopener"
-                        target="_blank"
-                        :to="`/app/${app.id}`"
+                        class="app-grid-item position-relative"
                       >
-                        <v-img
-                          v-ripple
-                          v-tooltip:top="app.title || `Unknown app ${app.id}`"
-                          :alt="app.title"
-                          aspect-ratio="1"
-                          class="h-100 w-100"
-                          cover
-                          lazy-src="/applogo.svg"
-                          :src="app.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${app.id}/header.jpg`"
+                        <v-btn
+                          v-tooltip:top="`Remove ${app.title || `Unknown app ${app.id}`}`"
+                          class="app-remove-btn"
+                          icon="mdi-close"
+                          size="x-small"
+                          @click.stop="removeApp(side, app.id)"
                         />
-                      </nuxt-link>
+                        <nuxt-link
+                          rel="noopener"
+                          target="_blank"
+                          :to="`/app/${app.id}`"
+                        >
+                          <v-img
+                            v-ripple
+                            v-tooltip:top="app.title || `Unknown app ${app.id}`"
+                            :alt="app.title"
+                            aspect-ratio="1"
+                            class="h-100 w-100"
+                            cover
+                            lazy-src="/applogo.svg"
+                            :src="app.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${app.id}/header.jpg`"
+                          />
+                        </nuxt-link>
+                      </div>
                     </div>
                   </div>
                 </v-col>
@@ -659,6 +684,20 @@
     .app-grid-item {
       aspect-ratio: 1;
       display: block;
+      position: relative;
+      &:hover .app-remove-btn {
+        opacity: 1;
+      }
     }
+  }
+
+  .app-remove-btn {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    z-index: 2;
+    background: rgba(var(--v-theme-surface), 0.8);
+    opacity: 0;
+    transition: opacity 0.2s;
   }
 </style>

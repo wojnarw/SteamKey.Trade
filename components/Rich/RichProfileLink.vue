@@ -281,7 +281,7 @@
     sup, sub {
       display: none;;
       font-family: monospace;
-      margin-left: .4em;
+      margin-left: .2em;
       position: relative;
       display: block;
       font-size: .4em;

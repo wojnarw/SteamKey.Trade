@@ -139,7 +139,6 @@
         >
           <rich-profile-link
             :avatar-size="24"
-            class="mr-2"
             no-link
             :user-id="item.partnerId"
           />
