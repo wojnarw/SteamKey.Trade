@@ -353,89 +353,104 @@
           <v-col cols="8">
             <v-card class="d-flex flex-column fill-height text-center justify-center position-relative overflow-hidden">
               <v-icon
-                v-tooltip:top="'The price on Steam'"
                 class="position-absolute opacity-10"
                 icon="mdi-steam"
                 size="80"
-                style="left: 25%; transform: translate(-50%, -50%); top: 50%;"
+                style="left: 25%; transform: translate(-50%, -50%); top: 50%; pointer-events: none;"
               />
               <v-icon
-                v-tooltip:top="'Market price (GG.Deals)'"
                 class="position-absolute opacity-10"
                 icon="mdi-shopping"
                 size="75"
-                style="right: 25%; transform: translate(50%, -50%); top: 50%;"
+                style="right: 25%; transform: translate(50%, -50%); top: 50%; pointer-events: none;"
               />
               <v-row no-gutters>
+                <!-- Steam Store Price Block (Left Side) -->
                 <v-col
-                  class="d-flex flex-column align-center justify-center"
+                  v-tooltip:top="'The price on Steam'"
                   cols="6"
-                  style="line-height: 1"
                 >
-                  <h1
-                    v-if="app.free"
-                    class="text-success"
-                  >
-                    Free
-                  </h1>
                   <a
-                    v-if="app.free"
-                    class="text-caption text-decoration-none text-disabled"
-                    :href="`steam://rungameid/${appid}`"
+                    v-ripple
+                    class="d-flex flex-column align-center justify-center text-decoration-none h-100 w-100 cursor-pointer"
+                    :href="app.free ? `steam://rungameid/${appid}` : `https://store.steampowered.com/app/${appid}`"
                     rel="noopener"
+                    style="line-height: 1"
+                    :target="app.free ? '_self' : '_blank'"
                   >
-                    Launch on Steam
-                  </a>
-                  <span
-                    v-if="app.retailPrice && app.discountedPrice !== app.retailPrice"
-                    class="text-caption"
-                  >
-                    <span class="text-decoration-line-through">
-                      ${{ app.retailPrice }}
+                    <h1
+                      v-if="app.free"
+                      class="text-success"
+                    >
+                      Free
+                    </h1>
+                    <span
+                      v-if="app.free"
+                      class="text-caption text-disabled"
+                    >
+                      Launch on Steam
                     </span>
-                    <span class="text-disabled"> ({{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice, 0) }}% off)</span>
-                  </span>
-                  <h1
-                    v-if="!isNaN(parseFloat(app.discountedPrice))"
-                    class="text-yellow"
-                  >
-                    ${{ formatNumber(app.discountedPrice, 2, 2) }}
-                  </h1>
-                  <h2
-                    v-else-if="!app.free"
-                    class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
-                  >
-                    ¯\_(ツ)_/¯
-                  </h2>
+                    <span
+                      v-if="app.retailPrice && app.discountedPrice !== app.retailPrice"
+                      class="text-caption"
+                    >
+                      <span class="text-decoration-line-through">
+                        ${{ app.retailPrice }}
+                      </span>
+                      <span class="text-disabled"> ({{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice, 0) }}% off)</span>
+                    </span>
+                    <h1
+                      v-if="!isNaN(parseFloat(app.discountedPrice))"
+                      class="text-yellow"
+                    >
+                      ${{ formatNumber(app.discountedPrice, 2, 2) }}
+                    </h1>
+                    <h2
+                      v-else-if="!app.free"
+                      class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
+                    >
+                      ¯\_(ツ)_/¯
+                    </h2>
+                  </a>
                 </v-col>
 
                 <v-divider
                   style="position: absolute; left: 50%; height: 100%;"
                   vertical
                 />
+
+                <!-- GG.Deals Market Price Block (Right Side) -->
                 <v-col
-                  class="d-flex flex-column align-center justify-center"
+                  v-tooltip:top="'Market price (GG.Deals)'"
                   cols="6"
-                  style="line-height: 1"
                 >
-                  <h1
-                    v-if="!isNaN(parseFloat(app.marketPrice))"
-                    class="text-yellow"
+                  <a
+                    v-ripple
+                    class="d-flex flex-column align-center justify-center text-decoration-none h-100 w-100 cursor-pointer"
+                    :href="`https://gg.deals/steam/app/${appid}`"
+                    rel="noopener"
+                    style="line-height: 1"
+                    target="_blank"
                   >
-                    ${{ formatNumber(app.marketPrice, 2, 2) }}
-                  </h1>
-                  <h2
-                    v-else
-                    class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
-                  >
-                    ¯\_(ツ)_/¯
-                  </h2>
-                  <span
-                    v-if="!isNaN(parseFloat(app.historicalLow))"
-                    class="text-caption"
-                  >
-                    ${{ formatNumber(app.historicalLow, 2, 2) }} <span class="text-disabled">historical low</span>
-                  </span>
+                    <h1
+                      v-if="!isNaN(parseFloat(app.marketPrice))"
+                      class="text-yellow"
+                    >
+                      ${{ formatNumber(app.marketPrice, 2, 2) }}
+                    </h1>
+                    <h2
+                      v-else
+                      class="text-primary font-weight-thin text-no-wrap d-flex align-center justify-center"
+                    >
+                      ¯\_(ツ)_/¯
+                    </h2>
+                    <span
+                      v-if="!isNaN(parseFloat(app.historicalLow))"
+                      class="text-caption"
+                    >
+                      <span class="text-primary">${{ formatNumber(app.historicalLow, 2, 2) }}</span> <span class="text-disabled">historical low</span>
+                    </span>
+                  </a>
                 </v-col>
               </v-row>
             </v-card>
