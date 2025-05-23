@@ -59,7 +59,7 @@ SteamKey.Trade is a community-driven platform where gamers can safely and easily
 
 8. **Start the development server:**
    ```bash
-   npm run dev
+   npm run dev:local
    ```
 
 9. **More information:**
@@ -111,7 +111,8 @@ entrypoint = './functions/my-function/index.js'
 
 | Command                    | Description |
 |----------------------------|-|
-| **`npm run dev`**             | Starts the Supabase functions watcher and Nuxt development server. |
+| **`npm run dev:local`**       | Starts the Supabase functions watcher and Nuxt development server. |
+| **`npm run dev:prod`**        | Starts the Nuxt development server using the live database (be careful). |
 | **`npm run supabase:start`**  | Starts the local Supabase stack. |
 | **`npm run supabase:stop`**   | Stops the local Supabase stack. |
 | **`npm run supabase:status`** | Checks the status of the local Supabase server. |
