@@ -130,6 +130,60 @@
     }
   };
 
+  const importingCollection = ref(false);
+  const importCollection = async (collection) => {
+    importingCollection.value = true;
+    try {
+      let allAppIds = [];
+      let processed = 0;
+      const batchSize = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from(Collection.apps.table)
+          .select(Collection.apps.fields.appId)
+          .eq(Collection.apps.fields.collectionId, collection.id)
+          .range(processed, processed + batchSize - 1);
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data || data.length === 0) {
+          break;
+        }
+
+        allAppIds = allAppIds.concat(data);
+        if (data.length < batchSize) {
+          break;
+        }
+
+        processed += batchSize;
+      }
+
+      if (allAppIds.length === 0) {
+        snackbarStore.set('error', 'No apps found in the selected collection');
+        return;
+      }
+
+      const items = allAppIds.map(row => ({
+        appid: row[Collection.apps.fields.appId],
+        name: null,
+        query: row[Collection.apps.fields.appId],
+        score: 0,
+        suggestions: [],
+        type: VaultEntry.enums.type.key,
+        values: ['']
+      }));
+      setImports(items);
+      snackbarStore.set('success', `Imported ${items.length} apps from collection`);
+    } catch (error) {
+      console.error(error);
+      snackbarStore.set('error', 'Failed to import collection');
+    } finally {
+      importingCollection.value = false;
+    }
+  };
+
   const scoreToPercent = score => {
     return Math.round((1 - score) * 1000) / 10;
   };
@@ -311,6 +365,25 @@
                     </v-btn>
                   </template>
                 </dialog-manual-import>
+
+                <dialog-select-collection
+                  :multiple="false"
+                  :table-props="{ onlyUsers: [user.id], maxSelection: 1 }"
+                  @select="importCollection"
+                >
+                  <template #activator="{ props: activatorProps }">
+                    <v-btn
+                      v-bind="activatorProps"
+                      :disabled="importingCollection"
+                      variant="tonal"
+                    >
+                      <v-icon icon="mdi-apps" />
+                      <span class="hidden-sm-and-down ml-0 ml-sm-2">
+                        Collection
+                      </span>
+                    </v-btn>
+                  </template>
+                </dialog-select-collection>
 
                 <v-btn
                   :disabled="importingBartervg"
