@@ -225,11 +225,11 @@
           @confirm="emit('vaultless'); internalValue = false"
         >
           <template #activator="attrs">
-            <small>
-              <a
-                href="#"
-                v-bind="attrs.props"
-              >I prefer to exchange off-platform</a>
+            <small
+              class="text-decoration-underline cursor-pointer"
+              v-bind="attrs.props"
+            >
+              I prefer to exchange off-platform
             </small>
           </template>
 
