@@ -26,7 +26,7 @@
     "supabase:status": "supabase status",
     "supabase:reset": "supabase db reset",
     "supabase:pull": "supabase db pull --local && supabase migration up --local",
-    "supabase:diff": "nsupabase stop && supabase db diff -f patch && supabase start",
+    "supabase:diff": "supabase stop && supabase db diff -f patch && supabase start",
     "supabase:push": "supabase db push --local",
     "supabase:deploy": "supabase functions deploy && supabase secrets set --env-file ./supabase/.env.prod && supabase db push",
     "supabase:dump": "supabase db dump -f supabase/seed.sql --data-only && supabase db dump -f supabase/schema.sql -s public --keep-comments --local",
