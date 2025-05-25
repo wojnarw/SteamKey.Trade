@@ -3,6 +3,7 @@
   import { isSteamID64, isUrl } from '~/assets/js/validate';
 
   const route = useRoute();
+  const router = useRouter();
   const supabase = useSupabaseClient();
   const { slug } = route.params;
   const { User, Review } = useORM();
@@ -26,7 +27,7 @@
 
       if (user.customUrl) {
         // avoid navigateTo to prevent refetching user data
-        window.history.replaceState({}, '', `/user/${user.customUrl}`);
+        router.replace({ path: `/user/${user.customUrl}` }, { shallow: true });
       }
     } else {
       const users = await User.query(supabase, [
