@@ -55,6 +55,8 @@
       <table-apps
         :filters="filters"
         filters-in-url
+        sort-desc-first
+        sort-in-url
       />
     </v-card>
   </s-page-content>

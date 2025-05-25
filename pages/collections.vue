@@ -97,6 +97,7 @@
             v-if="user"
             filters-in-url
             :only-users="[user.id]"
+            sort-in-url
           />
         </v-window-item>
 
@@ -107,6 +108,7 @@
           <table-collections
             :exclude-users="isLoggedIn ? [user.id] : undefined"
             filters-in-url
+            sort-in-url
           />
         </v-window-item>
       </v-window>

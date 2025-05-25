@@ -50,6 +50,7 @@
         no-data-text="No users found"
         :query-getter="queryGetter"
         :search-field="User.fields.displayName"
+        sort-in-url
         @click:row="(item) => navigateTo(`/user/${item[User.fields.customUrl] || item[User.fields.steamId]}`)"
       >
         <template #[`item.avatar`]="{ item }">

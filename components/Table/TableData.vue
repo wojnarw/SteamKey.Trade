@@ -4,6 +4,7 @@
   const snackbarStore = useSnackbarStore();
   const slots = useSlots();
   const route = useRoute();
+  const router = useRouter();
 
   const emit = defineEmits(['click:row']);
   const props = defineProps({
@@ -24,6 +25,10 @@
       default: false
     },
     mustSort: {
+      type: Boolean,
+      default: false
+    },
+    sortInUrl: {
       type: Boolean,
       default: false
     },
@@ -91,6 +96,9 @@
     return props.headers;
   });
 
+  const waitingForUrlFilters = ref(props.filtersInUrl && route.query.filters);
+  const waitingForUrlSort = ref(props.sortInUrl && route.query.sort && route.query.order);
+
   watch([
     () => props.queryGetter,
     // () => props.headers,
@@ -108,6 +116,40 @@
   });
 
   const sortBy = ref([...props.defaultSortBy]);
+
+  const syncSortWithUrl = () => {
+    if (!props.sortInUrl) {
+      return;
+    }
+    if (!sortBy.value.length) {
+      // Remove sort/order from URL if no sort is active
+      // eslint-disable-next-line no-unused-vars
+      const { sort, order, ...rest } = route.query;
+      router.replace({ query: { ...rest } }, { shallow: true });
+      return;
+    }
+    const { key, order } = sortBy.value[0] || {};
+    if (!key || !order) {
+      return;
+    }
+    router.replace({ query: { ...route.query, sort: key, order } }, { shallow: true });
+  };
+
+  const loadSortFromUrl = () => {
+    if (!props.sortInUrl) {
+      return;
+    }
+    const { sort, order } = route.query;
+    if (sort && order) {
+      sortBy.value = [{ key: sort, order }];
+    }
+    waitingForUrlSort.value = false;
+  };
+
+  onMounted(() => loadSortFromUrl());
+  watch(() => route.query, () => loadSortFromUrl());
+  watch(sortBy, () => syncSortWithUrl(), { deep: true });
+
   const itemsPerPage = ref(props.defaultItemsPerPage * 1);
   const loading = ref(false);
   const prevPage = ref(1);
@@ -116,7 +158,6 @@
   const serverItems = ref([]);
   let queryResults = [];
 
-  const waitingForUrlFilters = ref(props.filtersInUrl && route.query.filters);
   const applyFilters = (filters) => {
     activeFilters.value = filters;
     waitingForUrlFilters.value = false;
@@ -133,7 +174,7 @@
   watch(() => sortBy.value, (newValue, oldValue) => {
     if (props.sortDescFirst) {
       for (let i = 0; i < sortBy.value.length; i++) {
-        const isNew = !oldValue.find(({ key }) => key === sortBy.value[i].key);
+        const isNew = !oldValue.find(({ key }) => key === sortBy.value[i].key) && !route.query.sort && !route.query.order;
         if (isNew) {
           sortBy.value[i].order = 'desc';
         }
@@ -171,8 +212,8 @@
   };
 
   const loadItems = async ({ itemsPerPage, page, search, sortBy }) => {
-    // Skip initial data loading if we're waiting for URL filters
-    if (waitingForUrlFilters.value) {
+    // Skip initial data loading if we're waiting for URL filters or sort
+    if (waitingForUrlFilters.value || waitingForUrlSort.value) {
       return;
     }
 
@@ -427,7 +468,7 @@
       max-width: 300px;
     }
 
-    .desc-first ::v-deep(.v-data-table__th--sortable:not(.v-data-table__th--sorted) .v-icon) {
+    &.desc-first ::v-deep(.v-data-table__th--sortable:not(.v-data-table__th--sorted) .v-icon) {
       transform: rotate(180deg);
     }
   }
