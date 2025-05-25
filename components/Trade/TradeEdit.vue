@@ -19,6 +19,14 @@
     receiver: {
       type: String,
       default: null
+    },
+    senderSelected: {
+      type: Array,
+      default: () => []
+    },
+    receiverSelected: {
+      type: Array,
+      default: () => []
     }
   });
 
@@ -226,6 +234,33 @@
     }
   }, { deep: true, immediate: true });
 
+  // Pre-select apps for new trades if senderSelected/receiverSelected are provided
+  watch(
+    [() => selectedCollections.value, () => props.senderSelected, () => props.receiverSelected],
+    async ([collections, senderIds, receiverIds]) => {
+      if (
+        // Only for brand new trades
+        (!isNew || isCounter || isCopy)
+        // Only if both collections are ready
+        && (!collections.sender || !collections.receiver)
+        // Only if senderSelected/receiverSelected are non-empty
+        && (!senderIds?.length && !receiverIds?.length)
+      ) {
+        return;
+      }
+
+      const allIds = [...new Set([...senderIds, ...receiverIds])];
+      const appInstances = await App.query(supabase, [
+        { filter: 'in', params: [App.fields.id, allIds] }
+      ]);
+
+      const allApps = appInstances.map(instance => instance.toObject());
+      selectedApps.value.sender = allApps.filter(app => senderIds.includes(app.id));
+      selectedApps.value.receiver = allApps.filter(app => receiverIds.includes(app.id));
+    },
+    { immediate: true, deep: true }
+  );
+
   watch(() => selectedApps.value, () => {
     trade.value.senderTotal = Math.max(Math.min(selectedApps.value.sender.length, trade.value.senderTotal), mandatoryApps.value.sender.length);
     trade.value.receiverTotal = Math.max(Math.min(selectedApps.value.receiver.length, trade.value.receiverTotal), mandatoryApps.value.receiver.length);
@@ -236,7 +271,7 @@
         const existingTradeApp = tradeApps.value[side].find(tradeApp => tradeApp.appId === app.id) || {};
         apps.push({
           appId: app.id,
-          collectionId: existingTradeApp.collectionId || app.collection?.collectionId || selectedCollections.value[side][0] || null,
+          collectionId: existingTradeApp.collectionId || app.collection?.collectionId || selectedCollections.value?.[side]?.[0] || null,
           vaultEntryId: existingTradeApp.vaultEntryId || null,
           userId: side === 'sender' ? users.value.sender : users.value.receiver,
           mandatory: mandatoryApps.value[side].some(({ id }) => id === app.id),

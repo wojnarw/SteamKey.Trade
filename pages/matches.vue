@@ -385,7 +385,7 @@
               <v-btn
                 v-tooltip:top="`Click to trade with this user`"
                 target="_blank"
-                :to="`/trade/new?partner=${match.user}`"
+                :to="`/trade/new?partner=${match.user}&senderapps=${match.have.join(',')}&receiverapps=${match.want.join(',')}`"
                 variant="tonal"
               >
                 <v-icon
