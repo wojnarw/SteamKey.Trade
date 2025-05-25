@@ -219,7 +219,7 @@
         const existingAppids = await Collection.getMasterCollectionsApps(supabase, user.id).then(({ tradelist }) => tradelist || []);
         const newAppids = appids.filter(appid => !existingAppids.includes(appid));
         if (newAppids.length > 0) {
-          await collection.addApps(newAppids);
+          await collection.addApps(newAppids, Collection.enums.source.sync);
           tradelistCount = newAppids.length;
         }
       }

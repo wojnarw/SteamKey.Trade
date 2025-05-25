@@ -58,6 +58,41 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Create trigger function to sync master tradelist on vault entry delete
+create or replace function vault_entries_sync_tradelist_on_delete()
+returns trigger
+set search_path = ''
+as $$
+declare
+  v_master_tradelist_id text;
+  v_count integer;
+begin
+  -- Check if user has any more available (tradeable) copies of this app
+  select count(*) into v_count
+  from public.vault_entries
+  where user_id = old.user_id
+    and app_id = old.app_id
+    and trade_id is null;
+
+  if v_count = 0 then
+    -- Find the user's master tradelist
+    select id into v_master_tradelist_id
+    from public.collections
+    where user_id = old.user_id and master = true and type = 'tradelist';
+
+    if v_master_tradelist_id is not null then
+      -- Remove from master tradelist if collection_apps entry is of type 'sync'
+      delete from public.collection_apps
+      where collection_id = v_master_tradelist_id
+        and app_id = old.app_id
+        and source = 'sync';
+    end if;
+  end if;
+
+  return null;
+end;
+$$ language plpgsql security invoker;
+
 -- Create triggers
 create trigger vault_entries_ensure_app_exists
 before insert on vault_entries
@@ -73,6 +108,11 @@ create trigger vault_entries_handle_notifications_trigger
 after insert on vault_entries
 for each row
 execute function vault_entries_handle_notifications();
+
+create trigger vault_entries_sync_tradelist_on_delete_trigger
+after delete on vault_entries
+for each row
+execute function vault_entries_sync_tradelist_on_delete();
 
 -- Add date management triggers
 create trigger vault_entries_update_dates
