@@ -19,7 +19,7 @@
   }
 
   const { user, isLoggedIn } = useAuthStore();
-  const { App, Trade } = useORM();
+  const { App, Trade, Review } = useORM();
   const snackbarStore = useSnackbarStore();
   const supabase = useSupabaseClient();
 
@@ -244,6 +244,42 @@
     submitting.value = false;
   };
 
+  const showReviewDialog = ref(false);
+  const reviewChecked = ref(false);
+
+  watch(() => trade.value?.status, async (status) => {
+    if (status !== Trade.enums.status.completed) {
+      showReviewDialog.value = false;
+      reviewChecked.value = false;
+      return;
+    }
+
+    if (
+      status === Trade.enums.status.completed &&
+      isLoggedIn &&
+      (user.id === trade.value.senderId || user.id === trade.value.receiverId) &&
+      !reviewChecked.value
+    ) {
+      // Determine partner userId
+      const partnerId = user.id === trade.value.senderId ? trade.value.receiverId : trade.value.senderId;
+      if (!partnerId) {
+        return;
+      }
+
+      // Check if review exists
+      const reviews = await Review.query(supabase, [
+        { filter: 'eq', params: [Review.fields.subjectId, partnerId] },
+        { filter: 'eq', params: [Review.fields.userId, user.id] }
+      ]);
+
+      if (!reviews.length) {
+        showReviewDialog.value = true;
+      }
+
+      reviewChecked.value = true;
+    }
+  }, { immediate: true });
+
   const footerVisible = computed(() => {
     return isLoggedIn && trade.value && [
       trade.value.receiverId,
@@ -269,6 +305,12 @@
     :breadcrumbs="breadcrumbs"
     :loading="isLoading"
   >
+    <dialog-user-review
+      v-if="trade && user && (user.id === trade.senderId || user.id === trade.receiverId)"
+      v-model="showReviewDialog"
+      :user-id="user.id === trade.senderId ? trade.receiverId : trade.senderId"
+    />
+
     <v-form
       class="d-flex flex-column flex-grow-1"
       @submit.prevent="updateStatus(Trade.enums.status.accepted)"

@@ -8,7 +8,10 @@
 
   const emit = defineEmits(['submit']);
 
-  const internalValue = ref(false);
+  const internalValue = defineModel({
+    type: Boolean,
+    default: false
+  });
   const supabase = useSupabaseClient();
   const { Review } = useORM();
   const { user } = useAuthStore();
@@ -82,9 +85,18 @@
         @submit.prevent="submit"
       >
         <v-card-title>
-          <span>Review</span>
+          <span>
+            Review of
+            <rich-profile-link
+              class="ml-2"
+              :user-id="props.userId"
+            />
+          </span>
         </v-card-title>
-        <v-card-text>
+        <v-card-text v-if="review">
+          <p class="mb-8">
+            Rate your experience with this user.
+          </p>
           <v-row
             v-for="key in Review.enums.metric"
             :key="key"
