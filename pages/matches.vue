@@ -113,7 +113,39 @@
     }
   };
 
-  // Load more matches for infinite scrolling
+  const matchesStore = useMatchesStore();
+
+  // Load all fresh matches from cache (for current filter)
+  const loadCachedMatches = () => {
+    matches.value = [];
+    const userIds = Object.keys(matchesStore.users);
+    userIds.forEach(userId => {
+      const entry = matchesStore.getUserMatches(userId);
+      if (entry && filterMatches({ have: entry.have, want: entry.want })) {
+        matches.value.push({ user: userId, have: entry.have, want: entry.want });
+      }
+    });
+  };
+
+  onMounted(() => {
+    if (selectedUser.value || selectedApp.value) {
+      loadCachedMatches();
+      if (matches.value.length === 0) {
+        loadMatches();
+      }
+    }
+  });
+
+  // When filters change, reload from cache
+  watch([matchFilter, selectedApp, selectedUser], () => {
+    if (selectedUser.value || selectedApp.value) {
+      loadCachedMatches();
+    } else {
+      matches.value = [];
+    }
+  }, { immediate: false });
+
+  // Only fetch new users when scrolling (infinite scroll)
   const loadMoreMatches = async ({ done }) => {
     try {
       loading.value = true;
@@ -147,11 +179,14 @@
 
         // Only add match if it passes the filter
         if (filterMatches({ have, want })) {
-          matches.value.push({
-            user: userId,
-            have,
-            want
-          });
+          // Check if user already exists in matches, replace if so
+          const existingIndex = matches.value.findIndex(m => m.user === userId);
+          if (existingIndex === -1) {
+            matches.value.push({ user: userId, have, want });
+          } else {
+            matches.value[existingIndex] = { user: userId, have, want };
+          }
+          matchesStore.setUserMatches(userId, have, want);
           validMatchesFound = true;
         }
       }
@@ -174,15 +209,16 @@
   };
 
   const loadMatches = () => {
-    reset();
     return loadMoreMatches({ done: () => {} });
   };
 
-  onMounted(() => {
-    if (selectedUser.value || selectedApp.value) {
+  const startMatching = () => {
+    reset();
+    loadCachedMatches();
+    if (matches.value.length === 0) {
       loadMatches();
     }
-  });
+  };
 
   const title = 'Matches';
   const breadcrumbs = [
@@ -325,7 +361,7 @@
           prepend-icon="mdi-magnify"
           size="large"
           variant="tonal"
-          @click="loadMatches"
+          @click="startMatching"
         >
           {{ loading ? 'Loading...' : 'Find Matches' }}
         </v-btn>
