@@ -1,76 +1,12 @@
 <script setup>
-  import { FunctionsHttpError } from '@supabase/supabase-js';
+  const { Collection } = useORM();
 
-  const supabase = useSupabaseClient();
-  const snackbarStore = useSnackbarStore();
-  const { user, updateUserCollections } = useAuthStore();
   const internalValue = ref(false);
 
-  const steamWishlistSyncing = ref(false);
-  const syncSteamWishlist = async () => {
-    steamWishlistSyncing.value = true;
-    try {
-      const { data, error } = await supabase.functions.invoke('steam-sync', {
-        body: {
-          userId: user.id,
-          type: 'wishlist'
-        }
-      });
+  const { sync: syncWishlist, loading: loadingWishlist } = useSteamSync(Collection.enums.type.wishlist);
+  const { sync: syncLibrary, loading: loadingLibrary } = useSteamSync(Collection.enums.type.library);
 
-      if (error) {
-        throw error;
-      }
-
-      await updateUserCollections();
-
-      snackbarStore.set('success', 'Steam Wishlist synchronized');
-
-      await navigateTo(`/collection/${data.wishlist}`);
-    } catch (error) {
-      console.error(error);
-      if (error instanceof FunctionsHttpError) {
-        const message = await error.context.json();
-        snackbarStore.set('error', message.error || message);
-      } else {
-        snackbarStore.set('error', 'An unknown error occurred while synchronizing the Steam Wishlist');
-      }
-    }
-    steamWishlistSyncing.value = false;
-  };
-
-  const steamLibrarySyncing = ref(false);
-  const syncSteamLibrary = async () => {
-    steamLibrarySyncing.value = true;
-    try {
-      const { data, error } = await supabase.functions.invoke('steam-sync', {
-        body: {
-          userId: user.id,
-          type: 'library'
-        }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      await updateUserCollections();
-
-      snackbarStore.set('success', 'Steam Library synchronized');
-
-      await navigateTo(`/collection/${data.library}`);
-    } catch (error) {
-      console.error(error);
-      if (error instanceof FunctionsHttpError) {
-        const message = await error.context.json();
-        snackbarStore.set('error', message.error || message);
-      } else {
-        snackbarStore.set('error', 'An unknown error occurred while synchronizing the Steam Library');
-      }
-    }
-    steamLibrarySyncing.value = false;
-  };
-
-  const loading = computed(() => steamWishlistSyncing.value || steamLibrarySyncing.value);
+  const loading = computed(() => loadingWishlist.value || loadingLibrary.value);
 </script>
 
 <template>
@@ -91,10 +27,10 @@
       <v-card-text>
         <v-btn
           block
-          :disabled="steamLibrarySyncing"
-          :loading="steamWishlistSyncing"
+          :disabled="loadingLibrary"
+          :loading="loadingWishlist"
           variant="tonal"
-          @click="syncSteamWishlist"
+          @click="syncWishlist"
         >
           <v-icon
             class="mr-2"
@@ -106,10 +42,10 @@
         <v-btn
           block
           class="mt-4"
-          :disabled="steamWishlistSyncing"
-          :loading="steamLibrarySyncing"
+          :disabled="loadingWishlist"
+          :loading="loadingLibrary"
           variant="tonal"
-          @click="syncSteamLibrary"
+          @click="syncLibrary"
         >
           <v-icon
             class="mr-2"

@@ -8,6 +8,9 @@
   const supabase = useSupabaseClient();
   const { isLoggedIn, user } = storeToRefs(useAuthStore());
 
+  const { sync: syncWishlist, loading: loadingWishlist } = useSteamSync(Collection.enums.type.wishlist);
+  const { sync: syncLibrary, loading: loadingLibrary } = useSteamSync(Collection.enums.type.library);
+
   const table = ref(null);
   const props = defineProps({
     items: {
@@ -40,6 +43,10 @@
     },
     // Requires v-model to be set on this component to work properly!
     showSelect: {
+      type: Boolean,
+      default: false
+    },
+    showActions: {
       type: Boolean,
       default: false
     },
@@ -104,7 +111,8 @@
     { title: Collection.labels.description, value: Collection.fields.description, sortable: false },
     { title: Collection.labels.apps, value: 'apps', sortable: false },
     { title: Collection.labels.subcollections, value: 'subcollections', sortable: false },
-    { title: Collection.labels.updatedAt, value: Collection.fields.updatedAt, sortable: true, align: 'end' }
+    { title: Collection.labels.updatedAt, value: Collection.fields.updatedAt, sortable: true, align: 'end' },
+    ...(props.showActions ? [{ title: '', value: 'actions', sortable: false, align: 'end' }] : [])
   ];
 
   const mapItem = async (item) => {
@@ -183,6 +191,11 @@
   const tableEvents = computed(() => {
     return props.items ? { 'click:row': (_, { item }) => clickRow(toRaw(item)) } : { 'click:row': clickRow };
   });
+
+  const deleteCollection = async (item) => {
+    await supabase.from(Collection.table).delete().eq(Collection.fields.id, item.id);
+    table.value?.refresh?.();
+  };
 </script>
 
 <template>
@@ -224,6 +237,80 @@
         :date="item[Collection.fields.updatedAt]"
       />
       <span v-else>Never</span>
+    </template>
+
+    <template #[`item.actions`]="{ item }">
+      <v-menu
+        v-if="isLoggedIn && item[Collection.fields.userId] === user.id"
+        :close-on-content-click="false"
+      >
+        <template #activator="{ props: menuProps }">
+          <v-btn
+            v-bind="menuProps"
+            icon="mdi-dots-vertical"
+            :ripple="false"
+            variant="plain"
+          />
+        </template>
+        <v-list>
+          <v-list-item @click="navigateTo(`/collection/${item.id}/edit`)">
+            <v-list-item-title>
+              <v-icon
+                class="mr-1"
+                icon="mdi-pencil"
+                size="small"
+              />
+              Edit
+            </v-list-item-title>
+          </v-list-item>
+          <dialog-confirm
+            color="error"
+            confirm-text="Delete"
+            title="Delete Collection"
+            @confirm="deleteCollection(item)"
+          >
+            <template #activator="{ props: dialogProps }">
+              <v-list-item v-bind="dialogProps">
+                <v-list-item-title>
+                  <v-icon
+                    class="mr-1"
+                    icon="mdi-delete"
+                    size="small"
+                  />
+                  Delete
+                </v-list-item-title>
+              </v-list-item>
+            </template>
+            <template #body>
+              <div class="pa-4">
+                Are you sure you want to delete this collection?
+                This action cannot be undone.
+              </div>
+            </template>
+          </dialog-confirm>
+          <v-list-item
+            v-if="item.master && (item.type === Collection.enums.type.wishlist || item.type === Collection.enums.type.library)"
+            @click="item.type === Collection.enums.type.wishlist ? syncWishlist() : syncLibrary()"
+          >
+            <v-list-item-title>
+              <v-progress-circular
+                v-if="loadingWishlist || loadingLibrary"
+                class="mr-1"
+                color="primary"
+                indeterminate
+                size="16"
+              />
+              <v-icon
+                v-else
+                class="mr-1 spin"
+                icon="mdi-sync"
+                size="small"
+              />
+              Sync with Steam
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </template>
   </component>
 </template>

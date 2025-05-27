@@ -97,6 +97,7 @@
             v-if="user"
             filters-in-url
             :only-users="[user.id]"
+            show-actions
             sort-in-url
           />
         </v-window-item>

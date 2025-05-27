@@ -70,6 +70,17 @@
     loading.value = false;
   };
 
+  const syncing = ref(false);
+  const syncWithSteam = async () => {
+    syncing.value = true;
+    if (collection.value.type === Collection.enums.type.wishlist) {
+      await useSteamSync(Collection.enums.type.wishlist).sync();
+    } else if (collection.value.type === Collection.enums.type.library) {
+      await useSteamSync(Collection.enums.type.library).sync();
+    }
+    syncing.value = false;
+  };
+
   const title = computed(() => collection.value?.title || `Collection ${props.id}`);
   const breadcrumbs = computed(() => [
     { title: 'Home', to: '/' },
@@ -89,6 +100,24 @@
       v-if="isLoggedIn && collection && collection.userId === user.id"
       #append
     >
+      <v-btn
+        v-if="collection.master && [Collection.enums.type.wishlist, Collection.enums.type.library].includes(collection.type)"
+        class="bg-surface rounded"
+        :icon="$vuetify.display.xs"
+        :loading="syncing"
+        :rounded="$vuetify.display.xs"
+        variant="flat"
+        @click="syncWithSteam"
+      >
+        <v-icon
+          class="mr-0 mr-sm-2"
+          icon="mdi-sync"
+        />
+        <span class="d-none d-sm-block">
+          Sync
+        </span>
+      </v-btn>
+
       <v-btn
         class="ml-2 bg-surface rounded"
         :icon="$vuetify.display.xs"
