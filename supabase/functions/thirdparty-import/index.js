@@ -33,9 +33,9 @@ async function importSteamInventory(steamid) {
   const contextid = 1;
   const inventoryUrl = new URL(`https://steamcommunity.com/inventory/${steamid}/${appid}/${contextid}`);
   inventoryUrl.searchParams.set('l', 'english');
+  inventoryUrl.searchParams.set('count', '1000'); // Fetch up to 1000 items at once
 
-  let total = 0;
-  let count = 0;
+  let more = true;
 
   do {
     const response = await fetch(inventoryUrl.toString())
@@ -53,14 +53,14 @@ async function importSteamInventory(steamid) {
       throw new Error('No success');
     }
 
-    const { assets = [], descriptions, total_inventory_count, success } = response;
+    const { assets = [], descriptions, success, more_items, last_assetid } = response;
 
     if (!success) {
       throw new Error('No success');
     }
 
-    total = total_inventory_count;
-    count += assets.length;
+    more = more_items;
+    inventoryUrl.searchParams.set('start_assetid', last_assetid); // Set the next asset ID to continue fetching
 
     assets.forEach(asset => {
       const { type, actions = [], name, market_name, market_hash_name } = descriptions.find(({ classid }) => classid === asset.classid);
@@ -81,7 +81,7 @@ async function importSteamInventory(steamid) {
         }
       }
     });
-  } while (count < total);
+  } while (more);
 
   return { appids, queries };
 }
