@@ -63,7 +63,7 @@ async function importSteamInventory(steamid) {
     inventoryUrl.searchParams.set('start_assetid', last_assetid); // Set the next asset ID to continue fetching
 
     assets.forEach(asset => {
-      const { type, actions = [], name, market_name, market_hash_name } = descriptions.find(({ classid }) => classid === asset.classid);
+      const { type, actions = [], name, market_name, market_hash_name } = descriptions.find(({ assetid }) => assetid === asset.assetid) || {};
       if (type === 'Gift') {
         let appid = null;
         actions.forEach(({ link }) => {

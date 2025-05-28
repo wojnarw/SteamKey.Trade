@@ -355,7 +355,7 @@
                   <template #activator="{ props: activatorProps }">
                     <v-btn
                       v-bind="activatorProps"
-                      :disabled="importingSteamInventory || importingBartervg"
+                      :disabled="importingSteamInventory || importingBartervg || importingCollection"
                       variant="tonal"
                     >
                       <v-icon icon="mdi-text-box-edit-outline" />
@@ -374,7 +374,8 @@
                   <template #activator="{ props: activatorProps }">
                     <v-btn
                       v-bind="activatorProps"
-                      :disabled="importingCollection"
+                      :disabled="importingSteamInventory || importingBartervg"
+                      :loading="importingCollection"
                       variant="tonal"
                     >
                       <v-icon icon="mdi-apps" />
@@ -386,7 +387,7 @@
                 </dialog-select-collection>
 
                 <v-btn
-                  :disabled="importingBartervg"
+                  :disabled="importingBartervg || importingCollection"
                   :loading="importingSteamInventory"
                   variant="tonal"
                   @click="importSteamInventory"
@@ -401,7 +402,7 @@
                   <template #activator="{ props: activatorProps }">
                     <v-btn
                       v-bind="activatorProps"
-                      :disabled="importingSteamInventory || importingBartervg"
+                      :disabled="importingSteamInventory || importingBartervg || importingCollection"
                       variant="tonal"
                     >
                       <v-icon icon="mdi-gamepad-circle" />
@@ -413,7 +414,7 @@
                 </dialog-steamtrades-import>
 
                 <v-btn
-                  :disabled="importingSteamInventory"
+                  :disabled="importingSteamInventory || importingCollection"
                   :loading="importingBartervg"
                   variant="tonal"
                   @click="importBartervg"
