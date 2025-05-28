@@ -38,7 +38,7 @@
       appids.forEach(appid => {
         imports.push({
           query: appid,
-          value: [''],
+          values: [''],
           suggestions: [],
           appid,
           name: null,
@@ -58,7 +58,7 @@
             queried.value++;
             imports.push({
               query,
-              value: [''],
+              values: [''],
               suggestions: results.slice(0, 100),
               appid: results[0]?.item?.appid ?? null,
               name: results[0]?.item?.names?.[0] ?? query,

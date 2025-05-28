@@ -56,20 +56,25 @@
           values: Array(count).fill(`https://steamcommunity.com/tradeoffer/new/?partner=${toAccountID(user.steamId)}`)
         });
       }
-      for (const query of [...new Set(queries)]) {
-        const results = await search(query);
-        if (results) {
-          const count = queries.filter(q => q === query).length;
-          items.push({
-            appid: results[0]?.item?.appid ?? null,
-            name: results[0]?.item?.names?.[0] ?? query,
-            query,
-            score: results[0]?.score ?? 1,
-            suggestions: results.slice(0, 100),
-            type: VaultEntry.enums.type.gift,
-            value: Array(count).fill(`https://steamcommunity.com/tradeoffer/new/?partner=${toAccountID(user.id)}`)
-          });
-        }
+
+      const uniqueQueries = [...new Set(queries)];
+      for (let i = 0; i < uniqueQueries.length; i += 50) {
+        const batch = uniqueQueries.slice(i, i + 50);
+        await Promise.all(batch.map(async query => {
+          const results = await search(query);
+          if (results) {
+            const count = queries.filter(q => q === query);
+            items.push({
+              appid: results[0]?.item?.appid ?? null,
+              name: results[0]?.item?.names?.[0] ?? query,
+              query,
+              score: results[0]?.score ?? 1,
+              suggestions: results.slice(0, 10),
+              type: VaultEntry.enums.type.gift,
+              values: Array(count).fill(`https://steamcommunity.com/tradeoffer/new/?partner=${toAccountID(user.steamId)}`)
+            });
+          }
+        }));
       }
 
       setImports(items);

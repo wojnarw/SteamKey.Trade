@@ -1,4 +1,4 @@
-import { parseHTML } from 'npm:linkedom';
+import { parseHTML } from 'linkedom';
 
 import { serve } from '../_helpers/edge.js';
 import { createAuthenticatedClient } from '../_helpers/supabase.js';
@@ -119,6 +119,11 @@ async function importSteamTrades(steamid) {
     const { document: topicDocument } = parseHTML(topicHtml);
 
     const haveNode = topicDocument.querySelector('.have');
+    if (!haveNode) {
+      console.warn(`No "have" section found for topic: ${title}`);
+      return { title, url, appids, queries };
+    }
+
     for (const node of haveNode.querySelectorAll('[href*="store.steampowered.com/app/"], [href*="steamcommunity.com/app/"], [href*="steamdb.info/app/"], [href*="s.team/a/"]')) {
       const appLink = new URL(node.getAttribute('href'));
       const appid = Number(appLink.href.split('/')[4]);
