@@ -46,6 +46,7 @@ export class User extends Entity {
         darkMode: 'dark_mode',
         dashboardWidgets: 'dashboard_widgets',
         enabledNotifications: 'enabled_notifications',
+        trackVaultCopies: 'track_vault_copies',
         incomingCriteria: 'incoming_criteria',
         updatedAt: 'updated_at',
         createdAt: 'created_at'

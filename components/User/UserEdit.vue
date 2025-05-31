@@ -144,7 +144,8 @@
 
       // Update user preferences
       const savedPreferences = await instance.savePreferences({
-        enabledNotifications: enabledNotifications.value
+        enabledNotifications: enabledNotifications.value,
+        trackVaultCopies: preferences.trackVaultCopies
       });
 
       // Update auth store preferences
@@ -299,6 +300,14 @@
                   </v-combobox>
                 </v-col>
               </v-row>
+              <v-switch
+                v-model="preferences.trackVaultCopies"
+                class="mt-2 ml-2"
+                density="compact"
+                hint="Automatically updates the 'Count' tag in your tradelist to match the number of unsent copies you own in your vault."
+                :label="'Track vault counts'"
+                persistent-hint
+              />
             </v-col>
 
             <v-col
