@@ -394,10 +394,12 @@
                       v-if="app.retailPrice && app.discountedPrice !== app.retailPrice"
                       class="text-caption"
                     >
-                      <span class="text-decoration-line-through">
+                      <span class="text-decoration-line-through text-disabled">
                         ${{ app.retailPrice }}
                       </span>
-                      <span class="text-disabled"> ({{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice, 0) }}% off)</span>
+                      <span class="text-disabled"> (</span>
+                      <span class="text-primary">{{ formatNumber(100 * (app.retailPrice - app.discountedPrice) / app.retailPrice, 0) }}%</span>
+                      <span class="text-disabled"> off)</span>
                     </span>
                     <h1
                       v-if="!isNaN(parseFloat(app.discountedPrice))"
@@ -905,6 +907,7 @@
     overflow: hidden;
     position: relative;
     transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    zoom: 0.8;
 
     &.expanded {
       height: 310px;
