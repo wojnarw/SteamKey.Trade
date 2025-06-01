@@ -519,6 +519,14 @@
         class="d-flex flex-row align-center"
         style="min-width: 60px;"
       >
+        <div
+          class="text-overline v-data-table-header__content d-flex justify-center align-center"
+          style="width: 40px;"
+        >
+          <span>
+            #
+          </span>
+        </div>
         <v-checkbox
           v-if="showSelect"
           :color="allSelected ? 'primary' : ''"
@@ -627,9 +635,19 @@
             <!-- Data table select column -->
             <td
               v-if="showSelect || tableProps.showSelect"
-              class="v-data-table__td v-data-table-column--align-start"
+              class="v-data-table__td v-data-table-column--align-start d-flex flex-row align-center h-100"
               :style="getTags(item).length ? { borderBottom: 'none' } : {}"
             >
+              <div
+                class="d-flex flex-row align-center justify-center"
+                style="width: 40px;"
+              >
+                <h2>{{ Math.floor(Math.random() * 3) + 1 }}</h2>
+                <v-icon
+                  icon="mdi-close"
+                  size="x-small"
+                />
+              </div>
               <div :class="['app-avatar', { 'overlayed': isMandatory(item.id) || isSelected(item.id) }]">
                 <div>
                   <v-img

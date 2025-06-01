@@ -1,4 +1,6 @@
 <script setup>
+  import { useDisplay } from 'vuetify';
+
   const props = defineProps({
     id: {
       type: String,
@@ -260,6 +262,22 @@
     },
     { immediate: true, deep: true }
   );
+
+  const getGridItemWidth = () => {
+    const widths = [...document.querySelectorAll('.app-grid-item')].map(item => item.offsetWidth);
+    return widths.length ? Math.min(...widths) : 0;
+  };
+
+  const display = useDisplay();
+  const gridItemWidth = ref(getGridItemWidth());
+  watch([
+    () => selectedApps.value.sender,
+    () => selectedApps.value.receiver,
+    () => display.width
+  ], async () => {
+    await nextTick();
+    gridItemWidth.value = getGridItemWidth();
+  }, { immediate: true, deep: true });
 
   watch(() => selectedApps.value, () => {
     trade.value.senderTotal = Math.max(Math.min(selectedApps.value.sender.length, trade.value.senderTotal), mandatoryApps.value.sender.length);
@@ -545,87 +563,162 @@
             <v-divider />
 
             <v-card-text class="d-flex flex-column flex-grow-1">
-              <v-row class="pa-4">
-                <v-col
-                  v-for="side in sides"
-                  :key="`summary-${side}`"
-                  class="d-flex flex-wrap justify-center  pt-0"
-                  cols="5"
-                  :order="side === 'sender' ? 1 : 3"
-                >
+              <v-chip
+                class="mb-4 justify-center"
+                size="large"
+              >
+                {{ trade.senderTotal === 1 ? '1 app' : `${trade.senderTotal || 0} apps` }} in exchange for {{ trade.receiverTotal === 1 ? '1 app' : `${trade.receiverTotal || 0} apps` }}
+              </v-chip>
+              <div class="d-flex flex-column gap-4 pa-4">
+                <div class="d-flex flex-column">
+                  <!-- Sender section -->
                   <div
-                    v-if="!selectedApps[side].length"
-                    class="d-flex flex-column justify-center align-center text-center"
+                    v-if="selectedApps.sender.length"
+                    class="d-flex align-center mb-1"
                   >
-                    <span class="text-disabled font-italic">Select apps to trade</span>
-                  </div>
-                  <div
-                    v-else
-                    class="d-flex flex-column flex-grow-1 "
-                  >
+                    <span class="me-2 mb-2 text-no-wrap">{{ trade.senderTotal || 0 }} / {{ selectedApps.sender.length || 0 }}</span>
                     <v-slider
-                      v-model.number="trade[side === 'sender' ? 'senderTotal' : 'receiverTotal']"
+                      v-model.number="trade.senderTotal"
                       class="w-100 mb-2 flex-grow-0"
-                      :disabled="selectedApps[side].every(({ id }) => mandatoryApps[side].some(({ id: mandatoryId }) => mandatoryId === id))"
+                      :disabled="selectedApps.sender.every(({ id }) => mandatoryApps.sender.some(({ id: mandatoryId }) => mandatoryId === id))"
                       hide-details
-                      :max="selectedApps[side].length"
-                      :min="mandatoryApps[side].length"
+                      :max="selectedApps.sender.length"
+                      :min="mandatoryApps.sender.length"
                       required
                       step="1"
                       type="number"
                       variant="plain"
                     />
+                  </div>
+                  <div
+                    v-if="!selectedApps.sender.length"
+                    class="d-flex flex-column justify-center align-center text-center flex-grow-1"
+                  >
+                    <span class="text-disabled font-italic">Select apps to trade</span>
+                  </div>
+                  <div
+                    v-else
+                    class="flex-grow-1 app-grid"
+                    :style="getGridStyle(selectedApps.sender.length)"
+                  >
                     <div
-                      class="flex-grow-1 app-grid"
-                      :style="getGridStyle(selectedApps[side].length)"
+                      v-for="app in selectedApps.sender"
+                      :key="`summary-${app.id}`"
+                      class="app-grid-item position-relative"
                     >
-                      <div
-                        v-for="app in selectedApps[side]"
-                        :key="`summary-${app.id}`"
-                        class="app-grid-item position-relative"
+                      <v-btn
+                        v-tooltip:top="`Remove ${app.title || `Unknown app ${app.id}`}`"
+                        class="app-remove-btn"
+                        icon="mdi-close"
+                        size="x-small"
+                        @click.stop="removeApp('sender', app.id)"
+                      />
+                      <nuxt-link
+                        rel="noopener"
+                        target="_blank"
+                        :to="`/app/${app.id}`"
                       >
-                        <v-btn
-                          v-tooltip:top="`Remove ${app.title || `Unknown app ${app.id}`}`"
-                          class="app-remove-btn"
-                          icon="mdi-close"
-                          size="x-small"
-                          @click.stop="removeApp(side, app.id)"
+                        <v-img
+                          v-ripple
+                          v-tooltip:top="app.title || `Unknown app ${app.id}`"
+                          :alt="app.title"
+                          aspect-ratio="1"
+                          class="h-100 w-100"
+                          cover
+                          lazy-src="/applogo.svg"
+                          :src="app.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${app.id}/header.jpg`"
                         />
-                        <nuxt-link
-                          rel="noopener"
-                          target="_blank"
-                          :to="`/app/${app.id}`"
-                        >
-                          <v-img
-                            v-ripple
-                            v-tooltip:top="app.title || `Unknown app ${app.id}`"
-                            :alt="app.title"
-                            aspect-ratio="1"
-                            class="h-100 w-100"
-                            cover
-                            lazy-src="/applogo.svg"
-                            :src="app.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${app.id}/header.jpg`"
-                          />
-                        </nuxt-link>
-                      </div>
+                      </nuxt-link>
+                      <v-number-input
+                        class="app-quantity-input"
+                        :control-variant="gridItemWidth > 120 ? 'default' : 'hidden'"
+                        density="compact"
+                        hide-details
+                        :min="1"
+                        :model-value="1"
+                        :prefix="gridItemWidth > 180 ? 'Quantity:' : '#'"
+                      />
                     </div>
                   </div>
-                </v-col>
-                <v-col
-                  class="d-flex flex-column justify-center align-center"
-                  cols="2"
-                  order="2"
-                >
+                </div>
+                <div class="d-flex flex-column align-center my-2">
                   <v-icon
                     class="mx-4"
                     color="primary"
                     icon="mdi-swap-horizontal"
                     size="32"
                   />
-                </v-col>
-              </v-row>
-              <div class="text-center mt-4">
-                {{ trade.senderTotal || 0 }} of {{ selectedApps.sender.length || 0 }} apps, in exchange for {{ trade.receiverTotal || 0 }} of {{ selectedApps.receiver.length || 0 }} apps
+                </div>
+                <div class="d-flex flex-column">
+                  <!-- Receiver section -->
+                  <div
+                    v-if="selectedApps.receiver.length"
+                    class="d-flex align-center mb-1"
+                  >
+                    <span class="me-2 mb-2 text-no-wrap">{{ trade.receiverTotal || 0 }} / {{ selectedApps.receiver.length || 0 }}</span>
+                    <v-slider
+                      v-model.number="trade.receiverTotal"
+                      class="w-100 mb-2 flex-grow-0"
+                      :disabled="selectedApps.receiver.every(({ id }) => mandatoryApps.receiver.some(({ id: mandatoryId }) => mandatoryId === id))"
+                      hide-details
+                      :max="selectedApps.receiver.length"
+                      :min="mandatoryApps.receiver.length"
+                      required
+                      step="1"
+                      type="number"
+                      variant="plain"
+                    />
+                  </div>
+                  <div
+                    v-if="!selectedApps.receiver.length"
+                    class="d-flex flex-column justify-center align-center text-center flex-grow-1"
+                  >
+                    <span class="text-disabled font-italic">Select apps to trade</span>
+                  </div>
+                  <div
+                    v-else
+                    class="flex-grow-1 app-grid"
+                    :style="getGridStyle(selectedApps.receiver.length)"
+                  >
+                    <div
+                      v-for="app in selectedApps.receiver"
+                      :key="`summary-${app.id}`"
+                      class="app-grid-item position-relative"
+                    >
+                      <v-btn
+                        v-tooltip:top="`Remove ${app.title || `Unknown app ${app.id}`}`"
+                        class="app-remove-btn"
+                        icon="mdi-close"
+                        size="x-small"
+                        @click.stop="removeApp('receiver', app.id)"
+                      />
+                      <nuxt-link
+                        rel="noopener"
+                        target="_blank"
+                        :to="`/app/${app.id}`"
+                      >
+                        <v-img
+                          v-ripple
+                          v-tooltip:top="app.title || `Unknown app ${app.id}`"
+                          :alt="app.title"
+                          aspect-ratio="1"
+                          class="h-100 w-100"
+                          cover
+                          lazy-src="/applogo.svg"
+                          :src="app.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${app.id}/header.jpg`"
+                        />
+                      </nuxt-link>
+                      <v-number-input
+                        class="app-quantity-input"
+                        :control-variant="gridItemWidth > 150 ? 'default' : 'hidden'"
+                        density="compact"
+                        hide-details
+                        :min="1"
+                        :prefix="gridItemWidth > 200 ? 'Quantity:' : '#'"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </v-card-text>
           </v-card>
@@ -734,5 +827,14 @@
     background: rgba(var(--v-theme-surface), 0.8);
     opacity: 0;
     transition: opacity 0.2s;
+  }
+
+  .app-quantity-input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    background: rgba(var(--v-theme-surface), 0.8);
   }
 </style>
