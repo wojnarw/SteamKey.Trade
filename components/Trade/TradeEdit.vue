@@ -557,7 +557,7 @@
                 icon="mdi-information"
                 start
               />
-              Ratio & summary
+              Shape your offer
             </v-card-title>
 
             <v-divider />
@@ -569,21 +569,26 @@
               >
                 {{ trade.senderTotal === 1 ? '1 app' : `${trade.senderTotal || 0} apps` }} in exchange for {{ trade.receiverTotal === 1 ? '1 app' : `${trade.receiverTotal || 0} apps` }}
               </v-chip>
-              <div class="d-flex flex-column gap-4 pa-4">
-                <div class="d-flex flex-column">
-                  <!-- Sender section -->
+              <template
+                v-for="side in sides"
+                :key="side"
+              >
+                <div
+                  class="d-flex flex-column"
+                  :class="selectedApps[side].length ? 'flex-grow-0' : 'flex-grow-1'"
+                >
                   <div
-                    v-if="selectedApps.sender.length"
+                    v-if="selectedApps[side].length"
                     class="d-flex align-center mb-1"
                   >
-                    <span class="me-2 mb-2 text-no-wrap">{{ trade.senderTotal || 0 }} / {{ selectedApps.sender.length || 0 }}</span>
+                    <span class="me-2 mb-2 text-no-wrap">{{ trade[side + 'Total'] || 0 }} / {{ selectedApps[side].length || 0 }}</span>
                     <v-slider
-                      v-model.number="trade.senderTotal"
+                      v-model.number="trade[side + 'Total']"
                       class="w-100 mb-2 flex-grow-0"
-                      :disabled="selectedApps.sender.every(({ id }) => mandatoryApps.sender.some(({ id: mandatoryId }) => mandatoryId === id))"
+                      :disabled="selectedApps[side].every(({ id }) => mandatoryApps[side].some(({ id: mandatoryId }) => mandatoryId === id))"
                       hide-details
-                      :max="selectedApps.sender.length"
-                      :min="mandatoryApps.sender.length"
+                      :max="selectedApps[side].length"
+                      :min="mandatoryApps[side].length"
                       required
                       step="1"
                       type="number"
@@ -591,7 +596,7 @@
                     />
                   </div>
                   <div
-                    v-if="!selectedApps.sender.length"
+                    v-if="!selectedApps[side].length"
                     class="d-flex flex-column justify-center align-center text-center flex-grow-1"
                   >
                     <span class="text-disabled font-italic">Select apps to trade</span>
@@ -599,10 +604,10 @@
                   <div
                     v-else
                     class="flex-grow-1 app-grid"
-                    :style="getGridStyle(selectedApps.sender.length)"
+                    :style="getGridStyle(selectedApps[side].length)"
                   >
                     <div
-                      v-for="app in selectedApps.sender"
+                      v-for="app in selectedApps[side]"
                       :key="`summary-${app.id}`"
                       class="app-grid-item position-relative"
                     >
@@ -611,7 +616,7 @@
                         class="app-remove-btn"
                         icon="mdi-close"
                         size="x-small"
-                        @click.stop="removeApp('sender', app.id)"
+                        @click.stop="removeApp(side, app.id)"
                       />
                       <nuxt-link
                         rel="noopener"
@@ -641,85 +646,19 @@
                     </div>
                   </div>
                 </div>
-                <div class="d-flex flex-column align-center my-2">
+                <div
+                  v-if="side === 'sender'"
+                  class="d-flex align-center justify-center my-2"
+                  :class="sides.every(side => selectedApps[side].length) ? 'flex-grow-1' : 'flex-grow-0'"
+                >
                   <v-icon
-                    class="mx-4"
+                    class="my-4"
                     color="primary"
-                    icon="mdi-swap-horizontal"
+                    icon="mdi-swap-horizontal mdi-rotate-90"
                     size="32"
                   />
                 </div>
-                <div class="d-flex flex-column">
-                  <!-- Receiver section -->
-                  <div
-                    v-if="selectedApps.receiver.length"
-                    class="d-flex align-center mb-1"
-                  >
-                    <span class="me-2 mb-2 text-no-wrap">{{ trade.receiverTotal || 0 }} / {{ selectedApps.receiver.length || 0 }}</span>
-                    <v-slider
-                      v-model.number="trade.receiverTotal"
-                      class="w-100 mb-2 flex-grow-0"
-                      :disabled="selectedApps.receiver.every(({ id }) => mandatoryApps.receiver.some(({ id: mandatoryId }) => mandatoryId === id))"
-                      hide-details
-                      :max="selectedApps.receiver.length"
-                      :min="mandatoryApps.receiver.length"
-                      required
-                      step="1"
-                      type="number"
-                      variant="plain"
-                    />
-                  </div>
-                  <div
-                    v-if="!selectedApps.receiver.length"
-                    class="d-flex flex-column justify-center align-center text-center flex-grow-1"
-                  >
-                    <span class="text-disabled font-italic">Select apps to trade</span>
-                  </div>
-                  <div
-                    v-else
-                    class="flex-grow-1 app-grid"
-                    :style="getGridStyle(selectedApps.receiver.length)"
-                  >
-                    <div
-                      v-for="app in selectedApps.receiver"
-                      :key="`summary-${app.id}`"
-                      class="app-grid-item position-relative"
-                    >
-                      <v-btn
-                        v-tooltip:top="`Remove ${app.title || `Unknown app ${app.id}`}`"
-                        class="app-remove-btn"
-                        icon="mdi-close"
-                        size="x-small"
-                        @click.stop="removeApp('receiver', app.id)"
-                      />
-                      <nuxt-link
-                        rel="noopener"
-                        target="_blank"
-                        :to="`/app/${app.id}`"
-                      >
-                        <v-img
-                          v-ripple
-                          v-tooltip:top="app.title || `Unknown app ${app.id}`"
-                          :alt="app.title"
-                          aspect-ratio="1"
-                          class="h-100 w-100"
-                          cover
-                          lazy-src="/applogo.svg"
-                          :src="app.header || `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${app.id}/header.jpg`"
-                        />
-                      </nuxt-link>
-                      <v-number-input
-                        class="app-quantity-input"
-                        :control-variant="gridItemWidth > 150 ? 'default' : 'hidden'"
-                        density="compact"
-                        hide-details
-                        :min="1"
-                        :prefix="gridItemWidth > 200 ? 'Quantity:' : '#'"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </template>
             </v-card-text>
           </v-card>
         </v-col>
