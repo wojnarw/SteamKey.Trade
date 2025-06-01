@@ -3,10 +3,11 @@ create table trade_apps (
   trade_id uuid not null references trades(id) on delete cascade,
   app_id integer not null references apps(id) on delete cascade,
   collection_id text references collections(id) on delete set null default null,
-  vault_entry_id uuid references vault_entries(id) on delete set null default null,
+  vault_entries uuid[] default null,
   user_id uuid not null references users(id) on delete cascade,
   mandatory boolean default false,
   selected boolean default false,
+  total integer not null default 1,
   snapshot jsonb default null,
   updated_at timestamptz default null,
   created_at timestamptz default now(),
@@ -131,16 +132,24 @@ begin
       raise exception 'Only receiver can update selected on pending trades';
   end if;
 
-  -- Validate vault_entry_id updates
-  if new.vault_entry_id != old.vault_entry_id and (
-    exists (
-      select 1 from public.trades
-      where id = new.trade_id
-      and status = 'completed'
-    ) or
-    new.user_id != (select auth.uid())
-  ) then
-    raise exception 'Invalid vault_entry_id update';
+  -- Validate vault_entries updates
+  if new.vault_entries is distinct from old.vault_entries then
+    -- Only allow setting vault entries that are not yet traded
+    if exists (
+      select 1 from public.vault_entries ve
+      where ve.id = any(new.vault_entries)
+        and ve.trade_id is not null
+    ) or (
+    -- Only allow update if the trade is not completed
+      exists (
+        select 1 from public.trades
+        where id = new.trade_id
+        and status = 'completed'
+      ) or
+      new.user_id != (select auth.uid())
+    ) then
+      raise exception 'Invalid vault_entries update';
+    end if;
   end if;
 
   return new;

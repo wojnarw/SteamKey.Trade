@@ -90,7 +90,7 @@ begin
               select 1 from public.trade_apps
               where trade_id = new.id
                 and selected = true
-                and vault_entry_id is null
+                and (vault_entries is null or array_length(vault_entries, 1) = 0)
             )
           ) or
           -- If both are false then check that all assigned vault entries have a value for both sender and receiver.
@@ -98,7 +98,7 @@ begin
             new.sender_vaultless = false and 
             exists (
               select 1 from public.vault_entries ve
-              join public.trade_apps ta on ta.vault_entry_id = ve.id
+              join public.trade_apps ta on ve.id = any(ta.vault_entries)
               where ta.trade_id = new.id
                 and ta.selected = true
                 and ve.trade_id is null
@@ -121,10 +121,21 @@ begin
             new.sender_vaultless = false and 
             exists (
               select 1 from public.vault_entries ve
-              join public.trade_apps ta on ta.vault_entry_id = ve.id
+              join public.trade_apps ta on ve.id = any(ta.vault_entries)
               where ta.trade_id = new.id
                 and ta.selected = true
                 and ve.trade_id is not null
+            )
+          ) or
+          -- Check that for each selected trade_app, the number of distinct vault_entries matches total
+          (
+            new.sender_vaultless = false and
+            exists (
+              select 1 from public.trade_apps ta
+              where ta.trade_id = new.id
+                and ta.selected = true
+                and ta.vault_entries is not null
+                and array_length(array(select distinct unnest(ta.vault_entries)), 1) != ta.total
             )
           ) or
           -- Verify that the count of selected sender trade apps equals the expected sender_total.
@@ -151,7 +162,7 @@ begin
     else
         raise exception 'Invalid status change';
     end case;
-    end if;
+  end if;
   return new;
 end;
 $$ language plpgsql security definer;
@@ -351,6 +362,7 @@ declare
   v_master_tradelist_id text;
   v_count integer;
   v_selected_apps integer[];
+  v_vault_entry_id uuid;
 begin
   -- Skip if the trade is not completed or if vaultless, we are done
   if new.status != 'completed' or new.sender_vaultless = true then
@@ -358,16 +370,15 @@ begin
   end if;
   -- We assume that the trade is valid (checked in the status change trigger)
 
-  -- Create received vault entries for each selected app
-  for v_vault_entry in
-    select * from public.vault_entries
-    where id in (
-      select vault_entry_id from public.trade_apps
-      where trade_id = new.id
-      and selected = true
-    )
-    and trade_id is null
+  -- Create received vault entries for each selected app and each vault entry in the array
+  for v_vault_entry_id in
+    select unnest(ta.vault_entries) as vault_entry_id
+    from public.trade_apps ta
+    where ta.trade_id = new.id
+      and ta.selected = true
+      and ta.vault_entries is not null
   loop
+    select * into v_vault_entry from public.vault_entries where id = v_vault_entry_id;
     -- Create new vault entry
     insert into public.vault_entries (
       user_id,
@@ -376,14 +387,14 @@ begin
       trade_id
     ) values (
       case 
-        when v_vault_entry.user_id = new.sender_id then new.receiver_id
-        else new.sender_id
+      when v_vault_entry.user_id = new.sender_id then new.receiver_id
+      else new.sender_id
       end,
       v_vault_entry.type,
       v_vault_entry.app_id,
       new.id
     ) returning * into v_new_vault_entry;
-    
+
     -- Copy vault value from original entry to the new entry
     insert into public.vault_values (
       vault_entry_id,
@@ -397,7 +408,7 @@ begin
     from public.vault_values
     where vault_entry_id = v_vault_entry.id
     and receiver_id = v_new_vault_entry.user_id;
-
+    
     -- Update the original entry with the completed trade ID (marking it as sent)
     update public.vault_entries
     set trade_id = new.id
@@ -409,7 +420,7 @@ begin
     -- Get all apps this user traded away in this trade
     select array_agg(ta.app_id) into v_selected_apps
     from public.trade_apps ta
-    join public.vault_entries ve on ta.vault_entry_id = ve.id
+    join public.vault_entries ve on ve.id = any(ta.vault_entries)
     where ta.trade_id = new.id
       and ta.selected = true
       and ve.user_id = v_user_id;

@@ -45,10 +45,11 @@ export class Trade extends Entity {
         tradeId: 'trade_id',
         appId: 'app_id',
         collectionId: 'collection_id',
-        vaultEntryId: 'vault_entry_id',
+        vaultEntries: 'vault_entries',
         userId: 'user_id',
         mandatory: 'mandatory',
         selected: 'selected',
+        total: 'total',
         snapshot: 'snapshot',
         updatedAt: 'updated_at',
         createdAt: 'created_at'
