@@ -158,10 +158,11 @@ export class User extends Entity {
         publicKey: { type: 'string', nullable: true, title: 'Encryption Key', description: 'Public key for vault encryption.' },
         updatedAt: { type: 'string', format: 'date-time', nullable: true, title: 'Modified', description: 'The timestamp when the user was last updated.' },
         createdAt: { type: 'string', format: 'date-time', title: 'Joined', description: 'The date you joined the site.' },
-        completedTrades: { type: 'string', title: 'Completed Trades', description: 'Number of successful exchanges.' },
+        totalCompletedTrades: { type: 'string', title: 'Completed Trades', description: 'Number of successful exchanges.' },
         offersSent: { type: 'string', title: 'Offers Sent', description: 'Number of offers sent to other traders.' },
         offersReceived: { type: 'string', title: 'Offers Received', description: 'Number of offers received from other traders.' },
-        offersCancelled: { type: 'string', title: 'Offers Cancelled', description: 'Number of offers that were cancelled by the user.' }
+        offersCancelled: { type: 'string', title: 'Offers Cancelled', description: 'Number of offers that were cancelled by the user.' },
+        totalAcceptedTrades: { type: 'string', title: 'Accepted Trades', description: 'Number of offers that were accepted by the user.' }
       }
     });
   }
@@ -184,7 +185,9 @@ export class User extends Entity {
       newVaultEntry: 'New Vault Entry',
       unreadMessages: 'Unread Messages',
       disputedTrade: 'Disputed Trade',
-      resolvedTrade: 'Resolved Trade'
+      resolvedTrade: 'Resolved Trade',
+      totalAcceptedTrades: 'Total Accepted Trades',
+      totalCompletedTrades: 'Total Completed Trades'
     });
   }
 
