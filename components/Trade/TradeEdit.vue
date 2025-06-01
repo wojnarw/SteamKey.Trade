@@ -290,10 +290,11 @@
         apps.push({
           appId: app.id,
           collectionId: existingTradeApp.collectionId || app.collection?.collectionId || selectedCollections.value?.[side]?.[0] || null,
-          vaultEntryId: existingTradeApp.vaultEntryId || null,
+          vaultEntries: existingTradeApp.vaultEntries || [],
           userId: side === 'sender' ? users.value.sender : users.value.receiver,
           mandatory: mandatoryApps.value[side].some(({ id }) => id === app.id),
-          selected: false
+          selected: false,
+          total: existingTradeApp.total || 1
         });
       }
       tradeApps.value[side] = apps;
@@ -635,12 +636,12 @@
                         />
                       </nuxt-link>
                       <v-number-input
+                        v-model="app.total"
                         class="app-quantity-input"
                         :control-variant="gridItemWidth > 120 ? 'default' : 'hidden'"
                         density="compact"
                         hide-details
                         :min="1"
-                        :model-value="1"
                         :prefix="gridItemWidth > 180 ? 'Quantity:' : '#'"
                       />
                     </div>

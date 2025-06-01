@@ -126,7 +126,8 @@
             .filter(app => sourceApps.some(({ appId }) => appId === app.id && filterFn({ appId, ...sourceApps.find(a => a.appId === app.id) })))
             .map(app => ({
               ...app,
-              snapshot: sourceApps.find(({ appId }) => appId === app.id)?.snapshot
+              snapshot: sourceApps.find(({ appId }) => appId === app.id)?.snapshot,
+              total: sourceApps.find(({ appId }) => appId === app.id)?.total // pass total to TableApps
             }));
         };
 

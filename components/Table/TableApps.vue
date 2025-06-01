@@ -440,6 +440,8 @@
     { title: App.labels.createdAt, value: App.fields.createdAt, type: Date }
   ]));
 
+  const hasTotals = computed(() => Array.isArray(props.items) && props.items.some(i => i.total != null && i.total !== undefined));
+
   // Determine which table component to use based on the presence of items
   const component = computed(() =>
     Array.isArray(props.items) ? VDataTable : TableData
@@ -468,7 +470,8 @@
           snapshot: {
             ...item.snapshot,
             app: App.toDB(item.snapshot?.app)
-          }
+          },
+          total: item.total
         })),
         itemsPerPage: 10,
         hideDefaultFooter: props.items.length <= 10,
@@ -520,6 +523,7 @@
         style="min-width: 60px;"
       >
         <div
+          v-if="hasTotals"
           class="text-overline v-data-table-header__content d-flex justify-center align-center"
           style="width: 40px;"
         >
@@ -634,15 +638,18 @@
           >
             <!-- Data table select column -->
             <td
-              v-if="showSelect || tableProps.showSelect"
+              v-if="(showSelect || tableProps.showSelect)"
               class="v-data-table__td v-data-table-column--align-start d-flex flex-row align-center h-100"
               :style="getTags(item).length ? { borderBottom: 'none' } : {}"
             >
               <div
+                v-if="item.total != null && item.total !== undefined"
                 class="d-flex flex-row align-center justify-center"
                 style="width: 40px;"
               >
-                <h2>{{ Math.floor(Math.random() * 3) + 1 }}</h2>
+                <h2>
+                  {{ item.total }}
+                </h2>
                 <v-icon
                   icon="mdi-close"
                   size="x-small"
