@@ -2,17 +2,8 @@
   import RichProfileLink from '~/components/Rich/RichProfileLink.vue';
 
   const props = defineProps({
-    userId: {
-      type: String,
-      required: true
-    },
-    attributes: {
-      type: {
-        Completed: String,
-        Sent: String,
-        Received: String,
-        Cancelled: String
-      },
+    user: {
+      type: Object,
       required: true
     },
     position: {
@@ -21,36 +12,11 @@
     }
   });
 
-  const { user: authUser } = useAuthStore();
-  const { User } = useORM();
-  const avatar = ref(null);
+  // console.info('WW:user: ' + JSON.stringify(props));
 
-  const { data: user, status, error } = useLazyAsyncData(`user-${authUser.id}`, async () => {
-    console.info('WW podium: ' + authUser)
-    const user = new User(authUser.id);
-    await user.load();
-    const data = user.toObject();
-
-    if (data.avatar) {
-      avatar.value = { url: data.avatar };
-    }
-
-    return data;
-  });
-
-  watch(() => error.value, error => {
-    if (error) {
-      throw error;
-    }
-  }, { immediate: true });
-
-  // TODO: get all needed properties
-  // const totalTrades = computed(() => user.value?.metadata?.total?.user?.[props.userId] ?? 0);
-
-  // const userStatistics = {
-  //   totalTrades
-  // };
-
+  // get everything except for userId
+  const { userId, ...attributes } = props.user;
+  // console.info('WW:attributes: ' + JSON.stringify(attributes));
   const avatarClass = computed(() => {
     return props.position === '1' ? 'first-place-avatar' : 'avatar';
   });
@@ -110,32 +76,39 @@
           <!--                        class="elevation-5 my-n10 z-20" :class="{ 'first-place-avatar' : props.position === '1'}"-->
           <!--                        preloader-->
           <!--                    />-->
-<!--          <img-->
-<!--            v-else-->
-<!--            alt="User Avatar"-->
-<!--            class="elevation-5 my-n10 z-20"-->
-<!--            :class="avatarClass"-->
-<!--            :src="user.avatar.url"-->
-<!--          >-->
-          <rich-image
-          v-if="user?.avatar"
-          :alt="user.displayName || 'User avatar'"
-          class="elevation-5 my-n10 z-20"
-          :class="avatarClass"
-          :image="user.avatar"
-        />
+          <!--          <img-->
+          <!--            v-else-->
+          <!--            alt="User Avatar"-->
+          <!--            class="elevation-5 my-n10 z-20"-->
+          <!--            :class="avatarClass"-->
+          <!--            :src="user.avatar.url"-->
+          <!--          >-->
+          <rich-profile-link
+            :avatar-size="100"
+            :class="avatarClass"
+            hide-reputation
+            hide-text
+            :user-id="props.user.userId"
+          />
+          <!--          <rich-image-->
+          <!--            v-if="user?.avatar"-->
+          <!--            :alt="user.displayName || 'User avatar'"-->
+          <!--            class="elevation-5 my-n10 z-20"-->
+          <!--            :class="avatarClass"-->
+          <!--            :image="user.avatar"-->
+          <!--          />-->
         </v-container>
 
         <!--        TODO change color of nick-->
         <rich-profile-link
           class="card-username position-relative font-weight-bold py-0 px-2 z-99 color-primary-700"
           hide-avatar
-          :user-id="props.userId"
+          :user-id="props.user.userId"
         />
       </v-card-text>
 
       <!--user statistics panel-->
-      <v-card-text class="pt-10 pb-4 ">
+      <v-card-text class="pt-10 pb-4">
         <span
           v-if="metaLoadingError"
           class="text-disabled font-italic error-message"
@@ -149,22 +122,22 @@
         />
 
         <v-row
-          v-for="(value, label) in attributes"
+          v-for="key in Object.keys(attributes)"
           v-else
-          :key="label"
+          :key="key"
           class="align-center"
         >
           <v-col
             class="text-right font-weight-bold py-1"
-            cols="5"
+            cols="3"
           >
-            {{ value }}
+            {{ props.user[key] }}
           </v-col>
           <v-col
             class="text-grey py-1"
-            cols="7"
+            cols="9"
           >
-            {{ label }}
+            {{ key }}
           </v-col>
         </v-row>
       </v-card-text>
@@ -208,7 +181,23 @@
   transition: transform 0.5s ease;
 }
 
-.first-place-avatar {
+.first-place-avatar img {
+  height: 110px;
+  width: 110px;
+  border-radius: 50%;
+  border: 2px solid #a0a0a0;
+  transition: transform 0.5s ease;
+}
+
+.first-place-avatar div.v-avatar {
+  height: 110px;
+  width: 110px;
+  border-radius: 50%;
+  border: 2px solid #a0a0a0;
+  transition: transform 0.5s ease;
+}
+
+:deep(.v-avatar) {
   height: 110px;
   width: 110px;
   border-radius: 50%;
