@@ -43,10 +43,41 @@
   });
 
   const internalValue = ref(false);
+  // Ensure each model item has a vaultEntries array matching its total
+  watch(
+    () => model.value.map(item => item.total),
+    () => {
+      model.value.forEach(item => {
+        if (!Array.isArray(item.vaultEntries)) {
+          item.vaultEntries = [];
+        }
+        // Ensure length matches total
+        while (item.vaultEntries.length < (item.total || 1)) {
+          item.vaultEntries.push(null);
+        }
+        if (item.vaultEntries.length > (item.total || 1)) {
+          item.vaultEntries.splice(item.total || 1);
+        }
+      });
+    },
+    { immediate: true, deep: true }
+  );
+
   const isIncomplete = computed(() => !props.onlyApps.every(appid => {
     const entry = model.value.find(item => item.appId === appid);
-    return entry?.vaultEntryId;
+    if (!entry) {
+      return false;
+    }
+
+    for (let idx = 0; idx < (entry.total || 1); idx++) {
+      if (!entry.vaultEntries || !entry.vaultEntries[idx]) {
+        return false;
+      }
+    }
+
+    return true;
   }));
+
   const missingPartnerVault = computed(() => {
     return user.value && !user.value.publicKey;
   });
@@ -98,16 +129,18 @@
     loading.value = true;
     try {
       // encrypt selected vault entries
-      await Promise.all(model.value.map(async ({ vaultEntryId }) => {
-        const entry = vaultEntries.value.find(entry => entry.id === vaultEntryId);
-        if (!entry) {
-          return;
-        }
+      await Promise.all(model.value.flatMap(item =>
+        (item.vaultEntries || []).map(async (vaultEntryId) => {
+          const entry = vaultEntries.value.find(entry => entry.id === vaultEntryId);
+          if (!entry) {
+            return;
+          }
 
-        const encryptedValue = await encrypt(entry.value, user.value.publicKey);
-        const instance = new VaultEntry(vaultEntryId);
-        await instance.addValue(user.value.id, encryptedValue);
-      }));
+          const encryptedValue = await encrypt(entry.value, user.value.publicKey);
+          const instance = new VaultEntry(vaultEntryId);
+          await instance.addValue(user.value.id, encryptedValue);
+        })
+      ));
 
       internalValue.value = false;
       emit('submit');
@@ -136,60 +169,64 @@
       <v-card-text class="pa-0">
         <dialog-vault-unlocker @unlocked="validPassword = true" />
         <v-container v-if="validPassword">
-          <v-row
-            v-for="(item, index) in model"
+          <template
+            v-for="item in model"
             :key="item.appId"
           >
             <template v-if="onlyApps.includes(item.appId)">
-              <v-col
-                class="d-flex align-center"
-                cols="12"
-                sm="3"
+              <v-row
+                v-for="idx in item.total || 1"
+                :key="item.appId + '-' + idx"
               >
-                <nuxt-link
-                  class="w-100 h-100"
-                  rel="noopener"
-                  target="_blank"
-                  :to="`/app/${item.appId}`"
+                <v-col
+                  class="d-flex align-center"
+                  cols="12"
+                  sm="3"
                 >
-                  <v-img
-                    v-ripple
-                    :alt="`App ${item.appId}`"
-                    cover
-                    height="56"
-                    lazy-src="/applogo.svg"
-                    :src="`https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${item.appId}/header.jpg`"
-                  />
-                </nuxt-link>
-              </v-col>
-              <v-col
-                cols="12"
-                sm="9"
-              >
-                <v-select
-                  v-model="model[index].vaultEntryId"
-                  clearable
-                  :disabled="missingPartnerVault"
-                  hide-details
-                  item-title="value"
-                  item-value="id"
-                  :items="vaultEntries.filter(entry => entry.appId === item.appId)"
-                  label="Vault entry"
-                >
-                  <template #no-data>
-                    <v-list-item
-                      subtitle="Please add a new vault entry here"
-                      target="_blank"
-                      title="No vault entries left"
-                      :to="`/vault?tab=unsent&appid=${item.appId}&action=add`"
-                      @click="internalValue = false"
+                  <nuxt-link
+                    class="w-100 h-100"
+                    rel="noopener"
+                    target="_blank"
+                    :to="`/app/${item.appId}`"
+                  >
+                    <v-img
+                      v-ripple
+                      :alt="`App ${item.appId}`"
+                      cover
+                      height="56"
+                      lazy-src="/applogo.svg"
+                      :src="`https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${item.appId}/header.jpg`"
                     />
-                  </template>
-                </v-select>
-              </v-col>
+                  </nuxt-link>
+                </v-col>
+                <v-col
+                  cols="12"
+                  sm="9"
+                >
+                  <v-select
+                    v-model="item.vaultEntries[idx-1]"
+                    clearable
+                    :disabled="missingPartnerVault"
+                    hide-details
+                    item-title="value"
+                    item-value="id"
+                    :items="vaultEntries.filter(entry => entry.appId === item.appId)"
+                    :label="`Vault entry${item.total > 1 ? ' #' + idx : ''}`"
+                  >
+                    <template #no-data>
+                      <v-list-item
+                        subtitle="Please add a new vault entry here"
+                        target="_blank"
+                        title="No vault entries left"
+                        :to="`/vault?tab=unsent&appid=${item.appId}&action=add`"
+                        @click="internalValue = false"
+                      />
+                    </template>
+                  </v-select>
+                </v-col>
+              </v-row>
             </template>
-          </v-row>
-
+          </template>
           <div class="mt-4 text-center">
             <small
               v-if="isIncomplete || missingPartnerVault"
