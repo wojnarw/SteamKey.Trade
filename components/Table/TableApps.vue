@@ -22,6 +22,10 @@
       type: Array,
       default: null
     },
+    excludeCollections: {
+      type: Array,
+      default: null
+    },
     onlyVaultUnsent: {
       type: Boolean,
       default: false
@@ -245,7 +249,7 @@
       return query;
     }
 
-    if (props.onlyCollections) {
+    if (props.onlyCollections || props.excludeCollections) {
       let query = supabase
         .from(App.table)
         .select(`*,
@@ -261,15 +265,23 @@
               )
             )
           )
-        `)
+        `);
+
+      if (props.onlyCollections?.length) {
         // This filter applies to the embedded alias – only matching rows where collection_id is the desired value.
-        .in(`collection.${Collection.apps.fields.collectionId}`, props.onlyCollections);
+        query = query.in(`collection.${Collection.apps.fields.collectionId}`, props.onlyCollections);
+      }
+
+      if (props.excludeCollections?.length) {
+        // Exclude apps that are in the specified collections
+        query = query.not(`collection.${Collection.apps.fields.collectionId}`, 'in', `(${props.excludeCollections.join(',')})`);
+      }
 
       if (props.includeApps?.length) {
         // The OR clause says: either the embedded alias exists (i.e. there is a match for collection_id)
         // or the app id is in the given list.
         query = query.or(`collection.not.is.null, ${App.fields.id}.in.(${(props.includeApps || []).join(',')})`);
-      } else {
+      } else if (props.excludeApps?.length || selectedOnly) {
         // If no includeApps are specified, we want to exclude apps that are not in the collection.
         query = query.or(`collection.not.is.null, ${App.fields.id}.is.null`);
       }
