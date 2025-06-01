@@ -321,6 +321,7 @@
 </script>
 
 <template>
+  <!-- TODO: Fix sticky header not working -->
   <v-data-table-server
     v-bind="$attrs"
     v-model="selected"
