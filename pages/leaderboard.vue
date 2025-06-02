@@ -15,12 +15,15 @@
   const tabs = ['top100', 'friends'];
 
   const headers = [
-    // { title: '#', value: 'TODO', sortable: false },
+    // TODO some values from Users table, how to join?
+    // { title: '#', value: '', sortable: false }, // TODO add position #
     // { title: User.labels.avatar, value: User.fields.avatar, sortable: false },
+    // { title: User.labels.displayName, value: User.fields.displayName, type: String },
+    // { title: User.labels.region, value: User.fields.region, sortable: true },
     { title: User.statistics.fields.userId, value: User.statistics.fields.userId, sortable: true },
     // { title: User.labels.region, value: User.fields.region, sortable: true },
-    { title: User.statistics.fields.totalCompletedTrades.title, value: User.statistics.fields.totalCompletedTrades, sortable: true },
-    { title: User.statistics.fields.totalAcceptedTrades.title, value: User.statistics.fields.totalAcceptedTrades, sortable: true }
+    { title: User.labels.totalCompletedTrades, value: User.statistics.fields.totalCompletedTrades, sortable: true },
+    { title: User.labels.totalAcceptedTrades, value: User.statistics.fields.totalAcceptedTrades, sortable: true }
     // { title: User.labels.createdAt, value: User.fields.createdAt, sortable: true }
   ];
 
@@ -32,7 +35,7 @@
   const filters = [
     { title: User.labels.steamId, value: User.fields.steamId, type: String },
     { title: User.labels.customUrl, value: User.fields.customUrl, type: String },
-    // { title: User.labels.displayName, value: User.fields.displayName, type: String },
+    { title: User.labels.displayName, value: User.fields.displayName, type: String },
     { title: User.labels.region, value: User.fields.region, type: String, options: countries },
     { title: User.labels.createdAt, value: User.fields.createdAt, type: Date }
   ];
@@ -48,7 +51,6 @@
 
   const { table: userStatsTable, fields: userStatsFields } = User.statistics;
   const mainStat = userStatsFields.totalCompletedTrades; // maybe turn this into a v-select?
-  // console.info('mainStat: ' + mainStat);
 
   // const queryGetter = () => {
   //   const result = supabase.from(userStatsTable)
@@ -89,7 +91,7 @@
       .select(`${userStatsFields.userId},${mainStat}, ${userStatsFields.totalUniqueTrades}, ${userStatsFields.totalDeclinedTrades},
       ${userStatsFields.totalReviewsReceived}, ${userStatsFields.avgSpeed}`)
       .order(mainStat, { ascending: false, nullsFirst: false })
-      // .order(`${userStatsFields.totalUniqueTrades}`, { ascending: false, nullsFirst: false })
+      .order(`${userStatsFields.totalUniqueTrades}`, { ascending: false, nullsFirst: false })
       .limit(10);
 
     if (error) {
@@ -167,7 +169,7 @@
               />
               <PodiumCard
                 v-if="top3?.[2]"
-                position="2"
+                position="3"
                 :user="top3[2]"
               />
             </v-row>
