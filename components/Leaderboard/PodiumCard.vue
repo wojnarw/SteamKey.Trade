@@ -60,27 +60,6 @@
           class="px-0 mx-0 z-10 overflow-visible ml-2 avatar-bg"
           :class="{ 'first-place-avatar-bg' : props.position === '1' }"
         >
-<!--          <v-skeleton-loader-->
-<!--            v-if="status === 'pending'"-->
-<!--            class="elevation-5 my-n10 z-20"-->
-<!--            :class="avatarClass"-->
-<!--            type="avatar"-->
-<!--          />-->
-
-          <!--          TODO: styles are broken if used with s-image OR v-img-->
-          <!--                    <s-image-->
-          <!--                        v-else-->
-          <!--                        :image="user.avatar"-->
-          <!--                        class="elevation-5 my-n10 z-20" :class="{ 'first-place-avatar' : props.position === '1'}"-->
-          <!--                        preloader-->
-          <!--                    />-->
-          <!--          <img-->
-          <!--            v-else-->
-          <!--            alt="User Avatar"-->
-          <!--            class="elevation-5 my-n10 z-20"-->
-          <!--            :class="avatarClass"-->
-          <!--            :src="user.avatar.url"-->
-          <!--          >-->
           <rich-profile-link
             :avatar-size="100"
             class="overflow-visible my-n10 z-20"
@@ -89,19 +68,13 @@
             hide-text
             :user-id="props.user.userId"
           />
-          <!--          <rich-image-->
-          <!--            v-if="user?.avatar"-->
-          <!--            :alt="user.displayName || 'User avatar'"-->
-          <!--            class="elevation-5 my-n10 z-20"-->
-          <!--            :class="avatarClass"-->
-          <!--            :image="user.avatar"-->
-          <!--          />-->
         </v-container>
 
         <!--        TODO change color of nick-->
         <rich-profile-link
           class="card-username position-relative font-weight-bold py-0 ml-4 z-99 color-primary-700"
           hide-avatar
+          hide-reputation
           :user-id="props.user.userId"
         />
       </v-card-text>
@@ -233,11 +206,10 @@
   }
 }
 
-.card-username >>> a >>> span,
-.card-username >>> span,
-.card-username {
-  color: white !important;
+.card-username::v-deep span {
+  color: #dddddd !important;
   font-size: 1rem;
   z-index: 1;
+  text-shadow: #4d4d4d 2px 1px;
 }
 </style>
