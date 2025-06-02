@@ -186,8 +186,30 @@ export class User extends Entity {
       unreadMessages: 'Unread Messages',
       disputedTrade: 'Disputed Trade',
       resolvedTrade: 'Resolved Trade',
+
+      avgCommunication: 'Average Communication',
+      avgFairness: 'Average Fairness',
+      avgHelpfulness: 'Average Helpfulness',
+      avgSpeed: 'Average Speed',
+
+      totalAbortedTrades: 'Total Aborted Trades',
       totalAcceptedTrades: 'Total Accepted Trades',
-      totalCompletedTrades: 'Total Completed Trades'
+      // totalBlacklist: 'master_blacklist_apps',
+      totalCollections: 'Total Collections',
+      totalCompletedTrades: 'Total Completed Trades',
+      totalCounteredTrades: 'Total Countered Trades',
+      totalDeclinedTrades: 'Total Declined Trades',
+      totalDisputedTrades: 'Total Disputed Trades',
+      totalLibrary: 'Total Library',
+      totalPendingTrades: 'Total Trades Pending',
+      // totalReviews: 'total_reviews',
+      totalReviewsGiven: 'Total Reviews Given',
+      totalReviewsReceived: 'Total Reviews Received',
+      // totalTradelist: 'master_tradelist_apps',
+      totalUniqueTrades: 'Total Unique Trades'
+      // totalVaultMine: 'vault_entries_mine',
+      // totalVaultReceived: 'vault_entries_received',
+      // totalWishlist: 'master_wishlist_apps'
     });
   }
 
