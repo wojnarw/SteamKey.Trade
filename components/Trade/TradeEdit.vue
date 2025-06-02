@@ -174,7 +174,7 @@
 
   watch(() => tradeApps.value, () => {
     if (tradeApps.value && tradeApps.value.sender && tradeApps.value.receiver && (!isNew || isCounter || isCopy)) {
-      headless.value = tradeApps.value.sender.every(app => app.vaultEntryId);
+      headless.value = headless.value || tradeApps.value.sender.every(({ vaultEntries, total }) => vaultEntries && vaultEntries.filter(Boolean).length === total);
 
       for (const side of sides) {
         const collectionIds = tradeApps.value[side].map(app => app.collectionId);
@@ -636,7 +636,7 @@
                         />
                       </nuxt-link>
                       <v-number-input
-                        v-model="app.total"
+                        v-model="tradeApps[side][tradeApps[side].findIndex(({ appId }) => appId === app.id)].total"
                         class="app-quantity-input"
                         :control-variant="gridItemWidth > 120 ? 'default' : 'hidden'"
                         density="compact"

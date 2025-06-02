@@ -197,7 +197,8 @@
 
         const apps = Object.values(tradeApps.value).flat();
         const bothVaultless = trade.value.senderVaultless && trade.value.receiverVaultless;
-        if (apps.every(({ vaultEntryId }) => vaultEntryId) || bothVaultless) {
+        const vaultComplete = apps.every(({ vaultEntries, total }) => vaultEntries && vaultEntries.filter(Boolean).length === total);
+        if (vaultComplete || bothVaultless) {
           status = Trade.enums.status.completed;
         }
 

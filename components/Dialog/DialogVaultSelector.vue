@@ -106,11 +106,20 @@
       value: password.value ? await decrypt(entry.value, password.value) : '********'
     })));
 
-    // remove vault entries that are no longer available
+    await nextTick();
+
     for (let i = 0; i < model.value.length; i++) {
-      const exists = vaultEntries.value.some(entry => entry.id === model.value[i].vaultEntryId);
-      if (!exists) {
-        model.value[i].vaultEntryId = null;
+      model.value[i].vaultEntries = model.value[i].vaultEntries || (new Array(model.value[i].total || 1)).fill(null);
+      for (let j = 0; j < (model.value[i].total || 1); j++) {
+        // remove vault entries that are no longer available
+        if (model.value[i].vaultEntries[j] && !vaultEntries.value.some(entry => entry.id === model.value[i].vaultEntries[j])) {
+          model.value[i].vaultEntries[j] = null;
+        }
+
+        // automatically set the first available vault entry if not already set
+        if (!model.value[i].vaultEntries[j] && vaultEntries.value.length > 0) {
+          model.value[i].vaultEntries[j] = vaultEntries.value[j] ? vaultEntries.value[j].id : null;
+        }
       }
     }
   }, { immediate: true });
