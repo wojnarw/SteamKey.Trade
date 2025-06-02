@@ -12,11 +12,9 @@
     }
   });
 
-  // console.info('WW:user: ' + JSON.stringify(props));
-
   // get everything except for userId
   const { userId, ...attributes } = props.user;
-  // console.info('WW:attributes: ' + JSON.stringify(attributes));
+  const { User } = useORM();
   const avatarClass = computed(() => {
     return props.position === '1' ? 'first-place-avatar' : 'avatar';
   });
@@ -62,12 +60,12 @@
           class="px-0 mx-0 z-10 overflow-visible ml-2 avatar-bg"
           :class="{ 'first-place-avatar-bg' : props.position === '1' }"
         >
-          <v-skeleton-loader
-            v-if="status === 'pending'"
-            class="elevation-5 my-n10 z-20"
-            :class="avatarClass"
-            type="avatar"
-          />
+<!--          <v-skeleton-loader-->
+<!--            v-if="status === 'pending'"-->
+<!--            class="elevation-5 my-n10 z-20"-->
+<!--            :class="avatarClass"-->
+<!--            type="avatar"-->
+<!--          />-->
 
           <!--          TODO: styles are broken if used with s-image OR v-img-->
           <!--                    <s-image-->
@@ -85,6 +83,7 @@
           <!--          >-->
           <rich-profile-link
             :avatar-size="100"
+            class="overflow-visible my-n10 z-20"
             :class="avatarClass"
             hide-reputation
             hide-text
@@ -101,7 +100,7 @@
 
         <!--        TODO change color of nick-->
         <rich-profile-link
-          class="card-username position-relative font-weight-bold py-0 px-2 z-99 color-primary-700"
+          class="card-username position-relative font-weight-bold py-0 ml-4 z-99 color-primary-700"
           hide-avatar
           :user-id="props.user.userId"
         />
@@ -128,16 +127,16 @@
           class="align-center"
         >
           <v-col
-            class="text-right font-weight-bold py-1"
-            cols="3"
+            class="text-right font-weight-bold pt-0 pb-1 text-h6"
+            cols="2"
           >
-            {{ props.user[key] }}
+            {{ attributes[key] }}
           </v-col>
           <v-col
             class="text-grey py-1"
-            cols="9"
+            cols="10"
           >
-            {{ key }}
+            {{ (User.labels[key] ? User.labels[key] : key) }}
           </v-col>
         </v-row>
       </v-card-text>
@@ -176,45 +175,50 @@
 .avatar {
   height: 90px;
   width: 90px;
-  border-radius: 50%;
-  border: 2px solid #a0a0a0;
+  //border-radius: 50%;
+  //border: 2px solid #a0a0a0;
   transition: transform 0.5s ease;
 }
 
-.first-place-avatar img {
-  height: 110px;
-  width: 110px;
-  border-radius: 50%;
-  border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
+.first-place-avatar ::v-deep a,
+.first-place-avatar ::v-deep div,
+.first-place-avatar ::v-deep div ::v-deep div,
+.first-place-avatar >>> div >>> div >>> div {
+  //height: 110px;
+  //width: 110px;
+  //border-radius: 50%;
+  border: 2px solid #e80404;
+  //transition: transform 0.5s ease;
+  overflow: visible;
 }
 
 .first-place-avatar div.v-avatar {
   height: 110px;
-  width: 110px;
-  border-radius: 50%;
-  border: 2px solid #a0a0a0;
+  //width: 110px;
+  //border-radius: 50%;
+  //border: 2px solid #a0a0a0;
   transition: transform 0.5s ease;
+  overflow: visible;
 }
 
 :deep(.v-avatar) {
   height: 110px;
-  width: 110px;
+  //width: 110px;
   border-radius: 50%;
   border: 2px solid #a0a0a0;
   transition: transform 0.5s ease;
 }
 
 .avatar-bg {
-  //height: 50px;
+  height: 50px;
   width: initial;
   background: rgba(0, 0, 0, 0);
 }
 
 .first-place-avatar-bg {
-  //height: 70px !important;
+  height: 70px !important;
   width: initial;
-  transition: transform 0.5s ease;
+  //transition: transform 0.5s ease;
 }
 
 // make avatar loader fill whole space correctly
@@ -229,8 +233,10 @@
   }
 }
 
+.card-username >>> a >>> span,
+.card-username >>> span,
 .card-username {
-  color: white;
+  color: white !important;
   font-size: 1rem;
   z-index: 1;
 }
