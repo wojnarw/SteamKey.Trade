@@ -206,12 +206,24 @@ export class User extends Entity {
       totalReviewsGiven: 'Total Reviews Given',
       totalReviewsReceived: 'Total Reviews Received',
       // totalTradelist: 'master_tradelist_apps',
-      totalUniqueTrades: 'Total Unique Trades'
+      totalUniqueTrades: 'Total trades with unique users'
       // totalVaultMine: 'vault_entries_mine',
       // totalVaultReceived: 'vault_entries_received',
       // totalWishlist: 'master_wishlist_apps'
     });
   }
+
+  static get shortLabels() {
+    return Object.freeze({
+      avgSpeed: 'Speed',
+      totalCompletedTrades: 'Trades',
+      totalDeclinedTrades: 'Declined',
+      totalDisputedTrades: 'Disputed',
+      totalLibrary: 'Library',
+      totalReviewsReceived: 'Reviews Received',
+      totalUniqueTrades: 'Unique trades'
+    });
+  };
 
   static get descriptions() {
     return Object.freeze({
