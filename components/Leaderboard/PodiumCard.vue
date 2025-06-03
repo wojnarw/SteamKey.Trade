@@ -14,17 +14,16 @@
 
   // get everything except for userId
   const { userId, ...attributes } = props.user;
+  // TODO: change order of attributes or just print them manually
+  // console.info('attributes', attributes);
   const { User } = useORM();
-  const avatarClass = computed(() => {
-    return props.position === '1' ? 'first-place-avatar' : 'avatar';
-  });
-
-  // const avatarSkeletonSize = computed(() => {
-  //   return props.position === '1' ? '115px' : '90px';
-  // });
 
   const cardMarginClass = computed(() => {
-    return props.position === '1' ? 'mb-10' : 'mt-16'; // for showing cards at different height
+    return props.position === '1' ? 'mb-10' : 'mt-12'; // for showing cards at different height
+  });
+
+  const avatarSize = computed(() => {
+    return props.position === '1' ? '110' : '100'; // for showing cards at different height
   });
 
   const positionBgClass = computed(() => {
@@ -57,26 +56,23 @@
         :class="positionBgClass"
       >
         <v-container
-          class="px-0 mx-0 z-10 overflow-visible ml-2 avatar-bg"
+          class="px-0 mx-0 z-10 overflow-visible mx-0 avatar-bg justify-space-between"
           :class="{ 'first-place-avatar-bg' : props.position === '1' }"
         >
           <rich-profile-link
-            :avatar-size="100"
-            class="overflow-visible my-n10 z-20"
-            :class="avatarClass"
+            :avatar-size="avatarSize"
+            class="overflow-visible my-n10 z-20 card-username position-relative font-weight-bold py-0 ml-n2"
             hide-reputation
-            hide-text
             :user-id="props.user.userId"
           />
         </v-container>
 
-        <!--        TODO change color of nick-->
-        <rich-profile-link
-          class="card-username position-relative font-weight-bold py-0 ml-4 z-99 color-primary-700"
-          hide-avatar
-          hide-reputation
-          :user-id="props.user.userId"
-        />
+        <!--        <rich-profile-link-->
+        <!--          class="card-username position-relative font-weight-bold py-0 ml-4 z-99 color-primary-700"-->
+        <!--          hide-avatar-->
+        <!--          hide-reputation-->
+        <!--          :user-id="props.user.userId"-->
+        <!--        />-->
       </v-card-text>
 
       <!--user statistics panel-->
@@ -100,16 +96,24 @@
           class="align-center"
         >
           <v-col
-            class="text-right font-weight-bold pt-0 pb-1 text-h6"
-            cols="2"
+            class="text-right font-weight-bold pt-0 pb-0 text-h6"
+            cols="3"
           >
             {{ attributes[key] }}
           </v-col>
           <v-col
             class="text-grey py-1"
-            cols="10"
+            cols="9"
           >
-            {{ (User.labels[key] ? User.labels[key] : key) }}
+            <span>
+              {{ (User.shortLabels[key] ? User.shortLabels[key] : key) }}
+              <v-tooltip
+                activator="parent"
+                open-delay="300"
+              >
+                {{ (User.labels[key] ? User.labels[key] : key) }}
+              </v-tooltip>
+            </span>
           </v-col>
         </v-row>
       </v-card-text>
@@ -145,41 +149,9 @@
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
 }
 
-.avatar {
-  height: 90px;
-  width: 90px;
-  //border-radius: 50%;
-  //border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
-}
-
-.first-place-avatar ::v-deep a,
-.first-place-avatar ::v-deep div,
-.first-place-avatar ::v-deep div ::v-deep div,
-.first-place-avatar >>> div >>> div >>> div {
-  //height: 110px;
-  //width: 110px;
-  //border-radius: 50%;
-  border: 2px solid #e80404;
-  //transition: transform 0.5s ease;
-  overflow: visible;
-}
-
-.first-place-avatar div.v-avatar {
-  height: 110px;
-  //width: 110px;
-  //border-radius: 50%;
-  //border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
-  overflow: visible;
-}
-
 :deep(.v-avatar) {
-  height: 110px;
-  //width: 110px;
-  border-radius: 50%;
-  border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
+  border: 2px solid #a0a0a0; // TODO: use some theme color
+  //border: 2px solid rgb(var(--v-theme-surface)) !important;
 }
 
 .avatar-bg {
@@ -189,9 +161,7 @@
 }
 
 .first-place-avatar-bg {
-  height: 70px !important;
-  width: initial;
-  //transition: transform 0.5s ease;
+  height: 60px !important;
 }
 
 // make avatar loader fill whole space correctly
