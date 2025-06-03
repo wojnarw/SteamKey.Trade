@@ -16,7 +16,9 @@ async function importBarterVg(steamid) {
   }
 
   const data = await response.json();
-  const appids = Object.values(data.by_platform[1] || {}).map(({ sku }) => Number(sku));
+  const appids = Object.values(data.by_platform[1] || {})
+    .filter(({ platform_id }) => platform_id === 1) // filter out subids
+    .map(({ sku }) => Number(sku));
   return { appids };
 }
 
