@@ -13,6 +13,7 @@
   });
 
   // get everything except for userId
+  // TODO: Split this up into multiple props instead?
   const { userId, ...attributes } = props.user;
   const { User } = useORM();
   const avatarClass = computed(() => {
@@ -66,16 +67,15 @@
             :class="avatarClass"
             hide-reputation
             hide-text
-            :user-id="props.user.userId"
+            :user-id="userId"
           />
         </v-container>
 
-        <!--        TODO change color of nick-->
         <rich-profile-link
-          class="card-username position-relative font-weight-bold py-0 ml-4 z-99 color-primary-700"
+          class="card-username position-relative font-weight-bold py-0 ml-4 z-99"
           hide-avatar
           hide-reputation
-          :user-id="props.user.userId"
+          :user-id="userId"
         />
       </v-card-text>
 
@@ -118,98 +118,98 @@
 </template>
 
 <style scoped lang="scss">
-.stylish-card {
-  border-radius: 10px;
-  padding: 0;
-  /*box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);*/
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 0 solid transparent;
-}
-
-.first-place {
-  background: rgb(204, 165, 0);
-  background: linear-gradient(0deg, rgba(178, 132, 8, 0.8) 0%, rgba(245, 180, 17, 0.8) 35%, rgba(255, 228, 1, 0.8) 45%, rgba(255, 228, 1, 0.8) 100%);
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
-  transition: transform 0.5s ease;
-}
-
-.second-place {
-  background: rgb(122, 122, 122);
-  background: linear-gradient(0deg, rgba(124, 124, 124, 0.8) 35%, rgba(164, 164, 164, 0.8) 45%, rgba(177, 177, 177, 0.8) 60%);
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
-}
-
-.third-place {
-  background: rgb(158, 95, 20);
-  background: linear-gradient(0deg, rgba(133, 76, 9, 0.8) 35%, rgba(158, 95, 20, 0.8) 45%, rgba(179, 102, 6, 0.8) 100%);
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
-}
-
-.avatar {
-  height: 90px;
-  width: 90px;
-  //border-radius: 50%;
-  //border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
-}
-
-.first-place-avatar ::v-deep a,
-.first-place-avatar ::v-deep div,
-.first-place-avatar ::v-deep div ::v-deep div,
-.first-place-avatar >>> div >>> div >>> div {
-  //height: 110px;
-  //width: 110px;
-  //border-radius: 50%;
-  border: 2px solid #e80404;
-  //transition: transform 0.5s ease;
-  overflow: visible;
-}
-
-.first-place-avatar div.v-avatar {
-  height: 110px;
-  //width: 110px;
-  //border-radius: 50%;
-  //border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
-  overflow: visible;
-}
-
-:deep(.v-avatar) {
-  height: 110px;
-  //width: 110px;
-  border-radius: 50%;
-  border: 2px solid #a0a0a0;
-  transition: transform 0.5s ease;
-}
-
-.avatar-bg {
-  height: 50px;
-  width: initial;
-  background: rgba(0, 0, 0, 0);
-}
-
-.first-place-avatar-bg {
-  height: 70px !important;
-  width: initial;
-  //transition: transform 0.5s ease;
-}
-
-// make avatar loader fill whole space correctly
-::v-deep .v-skeleton-loader {
-  .v-skeleton-loader__avatar {
-    height: 100%;
-    width: 100%;
-    max-height: initial;
-    max-width: initial;
-    margin: 0;
+  .stylish-card {
+    border-radius: 10px;
     padding: 0;
+    /*box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);*/
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 0 solid transparent;
   }
-}
 
-.card-username::v-deep span {
-  color: #dddddd !important;
-  font-size: 1rem;
-  z-index: 1;
-  text-shadow: #4d4d4d 2px 1px;
-}
+  .first-place {
+    background: rgb(204, 165, 0);
+    background: linear-gradient(0deg, rgba(178, 132, 8, 0.8) 0%, rgba(245, 180, 17, 0.8) 35%, rgba(255, 228, 1, 0.8) 45%, rgba(255, 228, 1, 0.8) 100%);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.5s ease;
+  }
+
+  .second-place {
+    background: rgb(122, 122, 122);
+    background: linear-gradient(0deg, rgba(124, 124, 124, 0.8) 35%, rgba(164, 164, 164, 0.8) 45%, rgba(177, 177, 177, 0.8) 60%);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .third-place {
+    background: rgb(158, 95, 20);
+    background: linear-gradient(0deg, rgba(133, 76, 9, 0.8) 35%, rgba(158, 95, 20, 0.8) 45%, rgba(179, 102, 6, 0.8) 100%);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .avatar {
+    height: 90px;
+    width: 90px;
+    //border-radius: 50%;
+    //border: 2px solid #a0a0a0;
+    transition: transform 0.5s ease;
+  }
+
+  .first-place-avatar ::v-deep a,
+  .first-place-avatar ::v-deep div,
+  .first-place-avatar ::v-deep div ::v-deep div,
+  .first-place-avatar >>> div >>> div >>> div {
+    //height: 110px;
+    //width: 110px;
+    //border-radius: 50%;
+    border: 2px solid #e80404;
+    //transition: transform 0.5s ease;
+    overflow: visible;
+  }
+
+  .first-place-avatar div.v-avatar {
+    height: 110px;
+    //width: 110px;
+    //border-radius: 50%;
+    //border: 2px solid #a0a0a0;
+    transition: transform 0.5s ease;
+    overflow: visible;
+  }
+
+  :deep(.v-avatar) {
+    height: 110px;
+    //width: 110px;
+    border-radius: 50%;
+    border: 2px solid #a0a0a0;
+    transition: transform 0.5s ease;
+  }
+
+  .avatar-bg {
+    height: 50px;
+    width: initial;
+    background: rgba(0, 0, 0, 0);
+  }
+
+  .first-place-avatar-bg {
+    height: 70px !important;
+    width: initial;
+    //transition: transform 0.5s ease;
+  }
+
+  // make avatar loader fill whole space correctly
+  ::v-deep .v-skeleton-loader {
+    .v-skeleton-loader__avatar {
+      height: 100%;
+      width: 100%;
+      max-height: initial;
+      max-width: initial;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .card-username::v-deep span {
+    color: #dddddd !important;
+    font-size: 1rem;
+    z-index: 1;
+    text-shadow: #4d4d4d 2px 1px;
+  }
 </style>
