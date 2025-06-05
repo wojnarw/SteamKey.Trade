@@ -134,7 +134,7 @@
               cols="12"
               md="4"
             > -->
-            <podium-card
+            <leaderboard-podium-card
               v-if="top3?.[1]"
               position="2"
               :user="top3[1]"
@@ -144,7 +144,7 @@
               cols="12"
               md="4"
             > -->
-            <podium-card
+            <leaderboard-podium-card
               v-if="top3?.[0]"
               position="1"
               :user="top3[0]"
@@ -154,7 +154,7 @@
               cols="12"
               md="4"
             > -->
-            <podium-card
+            <leaderboard-podium-card
               v-if="top3?.[2]"
               position="3"
               :user="top3[2]"
