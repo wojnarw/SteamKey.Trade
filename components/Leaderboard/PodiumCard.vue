@@ -13,6 +13,7 @@
   });
 
   // get everything except for userId
+  // TODO: Split this up into multiple props instead?
   const { userId, ...attributes } = props.user;
   // TODO: change order of attributes or just print them manually
   // console.info('attributes', attributes);
@@ -63,7 +64,7 @@
             :avatar-size="avatarSize"
             class="overflow-visible my-n10 z-20 card-username position-relative font-weight-bold py-0 ml-n2"
             hide-reputation
-            :user-id="props.user.userId"
+            :user-id="userId"
           />
         </v-container>
 

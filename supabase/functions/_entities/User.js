@@ -157,12 +157,7 @@ export class User extends Entity {
         },
         publicKey: { type: 'string', nullable: true, title: 'Encryption Key', description: 'Public key for vault encryption.' },
         updatedAt: { type: 'string', format: 'date-time', nullable: true, title: 'Modified', description: 'The timestamp when the user was last updated.' },
-        createdAt: { type: 'string', format: 'date-time', title: 'Joined', description: 'The date you joined the site.' },
-        totalCompletedTrades: { type: 'string', title: 'Completed Trades', description: 'Number of successful exchanges.' },
-        offersSent: { type: 'string', title: 'Offers Sent', description: 'Number of offers sent to other traders.' },
-        offersReceived: { type: 'string', title: 'Offers Received', description: 'Number of offers received from other traders.' },
-        offersCancelled: { type: 'string', title: 'Offers Cancelled', description: 'Number of offers that were cancelled by the user.' },
-        totalAcceptedTrades: { type: 'string', title: 'Accepted Trades', description: 'Number of offers that were accepted by the user.' }
+        createdAt: { type: 'string', format: 'date-time', title: 'Joined', description: 'The date you joined the site.' }
       }
     });
   }
@@ -194,22 +189,22 @@ export class User extends Entity {
 
       totalAbortedTrades: 'Total Aborted Trades',
       totalAcceptedTrades: 'Total Accepted Trades',
-      // totalBlacklist: 'master_blacklist_apps',
+      totalBlacklist: 'Total Apps in Blacklist',
       totalCollections: 'Total Collections',
       totalCompletedTrades: 'Total Completed Trades',
       totalCounteredTrades: 'Total Countered Trades',
       totalDeclinedTrades: 'Total Declined Trades',
       totalDisputedTrades: 'Total Disputed Trades',
-      totalLibrary: 'Total Library',
+      totalLibrary: 'Total Apps in Library',
       totalPendingTrades: 'Total Trades Pending',
-      // totalReviews: 'total_reviews',
+      totalReviews: 'Total Reviews',
       totalReviewsGiven: 'Total Reviews Given',
       totalReviewsReceived: 'Total Reviews Received',
-      // totalTradelist: 'master_tradelist_apps',
-      totalUniqueTrades: 'Total trades with unique users'
-      // totalVaultMine: 'vault_entries_mine',
-      // totalVaultReceived: 'vault_entries_received',
-      // totalWishlist: 'master_wishlist_apps'
+      totalTradelist: 'Total Apps in Tradelist',
+      totalUniqueTrades: 'Total trades with unique users',
+      totalVaultMine: 'My Total Vault Entries',
+      totalVaultReceived: 'Total Vault Entries Received',
+      totalWishlist: 'Total Apps in Wishlist'
     });
   }
 
