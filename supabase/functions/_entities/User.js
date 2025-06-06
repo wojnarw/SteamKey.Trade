@@ -211,9 +211,10 @@ export class User extends Entity {
   static get shortLabels() {
     return Object.freeze({
       avgSpeed: 'Speed',
-      totalCompletedTrades: 'Trades',
-      totalDeclinedTrades: 'Declined',
-      totalDisputedTrades: 'Disputed',
+      totalAcceptedTrades: 'Accepted Trades',
+      totalCompletedTrades: 'Completed Trades',
+      totalDeclinedTrades: 'Declined Trades',
+      totalDisputedTrades: 'Disputed Trades',
       totalLibrary: 'Library',
       totalReviewsReceived: 'Reviews Received',
       totalUniqueTrades: 'Unique trades'

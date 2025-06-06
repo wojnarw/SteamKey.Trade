@@ -17,8 +17,10 @@
     // TODO some values from Users table, how to join? --> can't a view (statistics) cannot use foreign keys
     { title: '#', value: 'rank', sortable: false }, // TODO add position #
     { title: 'User', value: User.statistics.fields.userId, sortable: true },
-    { title: User.labels.totalCompletedTrades, value: User.statistics.fields.totalCompletedTrades, sortable: true },
-    { title: User.labels.totalAcceptedTrades, value: User.statistics.fields.totalAcceptedTrades, sortable: true }
+    { title: User.shortLabels.totalCompletedTrades, value: User.statistics.fields.totalCompletedTrades, sortable: true },
+    { title: User.shortLabels.totalAcceptedTrades, value: User.statistics.fields.totalAcceptedTrades, sortable: true },
+    { title: User.shortLabels.avgSpeed, value: User.statistics.fields.avgSpeed, sortable: true },
+    { title: User.shortLabels.totalReviewsReceived, value: User.statistics.fields.totalReviewsReceived, sortable: true }
   ];
 
   const queryGetter = () => {
@@ -29,6 +31,7 @@
         ${mainStat},
         ${User.statistics.fields.totalUniqueTrades},
         ${User.statistics.fields.totalDeclinedTrades},
+        ${User.statistics.fields.totalAcceptedTrades},
         ${User.statistics.fields.totalReviewsReceived},
         ${User.statistics.fields.avgSpeed}
       `)
@@ -161,7 +164,7 @@
             />
             <!-- </v-col> -->
           </v-row>
-          <v-row class="d-flex">
+          <v-row class="d-flex mt-6">
             <v-card class="d-flex flex-grow-1 flex-column">
               <table-data
                 class="h-100"
