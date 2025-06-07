@@ -142,8 +142,8 @@
         // Set `selectedApps` based on the current state
         if (isAccepting.value) {
           // When accepting, selected apps are the same as mandatory apps, or all selected if required total matches total offered apps
-          selectedApps.value.sender = apps.value.sender.length === trade.value.senderTotal ? apps.value.sender : mandatoryApps.value.sender;
-          selectedApps.value.receiver = apps.value.receiver.length === trade.value.receiverTotal ? apps.value.receiver : mandatoryApps.value.receiver;
+          selectedApps.value.sender = apps.value.sender.length === trade.value.senderTotal ? [...apps.value.sender] : [...mandatoryApps.value.sender];
+          selectedApps.value.receiver = apps.value.receiver.length === trade.value.receiverTotal ? [...apps.value.receiver] : [...mandatoryApps.value.receiver];
         } else {
           // Otherwise, use the selected flag from trade apps
           selectedApps.value.sender = mapAppsWithSnapshot(data, newTradeApps.sender, ({ selected }) => selected);
