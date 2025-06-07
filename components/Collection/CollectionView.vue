@@ -286,7 +286,7 @@
 
       <v-window
         v-model="activeTab"
-        class="flex-grow-1"
+        class="flex-grow-1 overflow-visible"
       >
         <v-window-item value="apps">
           <table-apps

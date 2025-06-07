@@ -1060,7 +1060,7 @@
     display: flex;
     flex-grow: 1;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     .row-link {
       position: absolute;
