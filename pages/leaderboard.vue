@@ -174,6 +174,11 @@
                 :query-getter="queryGetter"
                 @click:row="(item) => navigateTo(`/user/${item[User.fields.customUrl] || item[User.fields.steamId]}`)"
               >
+                <template #[`item.rank`]="{ item, index }">
+                  <span class="text-h6 font-weight-black">
+                    {{ (index + 3) + '.' }}
+                  </span>
+                </template>
                 <template #[`item.${User.statistics.fields.userId}`]="{ item }">
                   <rich-profile-link
                     hide-reputation
