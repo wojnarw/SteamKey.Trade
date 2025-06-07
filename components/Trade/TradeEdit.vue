@@ -174,7 +174,9 @@
 
   watch(() => tradeApps.value, () => {
     if (tradeApps.value && tradeApps.value.sender && tradeApps.value.receiver && (!isNew || isCounter || isCopy)) {
-      headless.value = headless.value || tradeApps.value.sender.every(({ vaultEntries, total }) => vaultEntries && vaultEntries.filter(Boolean).length === total);
+      if (tradeApps.value.sender?.length) {
+        headless.value = headless.value || tradeApps.value.sender.every(({ vaultEntries, total }) => vaultEntries && vaultEntries.filter(Boolean).length === total);
+      }
 
       for (const side of sides) {
         const collectionIds = tradeApps.value[side].map(app => app.collectionId);
@@ -257,8 +259,20 @@
       ]);
 
       const allApps = appInstances.map(instance => instance.toObject());
-      selectedApps.value.sender = allApps.filter(app => senderIds.includes(app.id));
-      selectedApps.value.receiver = allApps.filter(app => receiverIds.includes(app.id));
+
+      selectedApps.value.sender = selectedApps.value.sender.concat(
+        allApps.filter(app =>
+          senderIds.includes(app.id) &&
+          !selectedApps.value.sender.some(selectedApp => selectedApp.id === app.id)
+        )
+      );
+
+      selectedApps.value.receiver = selectedApps.value.receiver.concat(
+        allApps.filter(app =>
+          receiverIds.includes(app.id) &&
+          !selectedApps.value.receiver.some(selectedApp => selectedApp.id === app.id)
+        )
+      );
     },
     { immediate: true, deep: true }
   );
