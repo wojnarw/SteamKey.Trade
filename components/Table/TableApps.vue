@@ -643,13 +643,12 @@
             <!-- Data table select column -->
             <td
               v-if="(showSelect || tableProps.showSelect)"
-              class="v-data-table__td v-data-table-column--align-start d-flex flex-row align-center h-100"
+              class="v-data-table__td v-data-table-column--align-start d-flex flex-row align-center h-100 justify-space-between"
               :style="getTags(item).length ? { borderBottom: 'none' } : {}"
             >
               <div
                 v-if="item.total != null && item.total !== undefined"
-                class="d-flex flex-row align-center justify-center"
-                style="width: 40px;"
+                class="d-flex flex-row align-center justify-center flex-grow-1 px-2"
               >
                 <h2>
                   {{ item.total }}
