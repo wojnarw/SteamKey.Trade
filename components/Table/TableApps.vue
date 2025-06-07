@@ -189,7 +189,8 @@
     if (props.noMandatory) {
       // if the item is selected and not mandatory, remove it from selected
       if (isSelected(id) && !isMandatory(id)) {
-        selected.value.splice(selected.value.indexOf(item), 1);
+        const index = selected.value.findIndex(v => v.id.toString() === id.toString());
+        selected.value.splice(index, 1);
         // if the item is not selected, add it to selected (only if not max selection)
       } else if (!isSelected(id)) {
         if (props.maxSelection && selected.value.length >= props.maxSelection) {
@@ -202,15 +203,18 @@
       // if the item is selected and not mandatory, remove it from selected
       if (!isSelected(id)) {
         if (isMandatory(id)) {
-          mandatory.value.splice(mandatory.value.indexOf(item), 1);
+          const index = mandatory.value.findIndex(v => v.id.toString() === id.toString());
+          mandatory.value.splice(index, 1);
         }
         if (props.maxSelection !== null && selected.value.length >= props.maxSelection) {
           return;
         }
         selected.value.push(item);
       } else if (isMandatory(id)) {
-        selected.value.splice(selected.value.indexOf(item), 1);
-        mandatory.value.splice(mandatory.value.indexOf(item), 1);
+        const selectedIndex = selected.value.findIndex(v => v.id.toString() === id.toString());
+        selected.value.splice(selectedIndex, 1);
+        const mandatoryIndex = mandatory.value.findIndex(v => v.id.toString() === id.toString());
+        mandatory.value.splice(mandatoryIndex, 1);
       } else {
         mandatory.value.push(item);
       }
