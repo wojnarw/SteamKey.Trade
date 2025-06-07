@@ -458,6 +458,24 @@ export class Collection extends Entity {
   }
 
   /**
+   * Empty all apps from this collection.
+   * @returns {Promise<boolean>} Whether the apps were emptied.
+   * @throws Will throw an error if the apps cannot be emptied.
+   */
+  async empty() {
+    const { error } = await this._client
+      .from(Collection.apps.table)
+      .delete()
+      .eq(Collection.apps.fields.collectionId, this.id);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  }
+
+  /**
    * Get a master collection by type.
    * @param {import('@supabase/supabase-js').SupabaseClient} supabase - The Supabase client.
    * @param {string} userId - The ID of the user.

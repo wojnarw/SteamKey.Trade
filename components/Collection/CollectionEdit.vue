@@ -110,6 +110,24 @@
     selectedApps.value = [];
   };
 
+  const emptyCollection = async () => {
+    loading.value = true;
+    try {
+      const instance = new Collection(collection.value.id);
+      await instance.empty();
+      appidsToRemove.value = [];
+      appidsToAdd.value = [];
+      selectedApps.value = [];
+      if (appsTable.value) {
+        await appsTable.value.refresh();
+      }
+      snackbarStore.set('success', 'Collection updated');
+    } catch (error) {
+      snackbarStore.set('error', error.message || 'Failed to empty collection');
+    }
+    loading.value = false;
+  };
+
   const addCollections = collections => {
     subcollections.value.push(...collections);
   };
@@ -181,8 +199,7 @@
 
   const isLoading = computed(() =>
     collectionStatus.value === 'pending' ||
-    subStatus.value === 'pending' ||
-    loading.value
+    subStatus.value === 'pending'
   );
 
   const title = computed(() => {
@@ -301,37 +318,42 @@
         <v-window v-model="activeTab">
           <v-window-item value="apps">
             <v-card-text class="d-flex flex-column overflow-auto">
-              <div class="d-flex flex-sm-row flex-column justify-space-between align-center ga-4 mb-2">
-                <div class="d-flex flex-sm-row flex-column ga-4 align-center flex-grow-1">
-                  <input-app-search
-                    v-model="newApp"
-                    density="compact"
-                    hide-details
-                    label="Add single app"
-                    prepend-inner-icon="mdi-plus"
-                    style="min-width: 180px;"
-                    @update:model-value="addApp"
-                  />
-                  or
-                  <dialog-add-apps
-                    :collection="collection"
-                    @submit="appsTable.refresh(); snackbarStore.set('success', 'Collection updated')"
-                  >
-                    <template #activator="attrs">
-                      <v-btn
-                        v-bind="attrs.props"
-                        :block="!$vuetify.display.smAndUp"
-                        :disabled="isNew && !collection.title"
-                        prepend-icon="mdi-plus"
-                        variant="tonal"
-                      >
-                        Add multiple apps
-                      </v-btn>
-                    </template>
-                  </dialog-add-apps>
-                </div>
+              <div class="d-flex flex-md-row flex-column align-center ga-4 mb-2 flex-wrap">
+                <input-app-search
+                  v-model="newApp"
+                  class="flex-grow-1 w-100 w-md-auto"
+                  density="compact"
+                  hide-details
+                  label="Add single app"
+                  min-width="200"
+                  prepend-inner-icon="mdi-plus"
+                  @update:model-value="addApp"
+                />
+                <span class="d-none d-md-inline-block">or</span>
+                <dialog-add-apps
+                  :collection="collection"
+                  @submit="appsTable.refresh(); snackbarStore.set('success', 'Collection updated')"
+                >
+                  <template #activator="attrs">
+                    <v-btn
+                      v-bind="attrs.props"
+                      :block="!$vuetify.display.mdAndUp"
+                      :disabled="isNew && !collection.title"
+                      variant="tonal"
+                    >
+                      <v-icon
+                        icon="mdi-plus"
+                        start
+                      />
+                      Add multiple apps
+                    </v-btn>
+                  </template>
+                </dialog-add-apps>
 
-                <v-divider vertical />
+                <v-divider
+                  v-if="$vuetify.display.mdAndUp"
+                  vertical
+                />
 
                 <dialog-add-tag
                   :apps="selectedApps"
@@ -341,7 +363,7 @@
                   <template #activator="attrs">
                     <v-btn
                       v-bind="attrs.props"
-                      :block="!$vuetify.display.smAndUp"
+                      :block="!$vuetify.display.mdAndUp"
                       class="flex-grow-1"
                       :disabled="!Object.keys(selectedApps).length"
                       variant="tonal"
@@ -355,23 +377,50 @@
                   </template>
                 </dialog-add-tag>
 
-                <v-divider vertical />
+                <v-divider
+                  v-if="$vuetify.display.mdAndUp"
+                  vertical
+                />
 
-                <v-btn
-                  :block="!$vuetify.display.smAndUp"
-                  class="flex-grow-1"
-                  :color="!Object.keys(selectedApps).length ? undefined : 'error'"
-                  :disabled="!Object.keys(selectedApps).length"
-                  :variant="Object.keys(selectedApps).length ? 'flat' : 'tonal'"
-                  @click="removeApps"
-                >
-                  <v-icon
-                    icon="mdi-delete"
-                    start
-                  />
-                  Remove {{ Object.keys(selectedApps).length || '' }}
-                  {{ Object.keys(selectedApps).length === 1 ? 'app' : 'apps' }}
-                </v-btn>
+                <div class="d-flex flex-md-row flex-column align-center ga-4 flex-grow-1 w-100 w-md-auto">
+                  <v-btn
+                    :block="!$vuetify.display.mdAndUp"
+                    class="flex-grow-1"
+                    :color="!Object.keys(selectedApps).length ? undefined : 'error'"
+                    :disabled="!Object.keys(selectedApps).length"
+                    variant="tonal"
+                    @click="removeApps"
+                  >
+                    <v-icon
+                      icon="mdi-delete"
+                      start
+                    />
+                    Remove {{ Object.keys(selectedApps).length || '' }}
+                    {{ Object.keys(selectedApps).length === 1 ? 'app' : 'apps' }}
+                  </v-btn>
+                  <span class="d-none d-md-inline-block">or</span>
+                  <dialog-confirm
+                    color="red"
+                    confirm-text="Empty"
+                    @confirm="emptyCollection"
+                  >
+                    <template #activator="{ props: activatorProps }">
+                      <v-btn
+                        :block="!$vuetify.display.mdAndUp"
+                        class="flex-grow-1"
+                        color="error"
+                        variant="tonal"
+                        v-bind="activatorProps"
+                      >
+                        <v-icon
+                          icon="mdi-delete-sweep"
+                          start
+                        />
+                        Empty collection
+                      </v-btn>
+                    </template>
+                  </dialog-confirm>
+                </div>
               </div>
               <table-apps
                 ref="appsTable"
@@ -387,53 +436,48 @@
           </v-window-item>
 
           <v-window-item value="collections">
-            <v-card-text>
-              <v-row class="mb-2">
-                <v-col
-                  cols="12"
-                  md="3"
+            <v-card-text class="d-flex flex-column overflow-auto">
+              <div class="d-flex flex-md-row flex-column align-center ga-4 mb-2 flex-wrap">
+                <dialog-select-collection
+                  multiple
+                  select-text="Add as subcollection"
+                  @select="addCollections"
                 >
-                  <dialog-select-collection
-                    multiple
-                    select-text="Add as subcollection"
-                    @select="addCollections"
-                  >
-                    <template #activator="attrs">
-                      <v-btn
-                        v-bind="attrs.props"
-                        :block="!$vuetify.display.mdAndUp"
-                        prepend-icon="mdi-plus"
-                        variant="tonal"
-                      >
-                        Add collections
-                      </v-btn>
-                    </template>
-                  </dialog-select-collection>
-                </v-col>
-                <v-col
-                  align="right"
-                  align-self="center"
-                  cols="12"
-                  md="9"
+                  <template #activator="attrs">
+                    <v-btn
+                      v-bind="attrs.props"
+                      :block="!$vuetify.display.mdAndUp"
+                      class="flex-grow-1"
+                      prepend-icon="mdi-plus"
+                      variant="tonal"
+                    >
+                      Add collections
+                    </v-btn>
+                  </template>
+                </dialog-select-collection>
+                <v-divider
+                  v-if="$vuetify.display.mdAndUp"
+                  vertical
+                />
+                <v-btn
+                  :block="!$vuetify.display.mdAndUp"
+                  class="flex-grow-1"
+                  color="error"
+                  :disabled="!Object.keys(selectedCollections).length"
+                  variant="tonal"
+                  @click="removeCollections"
                 >
-                  <v-btn
-                    :block="!$vuetify.display.mdAndUp"
-                    color="error"
-                    :disabled="!Object.keys(selectedCollections).length"
-                    :variant="Object.keys(selectedCollections).length ? 'flat' : 'tonal'"
-                    @click="removeCollections"
-                  >
-                    <v-icon
-                      icon="mdi-delete"
-                      start
-                    />
-                    Remove {{ Object.keys(selectedCollections).length || '' }}
-                    {{ Object.keys(selectedCollections).length === 1 ? 'collection' : 'collections' }}
-                  </v-btn>
-                </v-col>
-              </v-row>
+                  <v-icon
+                    icon="mdi-delete"
+                    start
+                  />
+                  Remove {{ Object.keys(selectedCollections).length || '' }}
+                  {{ Object.keys(selectedCollections).length === 1 ? 'collection' : 'collections' }}
+                </v-btn>
+              </div>
               <table-collections
                 v-model="selectedCollections"
+                class="flex-grow-1"
                 :items="subcollections"
                 show-select
               />
