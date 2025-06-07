@@ -257,7 +257,7 @@
       let query = supabase
         .from(App.table)
         .select(`*,
-          collection:${Collection.apps.table}!inner(
+          collection:${Collection.apps.table}${props.includeApps?.length ? '' : '!inner'}(
             ${Collection.apps.fields.collectionId},
             ...${Collection.table}(
               ${Collection.fields.userId},
