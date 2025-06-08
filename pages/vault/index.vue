@@ -100,8 +100,8 @@
       // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
     } else if (activeTab.value === 'received') {
       return query
-        // TODO: Only show entries that were received by the user
         .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null);
+      // TODO: Only show entries that were received by the user
       // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.appId}`, activeApp.value)
       // .neq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
     }
