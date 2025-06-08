@@ -171,6 +171,28 @@ begin
 end;
 $$ language plpgsql security invoker;
 
+-- Create computed column showing if vault entry is sent by me
+create or replace function is_sent(ve vault_entries)
+returns boolean
+set search_path = ''
+as $$
+  select
+    -- if not traded yet, it's also not sent
+    case
+      when ve.trade_id is null then false
+      -- exists a trade_app row for this trade+app where this entry is listed
+      when exists (
+        select 1
+          from public.trade_apps ta
+         where ta.trade_id = ve.trade_id
+           and ta.app_id = ve.app_id
+           and ve.id = any(ta.vault_entries)
+           and ta.user_id = (select auth.uid())
+      ) then true
+      else false
+    end
+$$ language sql stable security invoker;
+
 -- Create triggers
 create trigger vault_entries_ensure_app_exists
 before insert on vault_entries

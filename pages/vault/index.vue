@@ -84,7 +84,12 @@
       .from(VaultEntry.values.table)
       .select(`*,
         ${VaultEntry.table}!inner(*,
-          ${Trade.table}(*)
+          ${Trade.table}(
+            ${Trade.fields.id},
+            ${Trade.fields.receiverId},
+            ${Trade.fields.senderId}
+          ),
+          is_sent
         )
       `)
       .eq(VaultEntry.values.fields.receiverId, user.value.id)
@@ -94,16 +99,12 @@
       return query.is(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, null);
     } else if (activeTab.value === 'sent') {
       return query
-        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null);
-      // TODO: Only show entries that were sent by the user
-      // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.appId}`, activeApp.value)
-      // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
+        .eq(`${VaultEntry.table}.is_sent`, true);
     } else if (activeTab.value === 'received') {
       return query
-        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null);
-      // TODO: Only show entries that were received by the user
-      // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.appId}`, activeApp.value)
-      // .neq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
+        .eq(`${VaultEntry.table}.is_sent`, false);
     }
 
     return query;
