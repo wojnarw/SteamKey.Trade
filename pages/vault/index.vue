@@ -94,12 +94,16 @@
       return query.is(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, null);
     } else if (activeTab.value === 'sent') {
       return query
-        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
-        .eq(`${VaultEntry.table}.${Trade.table}.${Trade.fields.senderId}`, user.value.id);
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null);
+      // TODO: Only show entries that were sent by the user
+      // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.appId}`, activeApp.value)
+      // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
     } else if (activeTab.value === 'received') {
       return query
-        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null)
-        .eq(`${VaultEntry.table}.${Trade.table}.${Trade.fields.receiverId}`, user.value.id);
+        // TODO: Only show entries that were received by the user
+        .not(`${VaultEntry.table}.${VaultEntry.fields.tradeId}`, 'is', null);
+      // .eq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.appId}`, activeApp.value)
+      // .neq(`${VaultEntry.table}.${Trade.table}.${Trade.apps.table}.${Trade.apps.fields.userId}`, user.value.id);
     }
 
     return query;
