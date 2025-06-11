@@ -1,4 +1,6 @@
 <script setup>
+  import { encodeForQuery } from '~/assets/js/url';
+
   const { Trade } = useORM();
   const supabase = useSupabaseClient();
 
@@ -29,6 +31,7 @@
     title: Trade.labels[status],
     value: status
   }));
+
   const filters = computed(() => [
     { title: Trade.labels.status, value: Trade.fields.status, type: String, options: statuses },
     // TODO: Add user search
@@ -44,6 +47,33 @@
     { title: Trade.labels.receiverDisputed, value: Trade.fields.receiverDisputed, type: Boolean },
     { title: Trade.labels.receiverTotal, value: Trade.fields.receiverTotal, type: Number },
     { title: Trade.labels.createdAt, value: Trade.fields.createdAt, type: Date }
+  ]);
+
+  const route = useRoute();
+  const quickFilters = await Promise.all([
+    (async () => ({
+      title: 'Active',
+      value: await encodeForQuery([{
+        field: Trade.fields.status,
+        operation: 'in',
+        value: [Trade.enums.status.pending, Trade.enums.status.accepted]
+      }])
+    }))(),
+    (async () => ({
+      title: 'Disputed',
+      value: await encodeForQuery([{
+        operation: 'or',
+        value: `${Trade.fields.senderDisputed}.eq.true,${Trade.fields.receiverDisputed}.eq.true`
+      }])
+    }))(),
+    ...statuses.map(async ({ title, value }) => ({
+      title,
+      value: await encodeForQuery([{
+        field: Trade.fields.status,
+        operation: 'eq',
+        value
+      }])
+    }))
   ]);
 
   const queryGetter = () => {
@@ -133,6 +163,20 @@
         </v-tabs>
         <v-divider />
       </div>
+
+      <v-chip-group class="pa-2">
+        <v-chip
+          v-for="quickFilter in quickFilters"
+          :key="quickFilter.title"
+          filter
+          link
+          prepend-icon="mdi-filter"
+          :text="quickFilter.title"
+          :to="route.query.filters === decodeURIComponent(quickFilter.value) ? `/trades?tab=${activeTab}` : `/trades?tab=${activeTab}&filters=${quickFilter.value}`"
+          :value="quickFilter.value"
+          variant="tonal"
+        />
+      </v-chip-group>
 
       <v-window
         v-model="activeTab"

@@ -72,12 +72,11 @@ export class Trade extends Entity {
   static get enums() {
     return Object.freeze({
       status: {
-        aborted: 'aborted',
+        pending: 'pending',
         accepted: 'accepted',
-        completed: 'completed',
         declined: 'declined',
-        disputed: 'disputed',
-        pending: 'pending'
+        aborted: 'aborted',
+        completed: 'completed'
       },
       activity: {
         aborted: 'aborted',

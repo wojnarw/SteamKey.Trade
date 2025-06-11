@@ -1,5 +1,6 @@
 <script setup>
   import { parseDate } from '~/assets/js/date';
+  import { decodeFromQuery } from '~/assets/js/url';
 
   const snackbarStore = useSnackbarStore();
   const slots = useSlots();
@@ -146,8 +147,24 @@
     waitingForUrlSort.value = false;
   };
 
+  const loadFiltersFromUrl = async () => {
+    if (!props.filtersInUrl) {
+      return;
+    }
+    const filters = route.query.filters ? await decodeFromQuery(route.query.filters) : [];
+    if (filters.length) {
+      activeFilters.value = filters;
+      waitingForUrlFilters.value = false;
+    } else {
+      activeFilters.value = [];
+    }
+  };
+
   onMounted(() => loadSortFromUrl());
-  watch(() => route.query, () => loadSortFromUrl());
+  watch(() => route.query, () => {
+    loadSortFromUrl();
+    loadFiltersFromUrl();
+  }, { immediate: true });
   watch(sortBy, () => syncSortWithUrl(), { deep: true });
 
   const itemsPerPage = ref(props.defaultItemsPerPage * 1);
@@ -278,6 +295,8 @@
             query = query.overlaps(field, formattedValue);
           } else if (operation === 'in') {
             query = query.in(field, formattedValue);
+          } else if (operation === 'or') {
+            query = query.or(value);
           }
         });
       }
