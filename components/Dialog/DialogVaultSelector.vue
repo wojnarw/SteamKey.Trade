@@ -118,7 +118,8 @@
 
         // automatically set the first available vault entry if not already set
         if (!model.value[i].vaultEntries[j] && vaultEntries.value.length > 0) {
-          model.value[i].vaultEntries[j] = vaultEntries.value[j] ? vaultEntries.value[j].id : null;
+          const appVaultEntries = vaultEntries.value.filter(entry => entry.appId === model.value[i].appId);
+          model.value[i].vaultEntries[j] = appVaultEntries[j] ? appVaultEntries[j].id : null;
         }
       }
     }
