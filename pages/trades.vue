@@ -1,6 +1,4 @@
 <script setup>
-  import { encodeForQuery } from '~/assets/js/url';
-
   const { Trade } = useORM();
   const supabase = useSupabaseClient();
 
@@ -49,37 +47,31 @@
     { title: Trade.labels.createdAt, value: Trade.fields.createdAt, type: Date }
   ]);
 
-  const route = useRoute();
-  const quickFilters = await Promise.all([
-    (async () => ({
+  const quickFilters = [
+    {
       title: 'Active',
-      value: await encodeForQuery([{
+      value: [{
         field: Trade.fields.status,
         operation: 'in',
         value: [Trade.enums.status.pending, Trade.enums.status.accepted]
-      }])
-    }))(),
-    (async () => ({
+      }]
+    },
+    {
       title: 'Disputed',
-      value: await encodeForQuery([{
+      value: [{
         operation: 'or',
         value: `${Trade.fields.senderDisputed}.eq.true,${Trade.fields.receiverDisputed}.eq.true`
-      }])
-    }))(),
-    ...statuses.map(async ({ title, value }) => ({
+      }]
+    },
+    ...statuses.map(({ title, value }) => ({
       title,
-      value: await encodeForQuery([{
+      value: [{
         field: Trade.fields.status,
         operation: 'eq',
         value
-      }])
+      }]
     }))
-  ]);
-
-  const activeQuickFilter = computed(() => {
-    if (!route.query.filters) { return null; }
-    return quickFilters.find(qf => decodeURIComponent(qf.value) === route.query.filters)?.value || null;
-  });
+  ];
 
   const queryGetter = () => {
     let query = supabase
@@ -184,22 +176,7 @@
         <v-divider />
       </div>
 
-      <v-chip-group
-        class="pa-2"
-        :model-value="activeQuickFilter"
-      >
-        <v-chip
-          v-for="quickFilter in quickFilters"
-          :key="quickFilter.title"
-          filter
-          link
-          prepend-icon="mdi-filter"
-          :text="quickFilter.title"
-          :to="route.query.filters === decodeURIComponent(quickFilter.value) ? `/trades?tab=${activeTab}` : `/trades?tab=${activeTab}&filters=${quickFilter.value}`"
-          :value="quickFilter.value"
-          variant="tonal"
-        />
-      </v-chip-group>
+      <s-quick-filters :filters="quickFilters" />
 
       <v-window
         v-model="activeTab"
