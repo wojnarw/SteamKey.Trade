@@ -75,7 +75,7 @@
           >
             <v-icon
               class="mr-2"
-              icon="mdi-account-multiple"
+              icon="mdi-account-group"
               variant="tonal"
             />
             Community

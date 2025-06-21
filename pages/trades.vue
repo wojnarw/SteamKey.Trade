@@ -5,12 +5,12 @@
   const supabase = useSupabaseClient();
 
   const { isLoggedIn, user } = storeToRefs(useAuthStore());
-  const activeTab = useSearchParam('tab', 'received');
-  const tabs = ['received', 'sent'];
+  const activeTab = useSearchParam('tab', isLoggedIn.value ? 'received' : 'community');
+  const tabs = ['received', 'sent', 'community'];
 
   const headers = computed(() => ([
     { title: Trade.labels.status, value: Trade.fields.status, sortable: true },
-    ...(isLoggedIn.value
+    ...((isLoggedIn.value && activeTab.value !== 'community')
       ? [
         activeTab.value === 'received'
           ? { title: 'Received from', value: Trade.fields.senderId, sortable: true }
@@ -86,7 +86,7 @@
     } else if (isLoggedIn.value && activeTab.value === 'sent') {
       query = query.eq(Trade.fields.senderId, user.value.id);
     }
-
+    // For 'community' tab, no user filtering (same as logged out)
     return query;
   };
 
@@ -137,29 +137,44 @@
         class="d-block w-100"
       >
         <v-tabs v-model="activeTab">
-          <v-tab
-            class="w-50"
-            value="received"
+          <template
+            v-for="(tab, i) in tabs"
+            :key="tab"
           >
-            <v-icon
-              class="mr-2"
-              icon="mdi-arrow-right"
-              variant="tonal"
+            <v-tab
+              class="w-33"
+              :value="tab"
+            >
+              <template v-if="tab === 'received'">
+                <v-icon
+                  class="mr-2"
+                  icon="mdi-arrow-right"
+                  variant="tonal"
+                />
+                Received
+              </template>
+              <template v-else-if="tab === 'sent'">
+                Sent
+                <v-icon
+                  class="ml-2"
+                  icon="mdi-arrow-right"
+                  variant="tonal"
+                />
+              </template>
+              <template v-else>
+                <v-icon
+                  class="mr-2"
+                  icon="mdi-account-group"
+                  variant="tonal"
+                />
+                Community
+              </template>
+            </v-tab>
+            <v-divider
+              v-if="i < tabs.length - 1"
+              vertical
             />
-            Received
-          </v-tab>
-          <v-divider vertical />
-          <v-tab
-            class="w-50"
-            value="sent"
-          >
-            Sent
-            <v-icon
-              class="ml-2"
-              icon="mdi-arrow-right"
-              variant="tonal"
-            />
-          </v-tab>
+          </template>
         </v-tabs>
         <v-divider />
       </div>
@@ -190,11 +205,9 @@
           :value="tab"
         >
           <table-data
+            v-if="isLoggedIn || tab === 'community'"
             class="h-100"
-            :default-sort-by="[{
-              key: Trade.fields.createdAt,
-              order: 'desc'
-            }]"
+            :default-sort-by="[{ key: Trade.fields.createdAt, order: 'desc' }]"
             :filters="filters"
             filters-in-header
             filters-in-url
