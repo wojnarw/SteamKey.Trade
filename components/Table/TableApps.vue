@@ -444,7 +444,7 @@
     { title: App.labels.createdAt, value: App.fields.createdAt, type: Date }
   ]));
 
-  const hasTotals = computed(() => Array.isArray(props.items) && props.items.some(i => i.total != null && i.total !== undefined));
+  const hasTotals = computed(() => Array.isArray(props.items) && props.items.some(i => i.total != null && i.total !== undefined && i.total > 1));
 
   // Determine which table component to use based on the presence of items
   const component = computed(() =>
@@ -647,7 +647,7 @@
               :style="getTags(item).length ? { borderBottom: 'none' } : {}"
             >
               <div
-                v-if="item.total != null && item.total !== undefined"
+                v-if="item.total != null && item.total !== undefined && hasTotals"
                 class="d-flex flex-row align-center justify-center flex-grow-1 px-2"
               >
                 <h2>
