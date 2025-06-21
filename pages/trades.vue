@@ -76,6 +76,11 @@
     }))
   ]);
 
+  const activeQuickFilter = computed(() => {
+    if (!route.query.filters) { return null; }
+    return quickFilters.find(qf => decodeURIComponent(qf.value) === route.query.filters)?.value || null;
+  });
+
   const queryGetter = () => {
     let query = supabase
       .from(Trade.table)
@@ -179,7 +184,10 @@
         <v-divider />
       </div>
 
-      <v-chip-group class="pa-2">
+      <v-chip-group
+        class="pa-2"
+        :model-value="activeQuickFilter"
+      >
         <v-chip
           v-for="quickFilter in quickFilters"
           :key="quickFilter.title"
