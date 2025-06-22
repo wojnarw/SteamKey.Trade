@@ -98,6 +98,7 @@
             filters-in-url
             :only-users="[user.id]"
             show-actions
+            show-quick-filters
             sort-in-url
           />
         </v-window-item>
@@ -109,6 +110,7 @@
           <table-collections
             :exclude-users="isLoggedIn ? [user.id] : undefined"
             filters-in-url
+            show-quick-filters
             sort-in-url
           />
         </v-window-item>

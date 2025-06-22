@@ -51,6 +51,7 @@
   <v-chip-group
     class="pa-2"
     :model-value="activeFilter"
+    show-arrows
   >
     <v-chip
       v-for="filter in encodedFilters"
@@ -70,5 +71,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  :deep(.v-slide-group__prev--disabled),
+  :deep(.v-slide-group__next--disabled) {
+    display: none;
   }
 </style>

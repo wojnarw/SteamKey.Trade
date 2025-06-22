@@ -50,6 +50,10 @@
       type: Boolean,
       default: false
     },
+    showQuickFilters: {
+      type: Boolean,
+      default: false
+    },
     maxSelection: {
       type: Number,
       default: null
@@ -138,6 +142,37 @@
     { title: Collection.labels.createdAt, value: Collection.fields.createdAt, type: Date }
   ];
 
+  const quickFilters = [
+    {
+      title: 'Currently active',
+      value: [{
+        field: Collection.fields.startsAt,
+        operation: 'lte',
+        value: new Date().toISOString()
+      }, {
+        field: Collection.fields.endsAt,
+        operation: 'gte',
+        value: new Date().toISOString()
+      }]
+    },
+    {
+      title: 'Upcoming',
+      value: [{
+        field: Collection.fields.startsAt,
+        operation: 'gt',
+        value: new Date().toISOString()
+      }]
+    },
+    ...collectionTypes.map(({ title, value }) => ({
+      title,
+      value: [{
+        field: Collection.fields.type,
+        operation: 'eq',
+        value
+      }]
+    }))
+  ];
+
   const attrs = useAttrs();
 
   // Determine which table component to use based on the presence of items.
@@ -206,6 +241,13 @@
     :show-select=" props.showSelect ? '' : undefined"
     v-on="tableEvents"
   >
+    <template
+      v-if="showQuickFilters && !props.items"
+      #top
+    >
+      <s-quick-filters :filters="quickFilters" />
+    </template>
+
     <template #[`item.${Collection.fields.type}`]="{ item }">
       <v-icon
         v-tooltip:top="Collection.labels[item.type]"
