@@ -66,7 +66,7 @@
         >
           <rich-profile-link
             :avatar-size="avatarSize"
-            class="overflow-visible my-n10 z-20 card-username position-relative font-weight-bold py-0 ml-n2"
+            class="my-n12 z-20 position-relative py-0 ml-n3 card-username font-weight-bold color-primary-700"
             hide-reputation
             :user-id="userId"
           />
@@ -178,6 +178,9 @@
   color: #dddddd !important;
   font-size: 1rem;
   z-index: 1;
-  text-shadow: #4d4d4d 2px 1px;
+  text-shadow: #444444 2px 2px 3px;
+  text-overflow: ellipsis !important;
+  overflow: hidden;
+  white-space: nowrap;
 }
 </style>
