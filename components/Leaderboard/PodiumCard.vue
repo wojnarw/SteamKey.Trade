@@ -12,11 +12,15 @@
     }
   });
 
-  // get everything except for userId
-  // TODO: Split this up into multiple props instead?
-  const { userId, ...attributes } = props.user;
-  // TODO: change order of attributes or just print them manually
-  // console.info('attributes', attributes);
+  const { userId } = props.user;
+  const attributes = {
+    totalUniqueTrades: props.user.totalUniqueTrades,
+    totalCompletedTrades: props.user.totalCompletedTrades,
+    totalDeclinedTrades: props.user.totalDeclinedTrades,
+    totalReviewsReceived: props.user.totalReviewsReceived,
+    avgSpeed: props.user.avgSpeed.toFixed(2)
+  };
+
   const { User } = useORM();
 
   const cardMarginClass = computed(() => {
@@ -57,7 +61,7 @@
         :class="positionBgClass"
       >
         <v-container
-          class="px-0 mx-0 z-10 overflow-visible mx-0 avatar-bg justify-space-between"
+          class="px-0 mx-0 z-10 mx-0 avatar-bg justify-space-between"
           :class="{ 'first-place-avatar-bg' : props.position === '1' }"
         >
           <rich-profile-link
@@ -67,13 +71,6 @@
             :user-id="userId"
           />
         </v-container>
-
-        <!--        <rich-profile-link-->
-        <!--          class="card-username position-relative font-weight-bold py-0 ml-4 z-99 color-primary-700"-->
-        <!--          hide-avatar-->
-        <!--          hide-reputation-->
-        <!--          :user-id="props.user.userId"-->
-        <!--        />-->
       </v-card-text>
 
       <!--user statistics panel-->
@@ -97,14 +94,8 @@
           class="align-center"
         >
           <v-col
-            class="text-right font-weight-bold pt-0 pb-0 text-h6"
-            cols="3"
-          >
-            {{ attributes[key] }}
-          </v-col>
-          <v-col
-            class="text-grey py-1"
-            cols="9"
+            class="text-right text-grey py-1"
+            cols="8"
           >
             <span>
               {{ (User.shortLabels[key] ? User.shortLabels[key] : key) }}
@@ -115,6 +106,12 @@
                 {{ (User.labels[key] ? User.labels[key] : key) }}
               </v-tooltip>
             </span>
+          </v-col>
+          <v-col
+            class="font-weight-bold pt-0 pb-0 text-h6"
+            cols="4"
+          >
+            {{ attributes[key] }}
           </v-col>
         </v-row>
       </v-card-text>
@@ -134,20 +131,19 @@
 
 .first-place {
   background: rgb(204, 165, 0);
-  background: linear-gradient(0deg, rgba(178, 132, 8, 0.8) 0%, rgba(245, 180, 17, 0.8) 35%, rgba(255, 228, 1, 0.8) 45%, rgba(255, 228, 1, 0.8) 100%);
+  background: linear-gradient(0deg, rgba(178, 132, 8, 0.7) 0%, rgba(245, 180, 17, 0.7) 35%, rgba(255, 228, 1, 0.7) 45%, rgba(255, 228, 1, 0.7) 100%);
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
-  transition: transform 0.5s ease;
 }
 
 .second-place {
   background: rgb(122, 122, 122);
-  background: linear-gradient(0deg, rgba(124, 124, 124, 0.8) 35%, rgba(164, 164, 164, 0.8) 45%, rgba(177, 177, 177, 0.8) 60%);
+  background: linear-gradient(0deg, rgba(124, 124, 124, 0.7) 35%, rgba(164, 164, 164, 0.7) 45%, rgba(177, 177, 177, 0.7) 60%);
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
 }
 
 .third-place {
   background: rgb(158, 95, 20);
-  background: linear-gradient(0deg, rgba(133, 76, 9, 0.8) 35%, rgba(158, 95, 20, 0.8) 45%, rgba(179, 102, 6, 0.8) 100%);
+  background: linear-gradient(0deg, rgba(133, 76, 9, 0.7) 35%, rgba(158, 95, 20, 0.7) 45%, rgba(179, 102, 6, 0.7) 100%);
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
 }
 
