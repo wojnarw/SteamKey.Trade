@@ -48,12 +48,12 @@
     cols="4"
   >
     <v-card
-      class="stylish-card overflow-visible"
+      class="podium-card"
       width="250"
     >
       <!--card top-->
       <v-card-text
-        class="d-flex align-center justify-start pa-0 overflow-visible"
+        class="d-flex align-center justify-start pa-0"
         :class="positionBgClass"
       >
         <v-container
@@ -123,12 +123,13 @@
 </template>
 
 <style scoped lang="scss">
-.stylish-card {
+.podium-card {
   border-radius: 10px;
   padding: 0;
   /*box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);*/
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 0 solid transparent;
+  overflow: visible;
 }
 
 .first-place {

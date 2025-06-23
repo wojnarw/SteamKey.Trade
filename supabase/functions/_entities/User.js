@@ -217,7 +217,7 @@ export class User extends Entity {
       totalDisputedTrades: 'Disputed Trades',
       totalLibrary: 'Library',
       totalReviewsReceived: 'Reviews Received',
-      totalUniqueTrades: 'Unique trades'
+      totalUniqueTrades: 'Unique Trades'
     });
   };
 

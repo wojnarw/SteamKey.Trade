@@ -14,8 +14,7 @@
   const tabs = ['top100', 'friends'];
 
   const headers = [
-    // TODO some values from Users table, how to join? --> can't a view (statistics) cannot use foreign keys
-    { title: '#', value: 'rank', sortable: false }, // TODO add position #
+    { title: '', value: 'rank', sortable: false },
     { title: 'User', value: User.statistics.fields.userId, sortable: true },
     { title: User.shortLabels.totalCompletedTrades, value: User.statistics.fields.totalCompletedTrades, sortable: true },
     { title: User.shortLabels.totalAcceptedTrades, value: User.statistics.fields.totalAcceptedTrades, sortable: true },
