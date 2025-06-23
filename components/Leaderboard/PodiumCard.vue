@@ -27,10 +27,6 @@
     return props.position === '1' ? 'mb-10' : 'mt-12'; // for showing cards at different height
   });
 
-  const avatarSize = computed(() => {
-    return props.position === '1' ? '110' : '100'; // for showing cards at different height
-  });
-
   const positionBgClass = computed(() => {
     switch (props.position) {
       case '1':
@@ -60,12 +56,10 @@
         class="d-flex align-center justify-start pa-0"
         :class="positionBgClass"
       >
-        <v-container
-          class="px-0 mx-0 z-10 mx-0 avatar-bg justify-space-between"
-          :class="{ 'first-place-avatar-bg' : props.position === '1' }"
+        <v-container class="px-0 mx-0 z-10 mx-0 avatar-bg justify-space-between"
         >
           <rich-profile-link
-            :avatar-size="avatarSize"
+            avatar-size="100"
             class="my-n12 z-20 position-relative py-0 ml-n3 card-username font-weight-bold color-primary-700"
             hide-reputation
             :user-id="userId"
@@ -156,10 +150,6 @@
   height: 50px;
   width: initial;
   background: rgba(0, 0, 0, 0);
-}
-
-.first-place-avatar-bg {
-  height: 60px !important;
 }
 
 // make avatar loader fill whole space correctly
