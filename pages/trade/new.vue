@@ -2,15 +2,15 @@
   import { isSteamID64 } from '~/assets/js/validate';
 
   const supabase = useSupabaseClient();
-  const { currentRoute } = useRouter();
+  const route = useRoute();
   const { User } = useORM();
 
-  const { data: resolvedPartnerId } = await useLazyAsyncData(`steamid-${currentRoute.query.partner}`, async () => {
-    if (currentRoute.query.partner && isSteamID64(currentRoute.query.partner)) {
+  const { data: resolvedPartnerId } = await useLazyAsyncData(`user-id-${route.query.partner}`, async () => {
+    if (route.query.partner && isSteamID64(route.query.partner)) {
       const users = await User.query(supabase, [
         {
           filter: 'eq',
-          params: [User.fields.steamId, currentRoute.query.partner]
+          params: [User.fields.steamId, route.query.partner]
         },
         {
           filter: 'limit',
@@ -22,7 +22,7 @@
         return users[0].id;
       }
     }
-    return currentRoute.query.partner;
+    return route.query.partner;
   });
 
   definePageMeta({
@@ -32,10 +32,11 @@
 
 <template>
   <trade-edit
-    :copy-id="currentRoute.query.copy"
-    :counter-id="currentRoute.query.counter"
+    v-if="!route.query.partner || resolvedPartnerId"
+    :copy-id="route.query.copy"
+    :counter-id="route.query.counter"
     :receiver="resolvedPartnerId"
-    :receiver-selected="currentRoute.query.receiverapps ? currentRoute.query.receiverapps.split(',').map(Number) : []"
-    :sender-selected="currentRoute.query.senderapps ? currentRoute.query.senderapps.split(',').map(Number) : []"
+    :receiver-selected="route.query.receiverapps ? route.query.receiverapps.split(',').map(Number) : []"
+    :sender-selected="route.query.senderapps ? route.query.senderapps.split(',').map(Number) : []"
   />
 </template>
