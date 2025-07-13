@@ -1,4 +1,5 @@
 <script setup>
+  import { FunctionsHttpError } from '@supabase/supabase-js';
   import jsonata from 'jsonata';
 
   const props = defineProps({
@@ -19,8 +20,9 @@
 
   const selectedValueType = ref('title');
   const valueTypes = [
-    { title: 'AppID\'s', value: 'appid' },
-    { title: 'App titles', value: 'title' }
+    { title: 'AppID\'s (fast)', value: 'appid' },
+    { title: 'App titles (slow)', value: 'title' },
+    { title: 'AppID\'s and titles', value: 'mixed' }
   ];
 
   const selectedInputType = ref('text');
@@ -153,7 +155,7 @@
       if (selectedValueType.value === 'appid') {
         finalAppIds = validateAppIds(inputItems);
       // If app titles are selected, search for each title and extract the appids
-      } else if (selectedValueType.value === 'title') {
+      } else if (selectedValueType.value === 'title' || selectedValueType.value === 'mixed') {
         totalItems.value = inputItems.length;
         processedItems.value = 0;
 
@@ -165,6 +167,10 @@
 
           const batch = inputItems.slice(i, i + batchSize);
           const appIdPromises = batch.map(async (title) => {
+            if (selectedValueType.value === 'mixed' && !isNaN(Number(title))) {
+              return Number(title); // It's an appid
+            }
+
             const results = await search(title);
             processedItems.value++;
 
@@ -222,6 +228,177 @@
     totalItems.value = 0;
     processedItems.value = 0;
   };
+
+  const snackbarStore = useSnackbarStore();
+  const supabase = useSupabaseClient();
+  const presets = ref([
+    {
+      title: 'Barter.vg',
+      loading: false,
+      load: async (preset) => {
+        if (preset.loading) {
+          return;
+        }
+
+        preset.loading = true;
+        try {
+          const { data, error } = await supabase.functions.invoke('thirdparty-import', {
+            body: { source: 'bartervg' }
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          const { appids = [] } = data;
+
+          if (appids.length === 0) {
+            snackbarStore.set('error', 'No items found in your Barter.vg tradable collection');
+            return;
+          }
+
+          inputText.value = appids.join(',');
+          selectedInputType.value = 'text';
+          selectedValueType.value = 'appid';
+          delimiter.value = ',';
+          await updatePreview();
+          snackbarStore.set('success', 'Barter.vg items loaded successfully');
+        } catch (error) {
+          console.error(error);
+          if (error instanceof FunctionsHttpError) {
+            const message = await error.context.json();
+            snackbarStore.set('error', message.error || message);
+          } else {
+            snackbarStore.set('error', 'An unknown error occurred while importing Barter.vg items');
+          }
+        } finally {
+          preset.loading = false;
+        }
+      }
+    },
+    {
+      title: 'Steam Inventory',
+      loading: false,
+      load: async (preset) => {
+        if (preset.loading) {
+          return;
+        }
+
+        preset.loading = true;
+        try {
+          const { data, error } = await supabase.functions.invoke('thirdparty-import', {
+            body: { source: 'steam-inventory' }
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          const { appids = [], queries = [] } = data;
+
+          if (appids.length === 0) {
+            snackbarStore.set('error', 'No items found in your Steam Inventory');
+            return;
+          }
+
+          inputText.value = `${appids.join('\n')}\n${[...new Set(queries)].join('\n')}`;
+          selectedInputType.value = 'text';
+          selectedValueType.value = appids.length > 0 ? 'mixed' : 'title';
+          delimiter.value = '\n';
+          await updatePreview();
+          snackbarStore.set('success', 'Steam Inventory items loaded successfully');
+        } catch (error) {
+          console.error(error);
+          if (error instanceof FunctionsHttpError) {
+            const message = await error.context.json();
+            snackbarStore.set('error', message.error || message);
+          } else {
+            snackbarStore.set('error', 'An unknown error occurred while importing Steam Inventory');
+          }
+        } finally {
+          preset.loading = false;
+        }
+      }
+    },
+    {
+      title: 'Steamtrades',
+      loading: false,
+      load: async (preset) => {
+        if (preset.loading) {
+          return;
+        }
+
+        preset.loading = true;
+        try {
+          const { data, error } = await supabase.functions.invoke('thirdparty-import', {
+            body: { source: 'steamtrades' }
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          if (!data || data.length === 0) {
+            snackbarStore.set('error', 'No trade topics found in SteamTrades');
+            return;
+          }
+
+          inputText.value = '';
+          for (const topic of data) {
+            if (data.length > 1) {
+              inputText.value += `(REMOVE THIS) Found in: ${topic.title}\n\n`;
+            }
+            if (topic.appids && topic.appids.length > 0) {
+              inputText.value += `${topic.appids.join(',')}\n`;
+            }
+            if (topic.queries && topic.queries.length > 0) {
+              inputText.value += `${topic.queries.join('\n')}\n`;
+            }
+            const index = data.indexOf(topic);
+            if (index < data.length - 1) {
+              inputText.value += '\n\n\n--------------------------------------------------------\n\n\n';
+            }
+          }
+          selectedInputType.value = 'text';
+          selectedValueType.value = data.some(topic => topic.appids.length > 0) ? 'mixed' : 'title';
+          delimiter.value = '\n';
+          await updatePreview();
+          snackbarStore.set('success', 'SteamTrades topics loaded successfully');
+        } catch (error) {
+          console.error(error);
+          if (error instanceof FunctionsHttpError) {
+            const message = await error.context.json();
+            snackbarStore.set('error', message.error || message);
+          } else {
+            snackbarStore.set('error', 'An unknown error occurred while importing SteamTrades topics');
+          }
+        } finally {
+          preset.loading = false;
+        }
+      }
+    },
+    {
+      title: 'Steam Dynamic Store',
+      loading: false,
+      load: async () => {
+        selectedInputType.value = 'json';
+        selectedValueType.value = 'appid';
+        inputText.value = 'Copy and paste content from https://store.steampowered.com/dynamicstore/userdata/ here';
+        jsonataQuery.value = 'Pick one: rgWishlist, rgOwnedApps, rgFollowedApps, rgAppsInCart, $keys(rgIgnoredApps)';
+        await updatePreview();
+      }
+    },
+    {
+      title: 'Lestrade\'s',
+      loading: false,
+      load: async () => {
+        selectedInputType.value = 'text';
+        selectedValueType.value = 'title';
+        inputText.value = 'Export from https://lestrades.com/tradables/?export=&steamonly=on&nothing=on and paste here';
+        await updatePreview();
+      }
+    }
+  ]);
 </script>
 
 <template>
@@ -241,11 +418,40 @@
       <v-card :loading="isLoading">
         <v-card-title>
           Apps import
-          <template v-if="isLoading && selectedValueType === 'title'">
+          <template v-if="isLoading && (selectedValueType === 'title' || selectedValueType === 'mixed')">
             ({{ processedItems }}/{{ totalItems }})
           </template>
         </v-card-title>
         <v-card-text>
+          <v-row>
+            <v-col
+              class="d-flex align-center"
+              cols="12"
+            >
+              <span class="flex-grow-0 text-no-wrap">
+                <v-icon
+                  class="mr-1 mt-n1"
+                  icon="mdi-tune"
+                />
+                Presets:
+              </span>
+              <v-chip-group
+                class="presets flex-grow-1"
+                show-arrows
+              >
+                <v-chip
+                  v-for="preset in presets"
+                  :key="preset.title"
+                  :disabled="preset.loading"
+                  :prepend-icon="preset.loading ? 'mdi-loading mdi-spin' : undefined"
+                  :text="preset.title"
+                  variant="tonal"
+                  @click="preset.load(preset)"
+                />
+              </v-chip-group>
+            </v-col>
+          </v-row>
+          <v-divider class="my-4" />
           <v-row>
             <v-col
               cols="12"
@@ -374,3 +580,13 @@
     </template>
   </v-dialog>
 </template>
+
+<style lang="scss" scoped>
+  .presets {
+    padding: 0 8px 0 8px;
+    :deep(.v-slide-group__prev--disabled),
+    :deep(.v-slide-group__next--disabled) {
+      display: none;
+    }
+  }
+</style>

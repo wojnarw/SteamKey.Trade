@@ -344,7 +344,7 @@
               />
               <v-icon
                 v-else
-                class="mr-1 spin"
+                class="mr-1"
                 icon="mdi-sync"
                 size="small"
               />
