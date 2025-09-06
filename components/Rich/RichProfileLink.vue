@@ -123,7 +123,10 @@
         :size="avatarSize"
         :style="onlineBorder"
       >
-        <v-skeleton-loader type="avatar" />
+        <v-skeleton-loader
+          class="w-100 h-100"
+          type="avatar"
+        />
       </v-avatar>
       <span
         v-if="!hideText"

@@ -52,7 +52,8 @@
     isLoggedIn.value && { title: 'Matches', icon: 'mdi-crosshairs', to: '/matches' },
     { title: 'Collections', icon: 'mdi-apps', to: '/collections' },
     { title: 'Apps', icon: 'mdi-controller', to: '/apps' },
-    { title: 'Users', icon: 'mdi-account-group', to: '/users' }
+    { title: 'Users', icon: 'mdi-account-group', to: '/users' },
+    { title: 'Leaderboard', icon: 'mdi-podium-gold', to: '/leaderboard' }
   ]).filter(Boolean));
 
   const { refreshMetadata, refreshFacets } = useAppsStore();

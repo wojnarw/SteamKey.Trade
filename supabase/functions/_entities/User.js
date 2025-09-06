@@ -181,9 +181,46 @@ export class User extends Entity {
       newVaultEntry: 'New Vault Entry',
       unreadMessages: 'Unread Messages',
       disputedTrade: 'Disputed Trade',
-      resolvedTrade: 'Resolved Trade'
+      resolvedTrade: 'Resolved Trade',
+
+      avgCommunication: 'Average Communication',
+      avgFairness: 'Average Fairness',
+      avgHelpfulness: 'Average Helpfulness',
+      avgSpeed: 'Average Responsiveness Speed',
+
+      totalAbortedTrades: 'Total Aborted Trades',
+      totalAcceptedTrades: 'Total Accepted Trades',
+      totalBlacklist: 'Total Apps in Blacklist',
+      totalCollections: 'Total Collections',
+      totalCompletedTrades: 'Total Completed Trades',
+      totalCounteredTrades: 'Total Countered Trades',
+      totalDeclinedTrades: 'Total Declined Trades',
+      totalDisputedTrades: 'Total Disputed Trades',
+      totalLibrary: 'Total Apps in Library',
+      totalPendingTrades: 'Total Trades Pending',
+      totalReviews: 'Total Reviews',
+      totalReviewsGiven: 'Total Reviews Given',
+      totalReviewsReceived: 'Total Reviews Received',
+      totalTradelist: 'Total Apps in Tradelist',
+      totalUniqueTrades: 'Total trades with unique users',
+      totalVaultMine: 'My Total Vault Entries',
+      totalVaultReceived: 'Total Vault Entries Received',
+      totalWishlist: 'Total Apps in Wishlist'
     });
   }
+
+  static get shortLabels() {
+    return Object.freeze({
+      avgSpeed: 'Speed',
+      totalAcceptedTrades: 'Accepted Trades',
+      totalCompletedTrades: 'Completed Trades',
+      totalDeclinedTrades: 'Declined Trades',
+      totalDisputedTrades: 'Disputed Trades',
+      totalLibrary: 'Library',
+      totalReviewsReceived: 'Reviews Received',
+      totalUniqueTrades: 'Unique Trades'
+    });
+  };
 
   static get descriptions() {
     return Object.freeze({
