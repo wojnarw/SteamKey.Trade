@@ -1,4 +1,6 @@
 <script setup>
+  import { useDisplay } from 'vuetify';
+
   const { User } = useORM();
   const { isLoggedIn } = storeToRefs(useAuthStore());
   const supabase = useSupabaseClient();
@@ -85,6 +87,9 @@
     }
   });
 
+  // const isWrapped = computed(() => shouldWrap.value ? 12 : 4);
+  const { smAndDown } = useDisplay();
+
   useHead({ title });
 </script>
 
@@ -131,62 +136,44 @@
         <v-container class="d-flex flex-column align-center my-5">
           <!-- Podium Section -->
           <v-row justify="center">
-            <!-- TODO: Use v-col for responsiveness -->
-            <!-- <v-col
-              cols="12"
-              md="4"
-            > -->
-            <leaderboard-podium-card
-              v-if="top3?.[1]"
-              position="2"
-              :user="top3[1]"
-            />
-            <!-- </v-col>
-            <v-col
-              cols="12"
-              md="4"
-            > -->
-            <leaderboard-podium-card
-              v-if="top3?.[0]"
-              position="1"
-              :user="top3[0]"
-            />
-            <!-- </v-col>
-            <v-col
-              cols="12"
-              md="4"
-            > -->
-            <leaderboard-podium-card
-              v-if="top3?.[2]"
-              position="3"
-              :user="top3[2]"
-            />
-            <!-- </v-col> -->
-          </v-row>
-          <v-row class="d-flex mt-6">
-            <v-card class="d-flex flex-grow-1 flex-column">
-              <table-data
-                class="h-100"
-                :default-sort-by="sortBy"
-                :headers="headers"
-                no-data-text="No users found"
-                :query-getter="queryGetter"
-                @click:row="(item) => navigateTo(`/user/${item[User.fields.customUrl] || item[User.fields.steamId]}`)"
+            <v-row class="d-flex justify-center flex-row">
+              <template
+                v-for="(user, index) in top3"
+                :key="user.userId || index"
               >
-                <template #[`item.rank`]="{ item, index }">
-                  <span class="text-h6 font-weight-black">
-                    {{ (index + 3) + '.' }}
-                  </span>
-                </template>
-                <template #[`item.${User.statistics.fields.userId}`]="{ item }">
-                  <rich-profile-link
-                    hide-reputation
-                    :user-id="item[User.statistics.fields.userId]"
+                <v-col
+                  :class="smAndDown ? 'px-3' : 'px-5'"
+                  cols="4"
+                >
+                  <leaderboard-podium-card
+                    v-if="top3?.[index]"
+                    :position="(index + 1).toString()"
+                    :user="top3[index]"
                   />
-                </template>
-              </table-data>
-            </v-card>
+                </v-col>
+              </template>
+            </v-row>
           </v-row>
+          <table-data
+            class="h-100 mt-10"
+            :default-sort-by="sortBy"
+            :headers="headers"
+            no-data-text="No users found"
+            :query-getter="queryGetter"
+            @click:row="(item) => navigateTo(`/user/${item[User.fields.customUrl] || item[User.fields.steamId]}`)"
+          >
+            <template #[`item.rank`]="{ item, index }">
+              <span class="text-h6 font-weight-black">
+                {{ (index + 3) + '.' }}
+              </span>
+            </template>
+            <template #[`item.${User.statistics.fields.userId}`]="{ item }">
+              <rich-profile-link
+                hide-reputation
+                :user-id="item[User.statistics.fields.userId]"
+              />
+            </template>
+          </table-data>
         </v-container>
       </v-window-item>
     </v-window>
