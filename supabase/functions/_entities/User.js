@@ -185,7 +185,7 @@ export class User extends Entity {
       avgCommunication: 'Average Communication',
       avgFairness: 'Average Fairness',
       avgHelpfulness: 'Average Helpfulness',
-      avgSpeed: 'Average Speed',
+      avgSpeed: 'Average Responsiveness Speed',
 
       totalAbortedTrades: 'Total Aborted Trades',
       totalAcceptedTrades: 'Total Accepted Trades',
