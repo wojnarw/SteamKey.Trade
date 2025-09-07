@@ -220,7 +220,7 @@ export class User extends Entity {
       totalReviewsReceived: 'Reviews Received',
       totalUniqueTrades: 'Unique Trades'
     });
-  };
+  }
 
   static get descriptions() {
     return Object.freeze({
