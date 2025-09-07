@@ -169,7 +169,7 @@
 
   const itemsPerPage = ref(props.defaultItemsPerPage * 1);
   const loading = ref(false);
-  const prevPage = ref(1);
+  const currentPage = ref(1);
   const search = useDebouncedRef('', 600);
   const totalItems = ref(0);
   const serverItems = ref([]);
@@ -240,7 +240,7 @@
     }
 
     loading.value = true;
-    // prevPage.value = page;
+    currentPage.value = page;
 
     try {
       let query = props.queryGetter(selectedOnly.value && selected.value.length);
@@ -330,12 +330,14 @@
     loading.value = false;
   };
 
-  const refresh = () => loadItems({ itemsPerPage: itemsPerPage.value, page: prevPage.value, search: search.value, sortBy: sortBy.value });
+  const refresh = () => loadItems({ itemsPerPage: itemsPerPage.value, page: currentPage.value, search: search.value, sortBy: sortBy.value });
 
   defineExpose({
     loading,
     remap,
-    refresh
+    refresh,
+    currentPage,
+    itemsPerPage
   });
 </script>
 

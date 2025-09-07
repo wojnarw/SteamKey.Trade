@@ -2,7 +2,7 @@
   import { useDisplay } from 'vuetify';
 
   const { User } = useORM();
-  const { isLoggedIn } = storeToRefs(useAuthStore());
+  // const { isLoggedIn } = storeToRefs(useAuthStore());
   const supabase = useSupabaseClient();
 
   const title = 'Leaderboard';
@@ -11,9 +11,12 @@
     { title, disabled: true }
   ];
 
+  const table = useTemplateRef('table');
   const mainStat = User.statistics.fields.totalCompletedTrades; // TODO: maybe turn this into a v-select?
   const activeTab = ref('top100');
-  const tabs = ['top100', 'friends'];
+  // TODO: Implement a friend system (See #94)
+  // const tabs = ['top100', 'friends'];
+  const tabs = ['top100'];
 
   const headers = [
     { title: '', value: 'rank', sortable: false },
@@ -98,11 +101,12 @@
     :breadcrumbs="breadcrumbs"
     :loading="status === 'pending'"
   >
-    <template
-      v-if="isLoggedIn"
+    <!-- friends leaderboard only if logged in-->
+    <!-- TODO: Implement a friend system (See #94) -->
+    <!-- <template
+      v-if="isLoggedIn && false"
       #append
     >
-      <!-- friends leaderboard only if logged in-->
       <v-tabs v-model="activeTab">
         <v-tab value="top100">
           <v-icon
@@ -121,7 +125,7 @@
           Friends
         </v-tab>
       </v-tabs>
-    </template>
+    </template> -->
 
     <v-window
       v-model="activeTab"
@@ -135,11 +139,14 @@
       >
         <v-container class="d-flex flex-column align-center my-5">
           <!-- Podium Section -->
-          <v-row justify="center">
+          <v-row
+            class="w-100"
+            justify="center"
+          >
             <v-row class="d-flex justify-center flex-row">
               <template
-                v-for="(user, index) in top3"
-                :key="user.userId || index"
+                v-for="index in [1, 0, 2]"
+                :key="index"
               >
                 <v-col
                   :class="smAndDown ? 'px-3' : 'px-5'"
@@ -148,6 +155,7 @@
                   <leaderboard-podium-card
                     v-if="top3?.[index]"
                     :position="(index + 1).toString()"
+                    :style="{ marginTop: index === 0 ? '0' : (index === 1 ? '30px' : '60px') }"
                     :user="top3[index]"
                   />
                 </v-col>
@@ -155,6 +163,7 @@
             </v-row>
           </v-row>
           <table-data
+            ref="table"
             class="h-100 mt-10"
             :default-sort-by="sortBy"
             :headers="headers"
@@ -162,13 +171,14 @@
             :query-getter="queryGetter"
             @click:row="(item) => navigateTo(`/user/${item[User.fields.customUrl] || item[User.fields.steamId]}`)"
           >
-            <template #[`item.rank`]="{ item, index }">
+            <template #[`item.rank`]="{ index }">
               <span class="text-h6 font-weight-black">
-                {{ (index + 3) + '.' }}
+                {{ `${((table[0].currentPage - 1) * table[0].itemsPerPage) + index + 3}.` }}
               </span>
             </template>
             <template #[`item.${User.statistics.fields.userId}`]="{ item }">
               <rich-profile-link
+                :key="item[User.statistics.fields.userId] "
                 hide-reputation
                 :user-id="item[User.statistics.fields.userId]"
               />

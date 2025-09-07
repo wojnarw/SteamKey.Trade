@@ -19,7 +19,7 @@
     totalCompletedTrades: props.user.totalCompletedTrades,
     totalDeclinedTrades: props.user.totalDeclinedTrades,
     totalReviewsReceived: props.user.totalReviewsReceived,
-    avgSpeed: props.user.avgSpeed.toFixed(1)
+    avgSpeed: props.user.avgSpeed?.toFixed(1)
   };
 
   const { User } = useORM();
@@ -98,10 +98,10 @@
           </span>
         </v-col>
         <v-col
-          class="font-weight-bold pt-0 pb-0 text-h6 mx-0"
+          class="font-weight-bold pt-0 pb-0 text-h6 mx-0 text-no-wrap"
           cols="4"
         >
-          {{ attributes[key] ? attributes[key] : 'Property missing' }}
+          {{ attributes[key] ? attributes[key] : 'N/A' }}
         </v-col>
       </v-row>
     </v-card-text>
