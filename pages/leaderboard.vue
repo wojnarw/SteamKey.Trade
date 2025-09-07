@@ -40,7 +40,7 @@
         ${User.statistics.fields.avgSpeed}
       `)
       // Exclude top 3 users from the query
-      .not(User.statistics.fields.userId, 'in', `(${top3.value.map(user => user.userId)})`);
+      .not(User.statistics.fields.userId, 'in', `(${(top3.value?.map(user => user.userId) || []).join(',')})`);
 
     // TODO: Implement a friend system (See #94)
     // if (isLoggedIn.value && activeTab.value === 'friends') {
