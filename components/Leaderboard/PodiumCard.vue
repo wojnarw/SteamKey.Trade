@@ -1,5 +1,4 @@
 <script setup>
-  import RichProfileLink from '~/components/Rich/RichProfileLink.vue';
   import { useDisplay } from 'vuetify/framework';
 
   const props = defineProps({
