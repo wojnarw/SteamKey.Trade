@@ -173,7 +173,7 @@
           >
             <template #[`item.rank`]="{ index }">
               <span class="text-h6 font-weight-black">
-                {{ `${((table[0].currentPage - 1) * table[0].itemsPerPage) + index + 3}.` }}
+                {{ `${(((table?.[0]?.currentPage ?? 1) - 1) * (table?.[0]?.itemsPerPage ?? 10)) + index + 3}.` }}
               </span>
             </template>
             <template #[`item.${User.statistics.fields.userId}`]="{ item }">
